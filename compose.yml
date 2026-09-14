@@ -1,4 +1,35 @@
 services:
+  app:
+    container_name: marketplace-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    environment:
+      APP_NAME: Marketplace
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8080
+      APP_KEY: ${APP_KEY:-}
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: marketplace
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      SESSION_DRIVER: array
+      QUEUE_CONNECTION: database
+      CACHE_STORE: database
+      LOG_CHANNEL: stderr
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - app_storage:/var/www/html/storage
+    networks:
+      - marketplace
+
   postgres:
     container_name: marketplace-postgres
     image: postgres:17
@@ -7,7 +38,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: marketplace
     ports:
-      - 5432:5432
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -16,6 +47,13 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    networks:
+      - marketplace
 
 volumes:
   postgres_data:
+  app_storage:
+
+networks:
+  marketplace:
+    driver: bridge
