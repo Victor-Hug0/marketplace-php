@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Password;
 
 class RegisterRequest extends FormRequest
 {
@@ -25,8 +26,8 @@ class RegisterRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
-            'password' => 'required|string|min:8|max:64|confirmed',
-            'password_confirmation' => 'required|string|min:8|max:64',
+            'password' => ['required', 'confirmed', Password::defaults()],
+            'password_confirmation' => ['required', Password::defaults()],
         ];
     }
 
@@ -37,15 +38,11 @@ class RegisterRequest extends FormRequest
             'email.required' => 'O email é obrigatório',
             'email.email' => 'O email deve ser um email válido',
             'email.unique' => 'O email já está em uso',
-            'password.required' => 'A senha é obrigatória',
-            'password.string' => 'A senha deve ser uma string',
-            'password.min' => 'A senha deve ter pelo menos 8 caracteres',
-            'password.max' => 'A senha deve ter no máximo 64 caracteres',
-            'password.confirmed' => 'A senha e a confirmação de senha não conferem',
-            'password_confirmation.required' => 'A confirmação de senha é obrigatória',
-            'password_confirmation.string' => 'A confirmação de senha deve ser uma string',
-            'password_confirmation.min' => 'A confirmação de senha deve ter pelo menos 8 caracteres',
-            'password_confirmation.max' => 'A confirmação de senha deve ter no máximo 64 caracteres',
+            'password.letters' => 'A senha deve conter pelo menos uma letra.',
+            'password.mixed' => 'A senha deve conter letras maiúsculas e minúsculas.',
+            'password.numbers' => 'A senha deve conter pelo menos um número.',
+            'password.symbols' => 'A senha deve conter pelo menos um símbolo.',
+            'password.uncompromised' => 'Esta senha apareceu em um vazamento de dados. Escolha outra.',
         ];
     }
 }

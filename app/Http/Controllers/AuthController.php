@@ -6,6 +6,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -14,6 +15,10 @@ use Illuminate\Support\Facades\RateLimiter;
 
 class AuthController extends Controller
 {
+    public function __construct(
+        private readonly AuthService $authService
+    ) {
+    }
     public function login(LoginRequest $request): JsonResponse
     {
         $credentials = $request->validated();
@@ -29,7 +34,7 @@ class AuthController extends Controller
                 ]);
         }
 
-        if (!Auth::attempt($credentials)) {
+        if (!$this->authService->isValidCredentials($credentials)) {
             RateLimiter::hit($key, 60);
 
             return response()
@@ -45,7 +50,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Login realizado com sucesso',
             'user' => new UserResource($user),
-            ...$this->issueTokenPair($user),
+            ...$this->authService->issueTokenPair($user),
         ]);
     }
 
@@ -63,7 +68,7 @@ class AuthController extends Controller
 
         RateLimiter::hit($key, 60);
 
-        $user = User::create($data);
+        $user = $this->authService->register($data);
 
         RateLimiter::clear($key);
 
@@ -76,39 +81,26 @@ class AuthController extends Controller
 
     public function logout(Request $request): Response
     {
-        $request->user()->tokens()->whereIn('name', ['access_token', 'refresh_token'])->delete();
+        $this->authService->deleteUserTokens($request->user());
 
         return response()->noContent();
     }
 
     public function refresh(Request $request): JsonResponse
     {
-        $refresh_token = $request->user()->currentAccessToken();
+        $user = $request->user();
 
-        if ($refresh_token->name !== 'refresh_token' || !$refresh_token->can('refresh')) {
+        if (!$this->authService->isUserRefreshTokenValid($user)) {
             return response()
                 ->json([
                     'message' => 'Token de atualização inválido',
                 ], 401);
         }
 
-        $user = $request->user();
-
         return response()
             ->json([
                 'message' => 'Token de atualização realizado com sucesso',
-                ...$this->issueTokenPair($user),
+                ...$this->authService->issueTokenPair($user),
             ]);
     }
-
-    private function issueTokenPair(User $user): array
-    {
-        $user->tokens()->whereIn('name', ['access_token', 'refresh_token'])->delete();
-
-        $access_token = $user->createToken('access_token', ['access'], now()->addHour())->plainTextToken;
-        $refresh_token = $user->createToken('refresh_token', ['refresh'], now()->addDays(30))->plainTextToken;
-
-        return compact('access_token', 'refresh_token');
-    }
-
 }
