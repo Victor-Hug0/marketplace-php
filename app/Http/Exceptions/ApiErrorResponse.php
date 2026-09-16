@@ -12,7 +12,7 @@ final class ApiErrorResponse
     {
         return new JsonResponse([
             'message' => $message,
-            'timestamp' => now()->toISOString(),
+            'timestamp' => now()->toIso8601String(),
             'errors' => $errors,
         ], $statusCode);
     }

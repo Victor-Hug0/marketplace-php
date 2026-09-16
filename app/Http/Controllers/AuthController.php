@@ -6,6 +6,7 @@ use App\Http\Exceptions\ApiErrorResponse;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\UserResource;
+use App\Models\AuditLog;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -41,6 +42,16 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
+        AuditLog::create([
+            'action' => 'auth.login',
+            'actor_id' => $user->id,
+            'actor_type' => $user->getMorphClass(),
+            'payload' => ['email' => $user->email],
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'created_at' => now(),
+        ]);
+
         return response()->json([
             'message' => 'Login realizado com sucesso',
             'user' => new UserResource($user),
@@ -66,6 +77,16 @@ class AuthController extends Controller
 
         RateLimiter::clear($key);
 
+        AuditLog::create([
+            'action' => 'auth.register',
+            'actor_id' => $user->id,
+            'actor_type' => $user->getMorphClass(),
+            'payload' => ['email' => $user->email],
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'created_at' => now(),
+        ]);
+
         return response()
             ->json([
                 'message' => 'Usuário registrado com sucesso',
@@ -77,6 +98,16 @@ class AuthController extends Controller
     {
         $this->authService->deleteUserTokens($request->user());
 
+        AuditLog::create([
+            'action' => 'auth.logout',
+            'actor_id' => $request->user()->id,
+            'actor_type' => $request->user()->getMorphClass(),
+            'payload' => ['email' => $request->user()->email],
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'created_at' => now(),
+        ]);
+
         return response()->noContent();
     }
 
@@ -85,8 +116,27 @@ class AuthController extends Controller
         $user = $request->user();
 
         if (!$this->authService->isUserRefreshTokenValid($user)) {
+            AuditLog::create([
+                'action' => 'auth.refresh.invalid',
+                'actor_id' => $user->id,
+                'actor_type' => $user->getMorphClass(),
+                'payload' => ['email' => $user->email, 'token' => $request->bearerToken(), 'msg' => 'Token de atualização inválido'],
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'created_at' => now(),
+            ]);
             return ApiErrorResponse::create('Token de atualização inválido', 401);
         }
+
+        AuditLog::create([
+            'action' => 'auth.refresh',
+            'actor_id' => $user->id,
+            'actor_type' => $user->getMorphClass(),
+            'payload' => ['email' => $user->email],
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'created_at' => now(),
+        ]);
 
         return response()
             ->json([
