@@ -12,7 +12,7 @@ Route::prefix('v1')->group(function () {
         Route::post('refresh', [AuthController::class, 'refresh'])->middleware(['auth:sanctum', 'abilities:refresh']);
     });
 
-    Route::prefix('user')->group(function () {
+    Route::prefix('users')->group(function () {
         Route::get('me', [UserController::class, 'me'])->middleware(['auth:sanctum', 'abilities:access']);
     });
 });
