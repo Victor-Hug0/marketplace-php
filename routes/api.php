@@ -14,5 +14,6 @@ Route::prefix('v1')->group(function () {
 
     Route::prefix('users')->group(function () {
         Route::get('me', [UserController::class, 'me'])->middleware(['auth:sanctum', 'abilities:access']);
+        Route::get('/', [UserController::class, 'index'])->middleware(['auth:sanctum', 'abilities:access']);
     });
 });

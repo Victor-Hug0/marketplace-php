@@ -6,6 +6,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -13,7 +14,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens, HasUuids;
+    use HasFactory, Notifiable, HasApiTokens, HasUuids, SoftDeletes;
 
     protected $table = 'users';
     public $timestamps = true;
@@ -27,6 +28,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'cpf',
+        'phone_number',
+        'last_login_at',
         'created_at',
         'updated_at',
     ];
@@ -37,6 +41,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $hidden = [
+        'status',
         'password',
     ];
 

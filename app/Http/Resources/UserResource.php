@@ -18,6 +18,8 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
+            'cpf' => $this->cpf,
+            'phone_number' => $this->phone_number,
             'created_at' => $this->created_at->timezone('America/Sao_Paulo')->toISO8601String(),
             'updated_at' => $this->updated_at->timezone('America/Sao_Paulo')->toISO8601String(),
         ];

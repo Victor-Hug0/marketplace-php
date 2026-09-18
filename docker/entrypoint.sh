@@ -28,4 +28,8 @@ if [ -f artisan ]; then
     php artisan storage:link --force || true
 fi
 
+if [ "$#" -gt 0 ]; then
+    exec "$@"
+fi
+
 exec apache2-foreground

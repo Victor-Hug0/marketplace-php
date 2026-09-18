@@ -8,11 +8,35 @@ services:
       - .env
     environment:
       DB_HOST: postgres
+      REDIS_HOST: redis
+      QUEUE_CONNECTION: redis
     volumes:
       - .:/var/www/html
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    container_name: marketplace-worker
+    build: .
+    command: php artisan queue:work redis --sleep=1 --tries=3 --timeout=90
+    env_file:
+      - .env
+    environment:
+      DB_HOST: postgres
+      REDIS_HOST: redis
+      QUEUE_CONNECTION: redis
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      disable: true
 
   postgres:
     container_name: marketplace-postgres
@@ -31,5 +55,19 @@ services:
       timeout: 5s
       retries: 10
 
+  redis:
+    container_name: marketplace-redis
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
 volumes:
   postgres_data:
+  redis_data:
