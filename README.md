@@ -1,59 +1,162 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Marketplace PHP
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API de marketplace em **Laravel 12** + **PHP 8.4**, com autenticação via **Laravel Sanctum**, **PostgreSQL**, **Redis** (filas) e Docker Compose.
 
-## About Laravel
+Roadmap completo: [`docs/roadmap-implementacao-api.md`](docs/roadmap-implementacao-api.md).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Stack
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Peça | Tecnologia |
+|------|------------|
+| Runtime | PHP 8.4 / Laravel 12 |
+| Auth | Sanctum (access + refresh token) |
+| Banco | PostgreSQL 17 |
+| Filas / cache async | Redis 7 + `queue:work` |
+| API | REST versionada (`/api/v1`) |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## O que já está implementado
 
-## Learning Laravel
+### Autenticação e usuários
+- Cadastro (`register`) com validação forte de senha (`Password::defaults`)
+- Login com rate limit (manual + `throttle`) e par de tokens
+- Logout revogando access + refresh
+- Refresh token com rotação
+- Abilities Sanctum: `access` / `refresh`
+- `GET /users/me` e listagem paginada por cursor (`GET /users`)
+- Usuário com UUID, soft deletes, CPF, telefone, status e `last_login_at`
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Infra e qualidade
+- Docker Compose: `app`, `postgres`, `redis`, `worker`
+- Compose de testes: Postgres (`5433`) + Redis (`6380`) + runner
+- Envelope de erro JSON padronizado (`ApiErrorResponse`)
+- Audit log de domínio (`audit_logs` com morphs actor/auditable)
+- Trait de paginação cursor + `CursorPaginatedResource`
+- Feature tests de auth (register, login, logout, refresh, me, throttle)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Endpoints atuais
 
-## Laravel Sponsors
+| Método | Rota | Auth |
+|--------|------|------|
+| `POST` | `/api/v1/auth/register` | Público (throttle) |
+| `POST` | `/api/v1/auth/login` | Público (throttle) |
+| `POST` | `/api/v1/auth/logout` | Bearer `access` |
+| `POST` | `/api/v1/auth/refresh` | Bearer `refresh` |
+| `GET` | `/api/v1/users/me` | Bearer `access` |
+| `GET` | `/api/v1/users` | Bearer `access` (cursor) |
+| `GET` | `/up` | Healthcheck |
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Pré-requisitos
 
-### Premium Partners
+- Docker + Docker Compose
+- (Opcional) PHP 8.4 + Composer no host, para rodar Artisan/testes fora do container
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Subindo a aplicação
 
-## Contributing
+```bash
+# 1. Ambiente
+cp .env.example .env
+# Gere a key (no host ou no container depois do build):
+# php artisan key:generate
+# ou: docker compose run --rm app php artisan key:generate
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# 2. Build e start (app + postgres + redis + worker)
+docker compose up -d --build
 
-## Code of Conduct
+# 3. Migrations
+docker compose exec app php artisan migrate
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# 4. API
+# http://127.0.0.1:8080
+```
 
-## Security Vulnerabilities
+### Serviços
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| Serviço | Container | Porta host |
+|---------|-----------|------------|
+| API (Apache) | `marketplace-app` | `8080` |
+| PostgreSQL | `marketplace-postgres` | `5432` |
+| Redis | `marketplace-redis` | `6379` |
+| Queue worker | `marketplace-worker` | — |
 
-## License
+No Docker, `DB_HOST` e `REDIS_HOST` são sobrescritos para `postgres` e `redis`. No `.env` do host continue com `127.0.0.1` para ferramentas locais.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Comandos úteis
+
+```bash
+docker compose ps
+docker compose logs -f app
+docker compose logs -f worker
+docker compose exec app php artisan migrate
+docker compose exec app php artisan tinker
+docker compose down
+```
+
+## Testes
+
+A suíte usa Postgres/Redis isolados (`compose.test.yml`) e `phpunit.xml` configurado para:
+
+- DB: `127.0.0.1:5433` / `marketplace_test`
+- Redis: `127.0.0.1:6380`
+- `QUEUE_CONNECTION=sync`, `CACHE_STORE=array`
+
+### Rodar com Docker (recomendado)
+
+```bash
+# Sobe Postgres + Redis de teste e executa a suíte
+docker compose -f compose.test.yml up -d postgres redis
+docker compose -f compose.test.yml run --rm test
+
+# Somente os testes de autenticação
+docker compose -f compose.test.yml run --rm test php artisan test --filter=AuthenticationTest
+```
+
+### Rodar no host
+
+Com a infra de teste no ar (`5433` / `6380`):
+
+```bash
+docker compose -f compose.test.yml up -d postgres redis
+php artisan test
+# ou
+./vendor/bin/phpunit
+```
+
+### Cobertura atual de auth
+
+Arquivo: `tests/Feature/Auth/AuthenticationTest.php`
+
+- Register válido, inválido e e-mail duplicado
+- Login com tokens, credenciais inválidas e rate limit
+- `me` autenticado / sem token
+- Refresh com rotação e rejeição de access token
+- Logout revoga o par; refresh após logout → 401
+
+## Estrutura relevante
+
+```text
+app/
+  Http/Controllers/     AuthController, UserController
+  Http/Requests/        LoginRequest, RegisterRequest
+  Http/Resources/       UserResource, CursorPaginatedResource
+  Http/Exceptions/      ApiErrorResponse
+  Models/               User, AuditLog
+  Services/             AuthService
+  Support/Pagination/   CursorPaginates
+compose.yml             app + postgres + redis + worker
+compose.test.yml        infra e runner de testes
+docs/roadmap-implementacao-api.md
+tests/Feature/Auth/
+```
+
+## Próximos passos (roadmap)
+
+Itens ainda não implementados (ver documento completo):
+
+- Papéis `buyer` / `seller` / `admin` e Policies
+- Verificação de e-mail e reset de senha
+- Catálogo, estoque, pedidos, pagamentos
+- Horizon (opcional) quando houver múltiplas filas
+
+## Licença
+
+Projeto sob [MIT license](https://opensource.org/licenses/MIT).
