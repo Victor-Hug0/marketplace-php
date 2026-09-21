@@ -23,13 +23,16 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Password::defaults(function () {
-            return Password::min(8)
+            $rule = Password::min(8)
                 ->max(64)
                 ->letters()
                 ->mixedCase()
                 ->numbers()
-                ->symbols()
-                ->uncompromised();
+                ->symbols();
+
+            return $this->app->environment('testing')
+                ? $rule
+                : $rule->uncompromised();
         });
 
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);

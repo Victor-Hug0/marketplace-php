@@ -1,0 +1,63 @@
+name: marketplace-php-test
+
+services:
+  postgres:
+    container_name: marketplace-postgres-test
+    image: postgres:17
+    environment:
+      POSTGRES_USER: marketplace_test
+      POSTGRES_PASSWORD: marketplace_test
+      POSTGRES_DB: marketplace_test
+    ports:
+      - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U marketplace_test -d marketplace_test"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    container_name: marketplace-redis-test
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  test:
+    container_name: marketplace-test
+    build: .
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    environment:
+      APP_ENV: testing
+      APP_KEY: base64:2fl+KtvkdphvQyVfDOjYQx8wF1xK1zqGx0zqH2pQ8/E=
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: marketplace_test
+      DB_USERNAME: marketplace_test
+      DB_PASSWORD: marketplace_test
+      REDIS_CLIENT: phpredis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CACHE_STORE: array
+      QUEUE_CONNECTION: sync
+      SESSION_DRIVER: array
+      MAIL_MAILER: array
+      BCRYPT_ROUNDS: 4
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    entrypoint: ["entrypoint.sh"]
+    command: ["php", "artisan", "test", "--colors=always"]
+    healthcheck:
+      disable: true
