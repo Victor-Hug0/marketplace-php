@@ -150,12 +150,17 @@ tests/Feature/Auth/
 
 ## Próximos passos (roadmap)
 
-Itens ainda não implementados (ver documento completo):
+O roadmap prioriza **regra de negócio** antes de higiene de conta. Ordem sugerida:
 
-- Papéis `buyer` / `seller` / `admin` e Policies
-- Verificação de e-mail e reset de senha
-- Catálogo, estoque, pedidos, pagamentos
-- Horizon (opcional) quando houver múltiplas filas
+1. **B1** — Papéis + onboarding seller (sem e-mail verify / reset)
+2. **B2** — Catálogo
+3. **B3** — Ofertas, estoque e preços (Buy Box)
+4. **B4** — Carrinho, checkout e pedidos multi-seller
+5. **B5** — Pagamento mock + comissão + ledger
+6. **B6** — Frete simulado + tracking
+7. Só depois: verificação de e-mail, reset de senha, social, cupons, OpenAPI
+
+Detalhes: [`docs/roadmap-implementacao-api.md`](docs/roadmap-implementacao-api.md).
 
 ## Licença
 

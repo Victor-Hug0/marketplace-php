@@ -2,7 +2,8 @@
 
 namespace App\Services;
 
-use App\Http\Requests\RegisterRequest;
+use App\Enums\RoleName;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,6 +18,12 @@ class AuthService
     public function register(array $data): User
     {
         $user = User::create($data);
+
+        $buyerRoleId = Role::query()
+            ->where('name', RoleName::BUYER)
+            ->value('id');
+
+        $user->roles()->attach($buyerRoleId);
 
         return $user;
     }

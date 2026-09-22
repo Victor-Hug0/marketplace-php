@@ -1,656 +1,613 @@
-# Roadmap de Implementação — API Marketplace
+# Roadmap de Implementação — Core de Negócio do Marketplace
 
-Documento de referência para implementação da API de um marketplace híbrido (plataforma + vendedores terceiros), inspirado em plataformas como Mercado Livre, Amazon, Magalu, Kabum e Pichau, em proporção adequada a um projeto de portfólio/aprendizado.
+Documento vivo focado em **regras de negócio do marketplace**. Conta (recuperação de senha, verificação de e-mail, login social, etc.) só entra **depois** do fluxo comprar/vender estar fechado de ponta a ponta.
 
-**Stack:** PHP 8.4 · Laravel 12 · Sanctum · PostgreSQL · Redis (filas)  
-**Prefixo de API:** `/api/v1`  
-**Objetivo:** portfólio / aprendizado (sem prazo fixo)
-
----
-
-## 1. Visão e decisões confirmadas
-
-| Tema                | Decisão                                                                      |
-| ------------------- | ---------------------------------------------------------------------------- |
-| Modelo              | Híbrido: plataforma vende + sellers terceiros                                |
-| Pagamento           | Plataforma cobra o comprador e repassa ao seller (split + comissão)          |
-| Gateway real        | **Não** no início — apenas simulação/mock                                    |
-| Frete               | Tabelado interno (peso, dimensões, quantidade, distância/CEP) — **simulado** |
-| Transportadoras     | Sem integração real no início                                                |
-| Fulfillment físico  | Adiado (irrelevante enquanto frete for simulado)                             |
-| Geografia           | Somente Brasil                                                               |
-| Público             | B2C e B2B                                                                    |
-| Papéis              | Comprador, vendedor, admin                                                   |
-| Onboarding seller   | Aprovação manual + KYC                                                       |
-| Carrinho anônimo    | **Não**                                                                      |
-| Fidelidade / pontos | **Não**                                                                      |
-| Paginação           | Cursor                                                                       |
-| Soft delete         | Em todos os recursos                                                         |
-| IDs                 | UUID em todos os recursos                                                    |
-| Versionamento       | Manter apenas `/api/v1` por enquanto                                         |
-
-### Estado atual do repositório
-
-Já existe:
-
-- Auth Sanctum com access/refresh tokens (`abilities: access` / `refresh`)
-- Rotas em `[routes/api.php](../routes/api.php)`: login, register, logout, refresh, `GET /users/me`
-- `[app/Services/AuthService.php](../app/Services/AuthService.php)`, Form Requests, `UserResource`
-- Docker Compose com app + PostgreSQL 17
-- Usuário com UUID (`HasUuids`)
-
-Ainda **não** existe: papéis, catálogo, estoque, pedidos, pagamentos, frete, pós-venda, admin operacional, OpenAPI, Redis/workers, Policies, feature tests de domínio.
+**Stack:** PHP 8.4 · Laravel 12 · Sanctum · PostgreSQL · Redis  
+**API:** `/api/v1`  
+**Objetivo:** portfólio / aprendizado — priorizar domínio, não features de conta
 
 ---
 
-## 2. Fora de escopo inicial
+## 1. Princípio de priorização
 
-Não implementar nestas fases (pode ser revisitado depois):
+### O que é “core”
 
-- Gateway de pagamento real (Mercado Pago, Stripe, PagSeguro etc.)
-- Integração real com Correios / Melhor Envio / outras transportadoras
-- Fulfillment físico da plataforma (CD próprio)
-- Carrinho guest / merge no login
-- Programa de pontos / fidelidade
-- Multi-país, multi-moeda, i18n de catálogo
-- Nota fiscal eletrônica real (apenas dados fiscais **simulados** no pedido)
+Core = tudo que responde a estas perguntas de negócio:
+
+1. Quem vende e quem compra?
+2. O que está à venda (catálogo + oferta + estoque + preço)?
+3. Como o comprador fecha um pedido (carrinho → checkout → pedido)?
+4. Como o dinheiro é (simulado) liquidado (pagamento → comissão → ledger)?
+5. Como o pedido chega ao comprador (frete simulado + status de envio)?
+
+### O que NÃO é core agora
+
+Adiar conscientemente até o core estar estável:
+
+| Item | Motivo do adiamento |
+|------|---------------------|
+| Verificação de e-mail | Não bloqueia comprar/vender no MVP de portfólio |
+| Recuperação / reset de senha | Higiene de conta; não altera domínio |
+| Login social | Atalho de auth; zero regra de marketplace |
+| Cupons, ads, wishlist, chat | Engajamento; depende de pedido/catálogo maduros |
+| OpenAPI / webhooks seller | Contrato externo; vem após o domínio existir |
+| Gateway / Correios reais | Fora de escopo; mock basta para provar regras |
+
+**Regra:** se a feature não muda preço, estoque, pedido, pagamento ou envio, ela espera.
 
 ---
 
-## 3. Diagrama de dependências entre fases
+## 2. Visão do produto (decisões fixas)
+
+| Tema | Decisão |
+|------|---------|
+| Modelo | Híbrido: a **plataforma** também vende + **sellers** terceiros |
+| Cobrança | Plataforma cobra o comprador e **repassa** ao seller (split + comissão) |
+| Pagamento | Apenas **mock** (Pix / cartão / boleto simulados) |
+| Frete | Tabelado interno **simulado** (peso, dimensões, CEP) |
+| Geografia | Somente Brasil |
+| Público | B2C (B2B pode reutilizar o mesmo user; regras B2B avançadas depois) |
+| Papéis | `buyer`, `seller`, `admin` — user pode ser **buyer + seller** |
+| Onboarding seller | Solicitação + aprovação **manual** (KYC enxuto) |
+| Carrinho | Somente autenticado (sem guest) |
+| IDs | UUID |
+| Soft delete | Em recursos de domínio (exceto audit/ledger append-only) |
+| Paginação | Cursor |
+
+### Jornada mínima de sucesso (definição de “core pronto”)
+
+```text
+Buyer cadastrado
+  → navega catálogo / vê ofertas de 2+ sellers no mesmo produto
+  → adiciona ao carrinho
+  → checkout (endereço + frete simulado)
+  → pedido multi-seller em pending_payment
+  → pagamento mock confirma
+  → pedido paid; estoque baixado; ledger credita sellers e comissão
+  → seller marca envio; buyer vê tracking simulado
+  → pedido delivered
+```
+
+Enquanto essa jornada não existir com testes, **não** investir em e-mail verify / reset / social.
+
+---
+
+## 3. Estado atual do repositório (base técnica já feita)
+
+Já disponível (tratar como pré-requisito, não como “fase de negócio”):
+
+- Auth Sanctum (register, login, logout, refresh) com abilities `access` / `refresh`
+- User UUID + soft delete + CPF/telefone/status
+- Roles (`roles` / `role_user`) e enum `RoleName` em andamento
+- Audit log, erros JSON, cursor pagination, Redis + worker, testes de auth
+- Docker: app, postgres, redis, worker + `compose.test.yml`
+
+Isso **libera** o time para focar no domínio. Não reabrir fundação salvo bug bloqueante.
+
+---
+
+## 4. Diagrama — ordem do core
 
 ```mermaid
 flowchart TD
-  P0[P0 Fundacoes API]
-  P1[P1 Identidade e papeis]
-  P2[P2 Catalogo e midia]
-  P3[P3 Ofertas estoque precos]
-  P4[P4 Carrinho checkout pedidos]
-  P5[P5 Pagamentos mock financeiro]
-  P6[P6 Frete simulado rastreio]
-  P7[P7 Pos-venda confianca]
-  P8[P8 Marketing engajamento]
-  P9[P9 Admin analytics]
-  P10[P10 API sellers OpenAPI]
-  P0 --> P1 --> P2 --> P3 --> P4
-  P4 --> P5
-  P4 --> P6
-  P5 --> P7
-  P6 --> P7
-  P7 --> P8
-  P4 --> P9
-  P5 --> P9
-  P9 --> P10
+  B1[B1 Atores e autorizacao]
+  B2[B2 Catalogo]
+  B3[B3 Ofertas estoque precos]
+  B4[B4 Carrinho checkout pedidos]
+  B5[B5 Pagamento mock e ledger]
+  B6[B6 Frete e envio]
+  B7[B7 Pos-venda essencial]
+  L1[L1 Conta e higiene]
+  L2[L2 Marketing e engajamento]
+  L3[L3 Admin analytics OpenAPI]
+
+  B1 --> B2 --> B3 --> B4
+  B4 --> B5
+  B4 --> B6
+  B5 --> B7
+  B6 --> B7
+  B7 --> L1
+  B7 --> L2
+  B5 --> L3
+  B7 --> L3
 ```
 
-**Regra prática:** não avance de fase sem cumprir os critérios de “pronto” da fase anterior na cadeia crítica (P0 → P4). P5 e P6 podem avançar em paralelo após P4. P7 depende de pedido pago/enviável (P5 + P6 no mínimo básicos).
+- **B1–B6** = caminho crítico do negócio  
+- **B7** = confiança mínima (review + disputa enxuta)  
+- **L\*** = later (conta, marketing, polish)
 
 ---
 
-## 4. Convenções transversais de engenharia
-
-Checklist permanente — aplicar em **todas** as fases:
-
-| Convenção    | Padrão                                                                      |
-| ------------ | --------------------------------------------------------------------------- |
-| Sucesso      | `{ "data": { ... } }` (coleções paginadas com `data` + metadados de cursor) |
-| Erro         | `{ "message": "...", "errors": { "campo": ["..."] } }`                      |
-| HTTP         | 200 / 201 / 204 / 401 / 403 / 404 / 409 / 422 / 429 conforme o caso         |
-| Controllers  | Finos — delegar a Actions/Services                                          |
-| Validação    | Form Requests                                                               |
-| Resposta     | API Resources — nunca Model cru                                             |
-| Autorização  | Policies / Gates — nunca só no cliente                                      |
-| Persistência | Soft deletes + UUID                                                         |
-| Coleções     | Paginação cursor                                                            |
-| Async        | Jobs em fila Redis (e-mail, webhooks, imagens, notificações)                |
-| Testes       | Feature tests por domínio + factories/seeders ricos                         |
-| Segredos     | Nunca em logs, commits ou respostas                                         |
-| LGPD         | Minimizar PII; mascarar em logs; cuidado com KYC e dados bancários          |
-
-### Operações que exigem cuidado especial
-
-| Operação                      | Cuidados                                                          |
-| ----------------------------- | ----------------------------------------------------------------- |
-| Checkout / reserva de estoque | `DB::transaction`, lock pessimista ou equivalente, race condition |
-| Pagamento / webhook           | Idempotência (chave única), estados válidos apenas                |
-| Cancelamento / reembolso      | Transação + estorno de estoque + ledger                           |
-| Repasse / payout              | Ledger imutável (append-only), nunca “editar saldo”               |
-| Moderação / KYC               | Auditoria de quem aprovou/rejeitou e quando                       |
+## 5. Fases de negócio (detalhadas)
 
 ---
 
-## 5. Fases de implementação
+### B1 — Atores, papéis e autorização de domínio
 
-### P0 — Fundações da API
+**Objetivo de negócio:** garantir que cada ação do marketplace seja feita pelo ator certo — comprador, vendedor aprovado ou admin — sem ainda depender de e-mail verificado.
 
-**Objetivo:** padronizar a base antes de crescer o domínio marketplace.
+#### Problema que resolve
 
-**Entregáveis**
+Sem papéis claros, qualquer user autenticado poderia criar oferta, aprovar seller ou ver dados de outro. O marketplace deixa de ser multi-ator.
 
-- Envelope de erro consistente (concluir/corrigir stub `ApiErroResponse` / handler de exceções)
-- Trait ou base Model: UUID + soft deletes como padrão do projeto
-- Helper/trait de paginação cursor reutilizável
-- Redis + worker de queue no `compose.yml`
-- Feature tests cobrindo auth atual (login, register, logout, refresh, `me`, throttle)
-- Alinhar `.env.example` com Postgres (se ainda apontar sqlite)
+#### Regras de negócio (detalhe)
 
-**Entidades:** nenhuma nova de negócio.
+1. **Todo cadastro cria um `buyer`.** Comprar não exige papel seller.
+2. **Um user pode acumular `buyer` + `seller`.** Vender não remove a capacidade de comprar.
+3. **`admin` é exclusivo de operação.** Não se autoatribui; nasce via seeder/ação privilegiada.
+4. **Seller só opera catálogo/estoque/pedidos de venda após perfil `approved`.** Status `pending` / `rejected` / `suspended` bloqueiam escrita de ofertas e resposta a pedidos.
+5. **Solicitar seller** exige dados mínimos de negócio (nome da loja, documento, dados bancários mock). Admin aprova ou rejeita com motivo.
+6. **KYC nesta fase é enxuto:** metadados + arquivo no storage + status. Não precisa OCR nem bureau. Objetivo é treinar o fluxo de aprovação, não compliance bancário real.
+7. **Autorização em Policy/Gate**, nunca só no front. Token Sanctum prova identidade; role prova permissão de domínio.
+8. **Audit log** em: atribuição de role, approve/reject seller, suspensão.
 
-**Critérios de pronto**
+#### O que entregar
 
-- [ ] Erros 422/401/403/404 no formato acordado
-- [ ] Redis sobe no Docker e `queue:work` processa um Job de exemplo
-- [ ] Testes de auth passando
-- [ ] Documentado no README como subir app + db + redis + worker
+- Seed das roles `buyer`, `seller`, `admin`
+- Register já associa `buyer`
+- Endpoints: solicitar seller, admin listar/aprovar/rejeitar, `GET /me` com roles + status do seller profile
+- Middleware `role:seller|admin` + Policies base (`SellerProfilePolicy`, etc.)
+- Model `SellerProfile` (status, store_name, documentos refs)
 
-**Riscos:** baixo. Evita refatoração cara depois.
+#### Entidades
 
----
+| Entidade | Campos-chave de negócio |
+|----------|-------------------------|
+| `roles` / `role_user` | `name` único |
+| `seller_profiles` | `user_id`, `status`, `store_name`, `rejection_reason`, timestamps de decisão |
+| `kyc_documents` | `seller_profile_id`, `type`, `path`, `status` (sem logar arquivo) |
 
-### P1 — Identidade, papéis e onboarding
+#### Fora desta fase
 
-**Objetivo:** quem é o usuário, o que pode fazer, e como vira seller.
+- Verificação de e-mail obrigatória
+- Reset de senha
+- Social login
+- Permissions granulares tipo Spatie (só 3 roles bastam)
 
-**Entregáveis de API (exemplos)**
+#### Critérios de pronto
 
-- Papéis: `buyer`, `seller`, `admin` (um usuário pode acumular buyer + seller)
-- Verificação de e-mail (todos os perfis)
-- Recuperação de senha
-- Login social (candidato: Laravel Socialite — Google no mínimo)
-- Solicitação de seller + KYC (documentos, dados bancários) + aprovação/rejeição por admin
-- Rate limiting reforçado em login, register, reset e endpoints sensíveis
-- Policies básicas por papel
+- [ ] User novo sempre tem `buyer`
+- [ ] Seller pendente **não** cria oferta (403)
+- [ ] Admin aprova → user passa a `hasRole(seller)` e pode criar oferta
+- [ ] Buyer não acessa rotas admin
+- [ ] Feature tests de papel / isolamento
 
-**Entidades sugeridas**
+#### Cuidados
 
-- `roles` / `role_user` (ou enum + pivot)
-- `seller_profiles` (status: pending/approved/rejected/suspended)
-- `kyc_documents` (metadados + path storage; nunca logar conteúdo)
-- Campos de verificação em `users` (`email_verified_at` já padrão Laravel)
-- Tokens/password reset (já parcialmente no Laravel)
-
-**Regras críticas**
-
-- Seller só cria anúncios/ofertas após `approved`
-- Dados KYC e bancários: acesso restrito (owner + admin)
-- Login social não deve sobrescrever senha local sem fluxo explícito
-
-**Testes**
-
-- Não autenticado / sem papel / seller pendente / admin aprova KYC
-- Verificação de e-mail bloqueia ações sensíveis se assim for definido
-
-**Critérios de pronto**
-
-- [ ] Três papéis funcionando com Policies
-- [ ] Fluxo seller: request → KYC → approve/reject
-- [ ] E-mail verification + password reset + social login
-- [ ] Throttle/antifraude básico documentado
-
-**Cuidados:** autenticação, autorização, dados pessoais (LGPD).
+Autorização (IDOR), LGPD em documentos KYC, não vazar path interno de arquivo.
 
 ---
 
-### P2 — Catálogo e mídia
+### B2 — Catálogo (descoberta do que se vende)
 
-**Objetivo:** descoberta de produtos e estrutura de anúncios.
+**Objetivo de negócio:** o comprador encontra produtos; o seller (ou a plataforma) publica anúncios coerentes com categorias.
 
-**Entregáveis de API**
+#### Problema que resolve
 
-- CRUD de categorias hierárquicas (admin)
-- Atributos dinâmicos por categoria
-- Produtos (canônicos) + anúncios/listings ligados ao seller ou à plataforma
-- Upload de múltiplas imagens (storage + Job de processamento se necessário)
-- Status: draft / active / paused / rejected (moderação admin)
-- Loja pública do vendedor
-- Busca textual, filtros (preço, categoria, marca, seller) e ordenação
-- Listagem pública paginada (cursor)
+Sem catálogo estruturado não há Buy Box, filtros nem moderação. “Produto” misturado com “oferta do seller” gera preço e estoque inconsistentes depois.
 
-**Entidades sugeridas**
+#### Conceitos (importante separar)
 
-- `categories`, `category_attributes`
-- `products` (catálogo canônico)
-- `product_images`
-- `stores` / perfil público do seller
-- Campos de moderação (`moderated_by`, `moderated_at`, `rejection_reason`)
+| Conceito | Significado |
+|----------|-------------|
+| **Produto canônico** | O “o quê” (ex.: “Notebook X 16GB”) — identidade de catálogo |
+| **Oferta** | O “quem vende e por quanto” — entra na **B3** |
+| **Categoria** | Árvore de navegação + atributos esperados |
+| **Loja** | Vitrine pública do seller |
 
-**Regras críticas**
+Nesta fase o foco é **produto + categoria + mídia + moderação**. Preço/estoque ficam na B3, mesmo que o CRUD de produto já exista.
 
-- Seller só edita o que é dele (Policy + escopo)
-- Anúncio rejeitado não aparece na busca pública
-- Soft delete não quebra FKs de histórico futuro (pedidos)
+#### Regras de negócio (detalhe)
 
-**Testes**
+1. Categorias são **hierárquicas** (pai/filho). Admin gerencia a árvore.
+2. Categoria pode declarar **atributos** (ex.: “memória RAM”, “cor”) usados em filtros e no formulário do produto.
+3. Seller cria produto em `draft`. Só entra na busca pública em `active` após regras de moderação:
+   - Opção A (MVP): auto-publish se seller já `approved`
+   - Opção B: admin precisa aprovar (`pending_moderation` → `active` / `rejected`)
+4. Produto `paused` ou `rejected` **não** aparece em listagem pública nem aceita nova compra (ofertas herdam isso na B3).
+5. Seller só edita produtos da própria loja; admin edita qualquer um e pode rejeitar com motivo.
+6. Plataforma pode ter produtos próprios (seller “platform” ou flag `is_platform`) — mesmo modelo.
+7. Imagens: ordenação (capa = primeira), limite por produto, processamento assíncrono opcional (resize) via fila.
+8. Soft delete de produto **não apaga** histórico futuro de pedidos (pedidos guardam snapshot na B4).
 
-- CRUD autorizado, moderação, busca/filtros, isolamento entre sellers
+#### O que entregar
 
-**Critérios de pronto**
+- CRUD admin de categorias (+ atributos)
+- CRUD seller/admin de produtos + upload de imagens
+- Loja pública do seller (`GET /stores/{slug}`)
+- Busca pública: texto, categoria, seller; ordenação (relevância simples / mais recentes); cursor
+- Moderação admin (se opção B)
 
-- [ ] Catálogo navegável publicamente
-- [ ] Seller gerencia próprios produtos
-- [ ] Admin modera
-- [ ] Imagens persistidas e expostas via Resource
+#### Entidades
 
----
+| Entidade | Papel |
+|----------|-------|
+| `categories` | árvore (`parent_id`) |
+| `category_attributes` | definição de atributos |
+| `products` | canônico + status + `seller_id` ou `store_id` |
+| `product_images` | paths + `position` |
+| `stores` | perfil público (pode ser 1:1 com `seller_profiles`) |
 
-### P3 — Ofertas, estoque e preços
+#### Critérios de pronto
 
-**Objetivo:** o mesmo produto canônico pode ter várias ofertas (Buy Box); estoque seguro.
+- [ ] Comprador lista/detalha produtos ativos sem auth
+- [ ] Dois sellers autenticados não editam o produto um do outro
+- [ ] Produto rejeitado/pausado some da busca
+- [ ] Seed com categorias e alguns produtos para demo
 
-**Entregáveis de API**
+#### Cuidados
 
-- Variações / SKUs (cor, tamanho etc.)
-- Ofertas por seller (`offers`): preço, estoque, prazo de envio, status
-- Preço promocional (de/por) com vigência
-- Seleção da oferta “vencedora” para exibição (regra simples documentada: menor preço + estoque + reputação futura)
-- Reserva de estoque preparada para checkout (serviço de inventário)
-
-**Entidades sugeridas**
-
-- `product_variants` / `skus`
-- `offers` (`product_id` ou `variant_id`, `seller_id`, `price`, `promotional_price`, `stock`)
-- `inventory_reservations` (ou campos `stock` + `reserved` na offer)
-
-**Regras críticas**
-
-- Nunca decrementar estoque só no controller sem transação
-- Preço exibido ≠ preço cobrado no pedido (pedido congela preço na P4)
-- Oferta da plataforma usa o mesmo modelo (seller “platform” ou flag)
-
-**Testes**
-
-- Concorrência básica de reserva (dois checkouts no mesmo SKU)
-- Oferta pausada não entra no carrinho
-
-**Critérios de pronto**
-
-- [ ] Multi-oferta por produto
-- [ ] Estoque com reserva testável
-- [ ] Preço promocional aplicado na listagem/detalhe
-
-**Cuidados:** integridade de estoque e concorrência.
+N+1 em listagens, autorização por ownership, storage sem path absoluto em JSON.
 
 ---
 
-### P4 — Carrinho, checkout e pedidos
+### B3 — Ofertas, estoque e preços (Buy Box)
 
-**Objetivo:** jornada de compra multi-seller com preços históricos.
+**Objetivo de negócio:** o mesmo produto pode ser vendido por vários sellers, cada um com preço e estoque próprios; o sistema reserva estoque com segurança.
 
-**Entregáveis de API**
+#### Problema que resolve
 
-- Carrinho **somente autenticado** (sem guest)
-- Endereços de entrega do usuário
-- Checkout → cria pedido + subpedidos por seller
-- Itens com **preço unitário histórico**, nome, SKU snapshot
-- Máquina de estados do pedido/subpedido (ex.: `pending_payment` → `paid` → `processing` → `shipped` → `delivered` / `cancelled` / `refunded`)
-- Cancelamento por comprador, seller ou admin (regras por estado)
-- Dados fiscais **simulados** no pedido (CNPJ/CPF, inscrição — sem NFS-e real)
+Preço no produto canônico impede multi-seller. Estoque sem reserva gera oversell no checkout.
 
-**Entidades sugeridas**
+#### Regras de negócio (detalhe)
 
-- `carts`, `cart_items`
-- `addresses`
-- `orders`, `order_sellers` (subpedidos), `order_items`
-- `order_status_histories`
-- Snapshots fiscais/endereço no pedido
+1. **Oferta (`offer`)** pertence a um seller + produto (ou variante/SKU).
+2. Campos mínimos: `price`, `promotional_price` (opcional), `promo_starts_at` / `promo_ends_at`, `stock`, `reserved_stock` (ou tabela de reservas), `status` (`active` / `paused`).
+3. **Preço exibido** = promocional vigente se válido; senão `price`.
+4. **Buy Box (regra MVP documentada):** entre ofertas `active` com estoque disponível (`stock - reserved > 0`), escolher a de **menor preço vigente**; empate → maior estoque; empate → mais antiga. Reputação entra depois (B7).
+5. Oferta `paused` ou seller `suspended` não entra no Buy Box nem no carrinho.
+6. **Variantes/SKUs** (cor, tamanho): produto pai + variantes; oferta aponta para a variante. Se MVP apertar, começar sem variante e só `offers` no produto — mas modelar a extensão desde o início evita refactor.
+7. **Nunca** alterar estoque fora de transação. Dois checkouts concorrentes não podem reservar a mesma unidade.
+8. Preço da vitrine **não** é o preço cobrado depois: na B4 o pedido **congela** o valor no item.
+9. Plataforma vende com a mesma entidade `offer` (seller platform).
 
-**Regras críticas**
+#### O que entregar
 
-- Transação cobrindo: validar ofertas, reservar estoque, criar pedido, limpar carrinho
-- Pedido multi-seller: um `order` pai, N `order_sellers`
-- Transições de status explícitas (enum + guard clauses) — sem “set status” livre
-- Idempotência do checkout (chave do cliente ou hash do carrinho + user)
+- CRUD de ofertas do seller
+- Endpoint público de detalhe do produto com lista de ofertas + oferta vencedora
+- Serviço de inventário: `reserve`, `release`, `commit` (baixa definitiva)
+- Teste de concorrência (dois processos tentando reservar o último item)
 
-**Testes**
+#### Entidades
 
-- Checkout feliz, estoque insuficiente (409), não autenticado, cancelamentos por papel, snapshot de preço
+| Entidade | Papel |
+|----------|-------|
+| `product_variants` | opcional no MVP, recomendado |
+| `offers` | preço + estoque + seller |
+| `inventory_reservations` | `offer_id`, `qty`, `cart_id`/`user_id`, `expires_at` |
 
-**Critérios de pronto**
+#### Critérios de pronto
 
-- [ ] Carrinho → pedido multi-seller
-- [ ] Preços históricos corretos
-- [ ] FSM documentada e testada
-- [ ] Endereço e dados fiscais simulados persistidos
+- [ ] Mesmo produto com ≥ 2 ofertas de sellers diferentes
+- [ ] Buy Box retorna oferta documentada pela regra
+- [ ] Reserva impede oversell (teste automatizado)
+- [ ] Oferta pausada não é comprável
 
-**Cuidados:** estoque, pedido, dados pessoais, concorrência.
+#### Cuidados
 
----
-
-### P5 — Pagamentos mock e financeiro
-
-**Objetivo:** simular Pix, cartão e boleto com webhooks, comissão, ledger e payouts — sem gateway real.
-
-**Entregáveis de API**
-
-- Iniciar pagamento (`pix` | `credit_card` | `boleto`) → retorna payload mock
-- Endpoint de webhook simulado (e Job que processa)
-- Idempotência por `payment_intent_id` / `idempotency_key`
-- Reembolso total e parcial
-- Comissão da plataforma configurável
-- Ledger de movimentos (crédito seller, comissão, estorno)
-- Payouts/saques agendados (status: requested / paid / failed) — valores derivados do ledger
-
-**Entidades sugeridas**
-
-- `payments`, `payment_webhook_events`
-- `refunds`
-- `ledger_entries`
-- `payouts`
-- `platform_fee_rules`
-
-**Regras críticas**
-
-- Webhook duplicado não altera estado duas vezes
-- Só marca pedido `paid` após evento confirmado (mock)
-- Ledger append-only; saldo = soma das entradas
-- Logs sem PAN/CVV (mesmo em mock, não inventar dados sensíveis reais)
-
-**Testes**
-
-- Fluxos dos 3 métodos, webhook duplicado, reembolso, cálculo de comissão, payout
-
-**Critérios de pronto**
-
-- [ ] Pagamento mock fecha o ciclo até `paid`
-- [ ] Comissão e ledger coerentes
-- [ ] Reembolso atualiza pedido + ledger + estoque quando aplicável
-
-**Cuidados:** integridade financeira, idempotência, autorização.
+Concorrência (`lockForUpdate` / unique constraint), consistência `stock` vs `reserved`, não vazar custo interno.
 
 ---
 
-### P6 — Frete simulado e rastreio
+### B4 — Carrinho, checkout e pedidos (coração do marketplace)
 
-**Objetivo:** cotar frete e acompanhar envio sem transportadora real.
+**Objetivo de negócio:** transformar intenções de compra em um pedido multi-seller com preço histórico e máquina de estados explícita.
 
-**Entregáveis de API**
+#### Problema que resolve
 
-- Tabela/regras internas: peso, altura/largura/profundidade, quantidade, distância (CEP origem → destino)
-- Cotação no checkout por subpedido
-- Código de rastreio por subpedido (gerado/simulado)
-- Atualização de status de envio (seller/admin) alinhada à FSM
+Sem snapshot de preço/nome/SKU, mudança de catálogo altera pedidos passados. Sem subpedidos, um seller atrasa e “prende” o pedido inteiro de outro.
 
-**Entidades sugeridas**
+#### Regras de negócio (detalhe)
 
-- `shipping_rate_rules` ou motor em config + tabela
-- `shipments` (`tracking_code`, `carrier` = `simulated`, valores, prazos)
+**Carrinho**
 
-**Regras críticas**
+1. Somente user autenticado (`buyer`).
+2. Item do carrinho referencia `offer_id` + quantidade.
+3. Ao adicionar/atualizar: validar oferta ativa, seller aprovado, estoque disponível (considerando reservas).
+4. Carrinho pode misturar ofertas de vários sellers.
 
-- Frete calculado e **congelado** no pedido (não recalcular depois mudando o histórico)
-- CEP inválido → 422
+**Endereço**
 
-**Testes**
+5. User mantém endereços; checkout escolhe um (ou cria no ato).
+6. Snapshot do endereço vai para o pedido (mudança futura do cadastro não altera pedido antigo).
 
-- Cotação determinística com fixtures de CEP/peso
-- Tracking por subpedido
+**Checkout (atômico)**
 
-**Critérios de pronto**
+7. Em **uma** `DB::transaction`:
+   - revalidar cada oferta (status, preço vigente, seller)
+   - reservar estoque
+   - criar `order` + `order_sellers` (um por seller) + `order_items`
+   - gravar snapshots: nome, SKU, unit_price, quantity, seller_id
+   - limpar carrinho (ou marcar itens convertidos)
+8. Idempotência: header/chave `Idempotency-Key` ou hash `(user_id + cart_version)` evita pedido duplicado.
+9. Estoque insuficiente → **409** (ou 422 de negócio), nada parcial commitado.
 
-- [ ] Checkout inclui frete simulado
-- [ ] Tracking visível ao comprador e ao seller
+**Pedido multi-seller**
 
----
+10. `order` = agregador do comprador (total, endereço, status macro).
+11. `order_seller` = unidade operacional do seller (status próprio, frete próprio na B6, pagamento rateado na B5).
+12. Item sempre pertence a um `order_seller`.
 
-### P7 — Pós-venda e confiança
+**FSM (exemplo mínimo — documentar e testar cada transição)**
 
-**Objetivo:** reputação, suporte e resolução de conflitos.
+```text
+order / order_seller:
+  pending_payment
+    → paid
+    → cancelled
 
-**Entregáveis de API**
+  paid
+    → processing
+    → cancelled (regras restritas)
+    → refunded (via B5)
 
-- Avaliação de produto (somente após compra entregue/concluída)
-- Reputação do vendedor (agregado das avaliações/pedidos)
-- Perguntas e respostas no anúncio
-- Chat comprador–vendedor (mensagens; preferir Jobs para notificar)
-- Devoluções / RMA
-- Disputas com mediação admin
-- Wishlist / favoritos
+  processing
+    → shipped
+    → cancelled (regras restritas)
 
-**Entidades sugeridas**
+  shipped
+    → delivered
 
-- `product_reviews`, `seller_ratings`
-- `product_questions`, `product_answers`
-- `conversations`, `messages`
-- `return_requests`, `disputes`
-- `wishlists` / `wishlist_items`
+  delivered = terminal feliz
+  cancelled / refunded = terminais
+```
 
-**Regras críticas**
+13. **Quem cancela o quê:**
+    - Buyer: só em `pending_payment` (e talvez `paid` antes de `shipped`, se regra permitir — documentar)
+    - Seller: pode cancelar seu `order_seller` em estados iniciais (estoque volta)
+    - Admin: pode forçar com audit log
+14. Transição inválida → **409**, nunca “set status” livre no controller.
+15. Dados fiscais **simulados** no pedido (CPF/CNPJ do buyer já no user; campos fiscais mock no order). Sem NFS-e.
 
-- Review só de quem comprou o item (anti-fraude de reputação)
-- Disputa trava ações conflitantes (ex.: payout) até resolução — documentar regra
-- Chat: autorização estrita (só participantes + admin)
+#### O que entregar
 
-**Testes**
+- CRUD carrinho + endereços
+- `POST /checkout` idempotente
+- Consulta de pedidos (buyer vê os seus; seller vê `order_sellers` dele; admin vê tudo)
+- Cancelamento conforme FSM
+- Histórico de status (`order_status_histories`)
 
-- Review sem compra → 403
-- Fluxo devolução → reembolso (integração com P5)
-- Isolamento de conversas
+#### Entidades
 
-**Critérios de pronto**
+| Entidade | Papel |
+|----------|-------|
+| `carts` / `cart_items` | intenção de compra |
+| `addresses` | cadastro do buyer |
+| `orders` | pedido pai |
+| `order_sellers` | subpedido |
+| `order_items` | linha com snapshot |
+| `order_status_histories` | auditoria de transição |
 
-- [ ] Reviews e reputação
-- [ ] Q&A, chat, wishlist
-- [ ] Devolução e disputa com admin
+#### Critérios de pronto
 
-**Cuidados:** autorização (IDOR), dados pessoais em mensagens, impacto financeiro.
+- [ ] Checkout cria 1 order com N subpedidos quando há N sellers
+- [ ] Preço no item ≠ preço atual da offer após alteração posterior
+- [ ] FSM coberta por testes (transições válidas e inválidas)
+- [ ] Estoque reservado no checkout; liberado no cancelamento pré-pagamento
 
----
+#### Cuidados
 
-### P8 — Marketing e engajamento
-
-**Objetivo:** conversão e retenção leve (sem programa de pontos).
-
-**Entregáveis de API**
-
-- Cupons / vouchers (percentual, valor fixo, validade, limites)
-- Regra de frete grátis
-- Ads internos (anúncios patrocinados / boost de listagem)
-- Notificações e-mail (fila)
-- Notificações push / in-app (modelo + fila; provider push pode ser mock)
-
-**Entidades sugeridas**
-
-- `coupons`, `coupon_redemptions`
-- `free_shipping_rules`
-- `sponsored_placements` / `ads_campaigns`
-- `notifications`, `device_tokens` (se push)
-
-**Regras críticas**
-
-- Cupom aplicado no checkout com validação atômica (uso único / limite)
-- Ads não quebram ordenação orgânica sem flag explícita na API
-
-**Testes**
-
-- Cupom expirado/inválido/já usado
-- Frete grátis por regra
-- Job de e-mail disparado em eventos-chave (pedido pago, etc.)
-
-**Critérios de pronto**
-
-- [ ] Cupom + frete grátis no checkout
-- [ ] Ads listáveis
-- [ ] E-mail e notificação in-app via fila
+Transação, race condition, IDOR (seller A não vê subpedido de B), LGPD no endereço.
 
 ---
 
-### P9 — Admin, analytics e auditoria
+### B5 — Pagamento mock, comissão e ledger
 
-**Objetivo:** operação da plataforma e observabilidade de negócio.
+**Objetivo de negócio:** provar o modelo financeiro do marketplace (split + comissão) sem gateway real.
 
-**Entregáveis de API**
+#### Problema que resolve
 
-- Endpoints admin: users, sellers, produtos, pedidos, pagamentos, disputas
-- Relatórios básicos: vendas, comissão, cancelamentos, conversão simples
-- Auditoria de ações sensíveis (aprovação KYC, reembolso, mudança de papel, moderação)
+Sem ledger, “saldo do seller” vira número editável e inconsistente. Sem idempotência de webhook, o mesmo pagamento confirma duas vezes.
 
-**Entidades sugeridas**
+#### Regras de negócio (detalhe)
 
-- `audit_logs` (`actor_id`, `action`, `auditable_*`, `payload` sanitizado, `ip`)
+1. Buyer inicia pagamento no `order` (`pix` | `credit_card` | `boleto`) → API devolve payload **mock** (QR fake, linha digitável fake, etc.).
+2. Confirmação chega por **webhook simulado** (Job). Só então o pedido/subpedidos vão para `paid`.
+3. **Idempotência:** `payment_intent_id` / `idempotency_key` únicos; evento duplicado não gera segundo crédito.
+4. Ao pagar:
+   - commit da reserva de estoque (baixa definitiva)
+   - gerar `ledger_entries`: crédito seller (valor itens − comissão), crédito plataforma (comissão), por subpedido
+5. Comissão: regra configurável (ex.: % global MVP; depois por categoria).
+6. Reembolso total/parcial:
+   - estorna ledger (novas entradas negativas/contrárias — append-only)
+   - devolve estoque se ainda fizer sentido pelo estado do envio
+   - atualiza status para `refunded` / parcial documentado
+7. **Payout:** seller solicita saque do saldo disponível (soma do ledger − saques já pagos). Status `requested` → `paid` / `failed` (mock).
+8. Ledger é **append-only**. Saldo = soma; nunca `UPDATE balance`.
+9. Logs: nunca PAN/CVV; mesmo em mock, não inventar cartão real.
 
-**Regras críticas**
+#### O que entregar
 
-- Tudo admin atrás de Policy `admin`
-- Relatórios: queries agregadas com índices; evitar N+1
-- Audit log sem senha, token, documento completo quando possível (mascarar)
+- `POST /orders/{id}/payments`
+- `POST /webhooks/payments/mock` (protegido por secret de teste)
+- Reembolso admin/buyer conforme regra
+- Consulta de saldo + request payout (seller)
+- Config de comissão
 
-**Testes**
+#### Entidades
 
-- Buyer/seller não acessam rotas admin
-- Eventos sensíveis geram audit log
+| Entidade | Papel |
+|----------|-------|
+| `payments` | intenção + status |
+| `payment_webhook_events` | raw + processed_at |
+| `refunds` | valor + motivo |
+| `ledger_entries` | movimento imutável |
+| `payouts` | saque |
+| `platform_fee_rules` | % / valor |
 
-**Critérios de pronto**
+#### Critérios de pronto
 
-- [ ] API admin utilizável para ops do MVP
-- [ ] Relatórios mínimos
-- [ ] Auditoria nas ações críticas
+- [ ] Fluxo pending_payment → paid via webhook mock
+- [ ] Webhook duplicado é no-op seguro
+- [ ] Comissão e créditos batem com o total do pedido
+- [ ] Reembolso reflete no ledger
+- [ ] Feature tests dos 3 métodos mock
 
----
+#### Cuidados
 
-### P10 — API de sellers, webhooks e OpenAPI
-
-**Objetivo:** integração externa e contrato documentado.
-
-**Entregáveis**
-
-- API seller para catálogo, estoque, pedidos, envios (escopos/tokens próprios ou abilities Sanctum)
-- Webhooks para sellers (novo pedido, cancelamento, disputa) com assinatura HMAC e retentativas via Job
-- OpenAPI / Swagger da API pública e seller
-- Seeders/factories ricos para demo completa do marketplace
-
-**Regras críticas**
-
-- Webhooks: retry com backoff; não enviar PII desnecessária
-- Tokens seller com least privilege
-- OpenAPI alinhado ao comportamento real dos testes
-
-**Critérios de pronto**
-
-- [ ] Seller integra sem usar rotas “humanas” do app
-- [ ] Webhook entregue (ou mock receiver nos testes)
-- [ ] Spec OpenAPI publicada (arquivo ou UI)
-
----
-
-## 6. Mapa questionário → fase
-
-| #   | Item                              | Fase                | Status                                 |
-| --- | --------------------------------- | ------------------- | -------------------------------------- |
-| 1   | Modelo híbrido                    | —                   | Decisão                                |
-| 2   | Split + comissão                  | P5                  | MVP (mock)                             |
-| 3   | Frete seller e/ou plataforma      | P6                  | Simulado                               |
-| 4   | Só Brasil                         | —                   | Decisão                                |
-| 5   | B2C + B2B                         | P1/P4               | MVP (perfis; regras B2B podem evoluir) |
-| 6   | Papéis buyer/seller/admin         | P1                  | MVP                                    |
-| 7   | Aprovação manual seller           | P1                  | MVP                                    |
-| 8   | KYC                               | P1                  | MVP                                    |
-| 9   | Verificação de e-mail             | P1                  | MVP                                    |
-| 10  | Recuperação de senha              | P1                  | MVP                                    |
-| 11  | Login social                      | P1                  | MVP                                    |
-| 12  | Rate limit / antifraude básico    | P0/P1               | MVP                                    |
-| 13  | Categorias hierárquicas           | P2                  | MVP                                    |
-| 14  | Variações / SKUs                  | P3                  | MVP                                    |
-| 15  | Atributos dinâmicos               | P2                  | MVP                                    |
-| 16  | Imagens múltiplas                 | P2                  | MVP                                    |
-| 17  | Status do anúncio                 | P2                  | MVP                                    |
-| 18  | Busca textual                     | P2                  | MVP                                    |
-| 19  | Filtros                           | P2                  | MVP                                    |
-| 20  | Ordenação                         | P2                  | MVP                                    |
-| 21  | Loja do vendedor                  | P2                  | MVP                                    |
-| 22  | Moderação admin                   | P2                  | MVP                                    |
-| 23  | Estoque por SKU                   | P3                  | MVP                                    |
-| 24  | Reserva no checkout               | P3/P4               | MVP                                    |
-| 25  | Preço promocional                 | P3                  | MVP                                    |
-| 26  | Ofertas multi-seller (Buy Box)    | P3                  | MVP                                    |
-| 27  | Preço histórico no pedido         | P4                  | MVP                                    |
-| 28  | Carrinho logado                   | P4                  | MVP                                    |
-| 29  | Carrinho anônimo                  | —                   | **Excluído**                           |
-| 30  | Endereço no checkout              | P4                  | MVP                                    |
-| 31  | Pedido multi-seller               | P4                  | MVP                                    |
-| 32  | FSM de status                     | P4                  | MVP                                    |
-| 33  | Cancelamento (buyer/seller/admin) | P4                  | MVP                                    |
-| 34  | Dados fiscais                     | P4                  | Simulado                               |
-| 35  | Pix / cartão / boleto             | P5                  | Mock                                   |
-| 36  | Gateway real                      | —                   | **Excluído** (só mock)                 |
-| 37  | Webhooks pagamento                | P5                  | Mock                                   |
-| 38  | Idempotência checkout/pagamento   | P4/P5               | MVP                                    |
-| 39  | Reembolsos                        | P5                  | MVP                                    |
-| 40  | Comissão + ledger                 | P5                  | MVP                                    |
-| 41  | Payouts                           | P5                  | MVP                                    |
-| 42  | Frete tabelado interno            | P6                  | MVP                                    |
-| 43  | Transportadoras reais             | —                   | **Excluído**                           |
-| 44  | Cálculo por CEP                   | P6                  | MVP                                    |
-| 45  | Tracking por subpedido            | P6                  | MVP                                    |
-| 46  | Fulfillment físico                | —                   | **Adiado**                             |
-| 47  | Avaliações de produto             | P7                  | MVP                                    |
-| 48  | Reputação do seller               | P7                  | MVP                                    |
-| 49  | Perguntas e respostas             | P7                  | MVP                                    |
-| 50  | Chat                              | P7                  | MVP                                    |
-| 51  | Devoluções                        | P7                  | MVP                                    |
-| 52  | Disputas                          | P7                  | MVP                                    |
-| 53  | Wishlist                          | P7                  | MVP                                    |
-| 54  | Cupons                            | P8                  | MVP                                    |
-| 55  | Frete grátis por regra            | P8                  | MVP                                    |
-| 56  | Pontos / fidelidade               | —                   | **Excluído**                           |
-| 57  | Ads internos                      | P8                  | MVP                                    |
-| 58  | E-mail                            | P8                  | MVP                                    |
-| 59  | Push / in-app                     | P8                  | MVP                                    |
-| 60  | API admin                         | P9                  | MVP                                    |
-| 61  | Relatórios                        | P9                  | MVP                                    |
-| 62  | API sellers                       | P10                 | MVP                                    |
-| 63  | Webhooks sellers                  | P10                 | MVP                                    |
-| 64  | OpenAPI                           | P10                 | MVP                                    |
-| 65  | Auditoria                         | P9                  | MVP                                    |
-| 66  | Formato de erros                  | P0                  | MVP                                    |
-| 67  | Paginação cursor                  | P0                  | MVP                                    |
-| 68  | Filas Redis                       | P0                  | MVP                                    |
-| 69  | Soft delete universal             | P0                  | MVP                                    |
-| 70  | UUID universal                    | P0                  | MVP                                    |
-| 71  | Feature tests por domínio         | Todas               | MVP                                    |
-| 72  | Seeders/factories ricos           | P10 (+ incremental) | MVP                                    |
-| 73  | Docker Redis/worker               | P0                  | MVP                                    |
-| 74  | Só `/api/v1`                      | —                   | Decisão                                |
-| 75  | Objetivo portfólio                | —                   | Decisão                                |
-| 76  | Sem prazo                         | —                   | Decisão                                |
-| 77  | Só mock pagamento                 | P5                  | Decisão                                |
+Integridade financeira, autorização de webhook, não vazar dados de pagamento.
 
 ---
 
-## 7. Ordem sugerida de trabalho no dia a dia
+### B6 — Frete simulado e envio
 
-1. Completar **P0** (base sólida + Docker Redis + testes de auth).
-2. Implementar **P1** até seller aprovado conseguir autenticar com o papel certo.
-3. Subir **P2** com seed de categorias/produtos navegáveis.
-4. Fechar **P3** com pelo menos 2 sellers ofertando o mesmo produto.
-5. Entregar **P4** end-to-end até `pending_payment`.
-6. Em paralelo ou sequência: **P5** (pagar) e **P6** (frete/tracking).
-7. **P7** quando houver pedidos `delivered` nos seeds/testes.
-8. **P8** para cupons/ads/notificações.
-9. **P9** para operar e auditar.
-10. **P10** para documentação OpenAPI e integração seller.
+**Objetivo de negócio:** cotar frete no checkout e acompanhar envio por subpedido, sem transportadora real.
 
----
+#### Regras de negócio (detalhe)
 
-## 8. Referências internas do código
+1. Cotação por **subpedido** (cada seller pode ter origem/CEP e peso diferentes).
+2. Entrada do cálculo: peso, dimensões (produto/oferta), quantidade, CEP destino, CEP origem do seller/plataforma.
+3. Resultado: `price`, `estimated_days`, `service_code` interno (ex.: `simulated_standard`).
+4. Valor e prazo de frete são **congelados** no `order_seller` no checkout — não recalcular depois mudando o histórico.
+5. Após `paid`/`processing`, seller cria `shipment` com `tracking_code` gerado.
+6. Status de envio alimenta a FSM (`shipped` → `delivered`) com quem pode atualizar (seller do subpedido ou admin).
+7. CEP inválido → 422.
 
-| Área              | Caminho                                                                                 |
-| ----------------- | --------------------------------------------------------------------------------------- |
-| Rotas API         | `[routes/api.php](../routes/api.php)`                                                   |
-| Auth              | `[app/Http/Controllers/AuthController.php](../app/Http/Controllers/AuthController.php)` |
-| Auth service      | `[app/Services/AuthService.php](../app/Services/AuthService.php)`                       |
-| User              | `[app/Models/User.php](../app/Models/User.php)`                                         |
-| Docker            | `[compose.yml](../compose.yml)`                                                         |
-| Regras do projeto | `[.cursor/rules/laravel-backend.mdc](../.cursor/rules/laravel-backend.mdc)`             |
+#### Entidades
 
----
+| Entidade | Papel |
+|----------|-------|
+| `shipping_rate_rules` | tabela/regras |
+| `shipments` | tracking + valores congelados |
 
-## 9. Como usar este documento
+#### Critérios de pronto
 
-- Trate cada fase como um marco: só avance com checkboxes de “pronto” marcados.
-- Ao implementar, preferir commits/PRs por fase (ou subfase: ex. P1-KYC, P1-social).
-- Atualize a seção 6 se uma decisão de produto mudar.
-- Pagamentos e frete permanecem **mock** até decisão explícita em contrário.
+- [ ] Checkout persiste frete por subpedido
+- [ ] Buyer e seller veem tracking
+- [ ] Cotação determinística em testes com fixtures
+
+#### Cuidados
+
+Não misturar frete de sellers no mesmo cálculo cego; sempre por `order_seller`.
 
 ---
 
-_Gerado a partir do questionário de escopo do marketplace. Documento vivo: revise decisões antes de cada fase._
+### B7 — Pós-venda essencial (confiança mínima)
+
+**Objetivo de negócio:** reputação mínima e resolução de conflito — só o necessário para o core parecer marketplace de verdade.
+
+#### Escopo enxuto (não implementar tudo de uma vez)
+
+**Incluir**
+
+1. **Review de produto** só após `delivered` e só por quem comprou o item.
+2. **Nota agregada do seller** (média simples das reviews dos itens dele).
+3. **Disputa** aberta pelo buyer em janela pós-entrega; admin media; pode travar payout do subpedido até resolução.
+4. **Devolução (RMA) simplificada:** solicitar → aprovar/recusar → se aprovada, dispara reembolso (B5).
+
+**Adiar para L2**
+
+- Chat completo, Q&A rica, wishlist (podem ser stubs depois)
+
+#### Regras
+
+- Review sem compra → 403  
+- Uma review por item comprado (unique)  
+- Disputa ativa pode bloquear payout (flag no `order_seller` / ledger hold)  
+- Tudo com Policy anti-IDOR  
+
+#### Critérios de pronto
+
+- [ ] Review pós-entrega funciona
+- [ ] Disputa altera/bloqueia fluxo financeiro conforme regra documentada
+- [ ] Devolução aprovada gera reembolso testado
+
+---
+
+## 6. Fases later (depois do core)
+
+Só começar com a jornada B1→B6 (e B7 mínimo) **verde**.
+
+### L1 — Conta e higiene (ex-“P1 auth extra”)
+
+- Verificação de e-mail  
+- Reset de senha  
+- Login social (Google)  
+- Rate limit reforçado em reset  
+- (Opcional) exigir e-mail verificado para sacar / virar seller  
+
+### L2 — Marketing e engajamento
+
+- Cupons, frete grátis por regra  
+- Ads/boost de listagem  
+- Wishlist, Q&A, chat  
+- Notificações e-mail/in-app via fila  
+
+### L3 — Admin analytics, auditoria plena, OpenAPI e API seller
+
+- Relatórios (GMV, comissão, cancelamentos)  
+- OpenAPI  
+- API seller + webhooks HMAC  
+- Seeders ricos de demo  
+
+---
+
+## 7. Fora de escopo (permanece excluído)
+
+- Gateway real (Mercado Pago, Stripe, etc.)  
+- Correios / Melhor Envio reais  
+- Fulfillment físico / CD  
+- Carrinho guest  
+- Programa de pontos  
+- Multi-país / multi-moeda  
+- NFS-e real  
+
+---
+
+## 8. Cuidados transversais (sempre)
+
+| Área | Regra |
+|------|-------|
+| Checkout / estoque | `DB::transaction` + lock; nada parcial |
+| Pagamento | Idempotência; ledger append-only |
+| Pedido | Snapshot de preço/nome/endereço |
+| Authz | Policy por recurso; teste de IDOR |
+| PII | Mínimo em log/audit; mascarar documento |
+| API | Form Request + Resource + cursor |
+| Testes | Feature por fase de negócio com factories |
+
+---
+
+## 9. Ordem de trabalho sugerida
+
+1. **B1** — roles + seller approve (sem e-mail verify)  
+2. **B2** — catálogo navegável + ownership  
+3. **B3** — multi-oferta + reserva de estoque  
+4. **B4** — carrinho → pedido multi-seller + FSM  
+5. **B5** — pagamento mock + comissão + ledger  
+6. **B6** — frete + tracking no subpedido  
+7. **B7** — review + disputa/devolução mínimas  
+8. Só então **L1** (senha / e-mail / social) e demais L\*  
+
+---
+
+## 10. Checklist “core pronto” (definição de pronto do produto)
+
+- [ ] Buyer compra de 2 sellers no mesmo checkout  
+- [ ] Preços históricos corretos após mudar oferta  
+- [ ] Oversell impossível sob concorrência  
+- [ ] Webhook mock paga uma vez só  
+- [ ] Comissão e saldo seller batem com o ledger  
+- [ ] Frete congelado e tracking por subpedido  
+- [ ] Seller pendente não vende; admin opera com Policy  
+- [ ] Feature tests cobrem o caminho feliz + principais 403/409  
+
+Quando isso estiver marcado, o marketplace **prova o negócio**. Aí sim vale polir conta (L1) e crescimento (L2/L3).
+
+---
+
+## 11. Referências de código
+
+| Área | Caminho |
+|------|---------|
+| Rotas | [`routes/api.php`](../routes/api.php) |
+| Auth | [`app/Http/Controllers/AuthController.php`](../app/Http/Controllers/AuthController.php) |
+| Roles | [`app/Models/Role.php`](../app/Models/Role.php), [`app/Enums/RoleName.php`](../app/Enums/RoleName.php) |
+| User | [`app/Models/User.php`](../app/Models/User.php) |
+| Docker | [`compose.yml`](../compose.yml), [`compose.test.yml`](../compose.test.yml) |
+| README | [`README.md`](../README.md) |
+| Rules | [`.cursor/rules/laravel-backend.mdc`](../.cursor/rules/laravel-backend.mdc) |
+
+---
+
+_Documento focado em regra de negócio. Conta e marketing são later de propósito. Atualize decisões de produto aqui antes de cada fase B\*_
