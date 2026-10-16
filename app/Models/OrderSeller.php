@@ -22,18 +22,24 @@ class OrderSeller extends Model
         'order_id',
         'store_id',
         'status',
-        'subtotal',
-        'shipping_total',
-        'total',
+        'subtotal_cents',
+        'shipping_cents',
+        'total_cents',
+        'shipping_service_code',
+        'shipping_service_name',
+        'shipping_eta_days',
+        'shipping_quoted_at',
     ];
 
     protected function casts(): array
     {
         return [
             'status' => OrderSellerStatus::class,
-            'subtotal' => 'decimal:2',
-            'shipping_total' => 'decimal:2',
-            'total' => 'decimal:2',
+            'subtotal_cents' => 'integer',
+            'shipping_cents' => 'integer',
+            'total_cents' => 'integer',
+            'shipping_eta_days' => 'integer',
+            'shipping_quoted_at' => 'datetime',
         ];
     }
 
@@ -54,6 +60,6 @@ class OrderSeller extends Model
 
     public function statusHistories(): MorphMany
     {
-        return $this->morphMany(OrderStatusHistory::class, 'statusable');
+        return $this->morphMany(OrderStatusHistory::class, 'statusable')->latest();
     }
 }

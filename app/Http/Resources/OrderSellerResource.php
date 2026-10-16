@@ -18,9 +18,9 @@ final class OrderSellerResource extends JsonResource
             'id' => $this->id,
             'store_id' => $this->store_id,
             'status' => $this->status,
-            'subtotal' => (string) $this->subtotal,
-            'shipping_total' => (string) $this->shipping_total,
-            'total' => (string) $this->total,
+            'subtotal_cents' => $this->subtotal_cents,
+            'shipping_cents' => $this->shipping_cents,
+            'total_cents' => $this->total_cents,
             'store' => $this->whenLoaded('store', fn () => [
                 'id' => $this->store->id,
                 'store_name' => $this->store->store_name,

@@ -20,19 +20,17 @@ class OrderItem extends Model
         'offer_id',
         'product_id',
         'store_id',
-        'name',
-        'slug',
-        'unit_price',
+        'product_name',
+        'product_slug',
+        'unit_price_cents',
         'quantity',
-        'line_total',
     ];
 
     protected function casts(): array
     {
         return [
-            'unit_price' => 'decimal:2',
+            'unit_price_cents' => 'integer',
             'quantity' => 'integer',
-            'line_total' => 'decimal:2',
         ];
     }
 
@@ -54,5 +52,10 @@ class OrderItem extends Model
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
+    }
+
+    public function lineTotalCents(): int
+    {
+        return $this->unit_price_cents * $this->quantity;
     }
 }

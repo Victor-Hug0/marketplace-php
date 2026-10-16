@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Enums\OrderStatus;
+use App\Models\Address;
 use App\Models\Order;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -17,27 +18,27 @@ final class OrderFactory extends Factory
 {
     public function definition(): array
     {
-        $subtotal = fake()->randomFloat(2, 20, 500);
+        $subtotal = fake()->numberBetween(1000, 500000);
+        $shipping = fake()->numberBetween(0, 5000);
 
         return [
             'buyer_id' => User::factory(),
             'status' => OrderStatus::PENDING_PAYMENT,
             'currency' => 'BRL',
-            'subtotal' => $subtotal,
-            'shipping_total' => '0.00',
-            'total' => $subtotal,
-            'address_snapshot' => [
-                'recipient_name' => fake()->name(),
-                'phone' => fake()->numerify('###########'),
-                'cep' => fake()->numerify('########'),
-                'street' => fake()->streetName(),
-                'number' => (string) fake()->numberBetween(1, 999),
-                'complement' => null,
-                'district' => fake()->citySuffix(),
-                'city' => fake()->city(),
-                'state' => 'SP',
-            ],
+            'subtotal_cents' => $subtotal,
+            'shipping_cents' => $shipping,
+            'total_cents' => $subtotal + $shipping,
             'idempotency_key' => (string) Str::uuid(),
+            'address_id' => null,
+            'shipping_recipient_name' => fake()->name(),
+            'shipping_phone' => fake()->numerify('###########'),
+            'shipping_cep' => fake()->numerify('########'),
+            'shipping_street' => fake()->streetName(),
+            'shipping_number' => (string) fake()->numberBetween(1, 9999),
+            'shipping_complement' => fake()->optional()->secondaryAddress(),
+            'shipping_district' => fake()->citySuffix(),
+            'shipping_city' => fake()->city(),
+            'shipping_state' => fake()->randomElement(['SP', 'RJ', 'MG', 'RS', 'PR']),
         ];
     }
 
@@ -48,10 +49,38 @@ final class OrderFactory extends Factory
         ]);
     }
 
+    public function withAddress(Address $address): static
+    {
+        return $this->state(fn (): array => Order::snapshotFromAddress($address));
+    }
+
     public function pendingPayment(): static
     {
         return $this->state(fn (): array => [
             'status' => OrderStatus::PENDING_PAYMENT,
+        ]);
+    }
+
+    public function paid(): static
+    {
+        return $this->state(fn (): array => [
+            'status' => OrderStatus::PAID,
+        ]);
+    }
+
+    public function cancelled(): static
+    {
+        return $this->state(fn (): array => [
+            'status' => OrderStatus::CANCELLED,
+        ]);
+    }
+
+    public function withTotals(int $subtotalCents, int $shippingCents = 0): static
+    {
+        return $this->state(fn (): array => [
+            'subtotal_cents' => $subtotalCents,
+            'shipping_cents' => $shippingCents,
+            'total_cents' => $subtotalCents + $shippingCents,
         ]);
     }
 }

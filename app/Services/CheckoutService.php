@@ -79,22 +79,21 @@ final class CheckoutService
                 }
 
                 $prepared = $this->prepareLineItems($items);
-                $orderSubtotal = $prepared->reduce(
-                    static fn (string $carry, array $line): string => bcadd($carry, $line['line_total'], 2),
-                    '0.00',
+                $orderSubtotalCents = $prepared->sum(
+                    static fn (array $line): int => $line['line_total_cents'],
                 );
-                $shippingTotal = '0.00';
-                $orderTotal = bcadd($orderSubtotal, $shippingTotal, 2);
+                $shippingCents = 0;
+                $orderTotalCents = $orderSubtotalCents + $shippingCents;
 
                 $order = Order::query()->create([
                     'buyer_id' => $user->id,
                     'status' => OrderStatus::PENDING_PAYMENT,
                     'currency' => 'BRL',
-                    'subtotal' => $orderSubtotal,
-                    'shipping_total' => $shippingTotal,
-                    'total' => $orderTotal,
-                    'address_snapshot' => $this->snapshotAddress($address),
+                    'subtotal_cents' => $orderSubtotalCents,
+                    'shipping_cents' => $shippingCents,
+                    'total_cents' => $orderTotalCents,
                     'idempotency_key' => $idempotencyKey,
+                    ...Order::snapshotFromAddress($address),
                 ]);
 
                 $this->recordStatusHistory(
@@ -111,20 +110,19 @@ final class CheckoutService
                 );
 
                 foreach ($grouped as $storeId => $storeLines) {
-                    $sellerSubtotal = $storeLines->reduce(
-                        static fn (string $carry, array $line): string => bcadd($carry, $line['line_total'], 2),
-                        '0.00',
+                    $sellerSubtotalCents = $storeLines->sum(
+                        static fn (array $line): int => $line['line_total_cents'],
                     );
-                    $sellerShipping = '0.00';
-                    $sellerTotal = bcadd($sellerSubtotal, $sellerShipping, 2);
+                    $sellerShippingCents = 0;
+                    $sellerTotalCents = $sellerSubtotalCents + $sellerShippingCents;
 
                     $orderSeller = OrderSeller::query()->create([
                         'order_id' => $order->id,
                         'store_id' => $storeId,
                         'status' => OrderSellerStatus::PENDING_PAYMENT,
-                        'subtotal' => $sellerSubtotal,
-                        'shipping_total' => $sellerShipping,
-                        'total' => $sellerTotal,
+                        'subtotal_cents' => $sellerSubtotalCents,
+                        'shipping_cents' => $sellerShippingCents,
+                        'total_cents' => $sellerTotalCents,
                     ]);
 
                     $this->recordStatusHistory(
@@ -141,11 +139,10 @@ final class CheckoutService
                             'offer_id' => $line['offer']->id,
                             'product_id' => $line['product_id'],
                             'store_id' => $line['store_id'],
-                            'name' => $line['name'],
-                            'slug' => $line['slug'],
-                            'unit_price' => $line['unit_price'],
+                            'product_name' => $line['product_name'],
+                            'product_slug' => $line['product_slug'],
+                            'unit_price_cents' => $line['unit_price_cents'],
                             'quantity' => $line['quantity'],
-                            'line_total' => $line['line_total'],
                         ]);
 
                         $reservation = $this->inventoryService->reserve(
@@ -163,7 +160,7 @@ final class CheckoutService
                 $this->audit($user, $order, 'order.checkout.created', [
                     'sellers_count' => $grouped->count(),
                     'items_count' => $prepared->sum('quantity'),
-                    'total' => $orderTotal,
+                    'total_cents' => $orderTotalCents,
                 ]);
 
                 return [
@@ -208,18 +205,17 @@ final class CheckoutService
                 );
             }
 
-            $unitPrice = $offer->currentPrice();
-            $lineTotal = bcmul($unitPrice, (string) $item->quantity, 2);
+            $unitPriceCents = $this->priceToCents($offer->currentPrice());
 
             return [
                 'offer' => $offer,
                 'store_id' => $offer->store_id,
                 'product_id' => $offer->product_id,
-                'name' => $offer->product->name,
-                'slug' => $offer->product->slug,
-                'unit_price' => $unitPrice,
+                'product_name' => $offer->product->name,
+                'product_slug' => $offer->product->slug,
+                'unit_price_cents' => $unitPriceCents,
                 'quantity' => $item->quantity,
-                'line_total' => $lineTotal,
+                'line_total_cents' => $unitPriceCents * $item->quantity,
             ];
         })->values();
     }
@@ -250,24 +246,9 @@ final class CheckoutService
         return $offer;
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    private function snapshotAddress(Address $address): array
+    private function priceToCents(string $price): int
     {
-        return [
-            'id' => $address->id,
-            'label' => $address->label,
-            'recipient_name' => $address->recipient_name,
-            'phone' => $address->phone,
-            'cep' => $address->cep,
-            'street' => $address->street,
-            'number' => $address->number,
-            'complement' => $address->complement,
-            'district' => $address->district,
-            'city' => $address->city,
-            'state' => $address->state,
-        ];
+        return (int) round(((float) $price) * 100);
     }
 
     private function recordStatusHistory(
@@ -283,9 +264,7 @@ final class CheckoutService
             'from_status' => $fromStatus,
             'to_status' => $toStatus,
             'actor_id' => $actor->id,
-            'actor_type' => $actor->getMorphClass(),
             'reason' => $reason,
-            'created_at' => now(),
         ]);
     }
 
@@ -322,6 +301,6 @@ final class CheckoutService
         $message = $exception->getMessage();
 
         return str_contains($message, 'idempotency_key')
-            || str_contains($message, 'orders_idempotency_key_unique');
+            || str_contains($message, 'orders_buyer_id_idempotency_key_unique');
     }
 }

@@ -13,4 +13,13 @@ enum OrderStatus: string
     case DELIVERED = 'delivered';
     case CANCELLED = 'cancelled';
     case REFUNDED = 'refunded';
+
+    public function isTerminal(): bool
+    {
+        return in_array($this, [
+            self::DELIVERED,
+            self::CANCELLED,
+            self::REFUNDED,
+        ], true);
+    }
 }

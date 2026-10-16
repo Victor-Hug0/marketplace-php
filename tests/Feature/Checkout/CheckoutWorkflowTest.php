@@ -83,9 +83,9 @@ final class CheckoutWorkflowTest extends TestCase
             ])
             ->assertCreated()
             ->assertJsonPath('data.status', OrderStatus::PENDING_PAYMENT->value)
-            ->assertJsonPath('data.subtotal', '130.00')
-            ->assertJsonPath('data.shipping_total', '0.00')
-            ->assertJsonPath('data.total', '130.00')
+            ->assertJsonPath('data.subtotal_cents', 13000)
+            ->assertJsonPath('data.shipping_cents', 0)
+            ->assertJsonPath('data.total_cents', 13000)
             ->assertJsonPath('data.address_snapshot.recipient_name', 'Maria Compradora')
             ->assertJsonPath('data.address_snapshot.city', 'São Paulo')
             ->assertJsonCount(2, 'data.sellers');
@@ -135,17 +135,17 @@ final class CheckoutWorkflowTest extends TestCase
                 'Idempotency-Key' => 'price-snapshot-key-1',
             ])
             ->assertCreated()
-            ->assertJsonPath('data.sellers.0.items.0.unit_price', '100.00')
+            ->assertJsonPath('data.sellers.0.items.0.unit_price_cents', 10000)
             ->json('data.id');
 
         $offer->update(['price' => '999.00']);
 
         $this->assertDatabaseHas('order_items', [
-            'unit_price' => '100.00',
+            'unit_price_cents' => 10000,
         ]);
 
-        $order = Order::query()->findOrFail($orderId);
-        $this->assertSame('100.00', (string) $order->sellers->first()->items->first()->unit_price);
+        $order = Order::query()->with('sellers.items')->findOrFail($orderId);
+        $this->assertSame(10000, $order->sellers->first()->items->first()->unit_price_cents);
     }
 
     public function test_checkout_is_idempotent_for_same_key(): void

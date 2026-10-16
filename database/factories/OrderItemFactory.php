@@ -19,19 +19,17 @@ final class OrderItemFactory extends Factory
 {
     public function definition(): array
     {
-        $unitPrice = fake()->randomFloat(2, 10, 200);
-        $quantity = fake()->numberBetween(1, 5);
+        $name = fake()->words(3, true);
 
         return [
             'order_seller_id' => OrderSeller::factory(),
             'offer_id' => null,
             'product_id' => Product::factory()->active(),
             'store_id' => Store::factory()->active(),
-            'name' => fake()->words(3, true),
-            'slug' => Str::slug(fake()->unique()->words(3, true)),
-            'unit_price' => $unitPrice,
-            'quantity' => $quantity,
-            'line_total' => bcmul((string) $unitPrice, (string) $quantity, 2),
+            'product_name' => $name,
+            'product_slug' => Str::slug($name).'-'.fake()->unique()->numerify('###'),
+            'unit_price_cents' => fake()->numberBetween(500, 50000),
+            'quantity' => fake()->numberBetween(1, 5),
         ];
     }
 
@@ -43,19 +41,36 @@ final class OrderItemFactory extends Factory
         ]);
     }
 
-    public function fromOffer(Offer $offer, int $quantity = 1): static
+    public function fromOffer(Offer $offer, ?int $unitPriceCents = null): static
     {
-        $unitPrice = $offer->currentPrice();
+        $offer->loadMissing('product');
+
+        $price = $unitPriceCents;
+        if ($price === null) {
+            $price = (int) round(((float) $offer->currentPrice()) * 100);
+        }
 
         return $this->state(fn (): array => [
             'offer_id' => $offer->id,
             'product_id' => $offer->product_id,
             'store_id' => $offer->store_id,
-            'name' => $offer->product?->name ?? 'Produto',
-            'slug' => $offer->product?->slug ?? 'produto',
-            'unit_price' => $unitPrice,
+            'product_name' => $offer->product->name,
+            'product_slug' => $offer->product->slug,
+            'unit_price_cents' => $price,
+        ]);
+    }
+
+    public function withQuantity(int $quantity): static
+    {
+        return $this->state(fn (): array => [
             'quantity' => $quantity,
-            'line_total' => bcmul($unitPrice, (string) $quantity, 2),
+        ]);
+    }
+
+    public function priced(int $unitPriceCents): static
+    {
+        return $this->state(fn (): array => [
+            'unit_price_cents' => $unitPriceCents,
         ]);
     }
 }

@@ -45,7 +45,7 @@ Documento derivado de [`roadmap-implementacao-api.md`](roadmap-implementacao-api
 | B2 Catálogo | `done` | Categorias, produtos, vitrine, busca |
 | B2-extra (atributos valorados, resize) | `todo` | Paralelo seguro à B3 |
 | B3 Ofertas / estoque / Buy Box | `wip` | Branch `feature/b3-offers-inventory` |
-| B4 Carrinho / checkout / pedidos | `wip` | B4.1–B4.2 done; B4.3 schema + B4.4 checkout em `feature/b4-4-checkout` |
+| B4 Carrinho / checkout / pedidos | `wip` | B4.1–B4.3 done; B4.4 checkout em `cursor/b4-4-checkout-3866` |
 | B5 Pagamento / ledger | `todo` | Depende B4 |
 | B6 Frete / envio | `todo` | Depende B4 (paralelo parcial a B5) |
 | B7 Pós-venda | `todo` | Depende B5+B6 |
@@ -359,9 +359,9 @@ DELETE /api/v1/cart
 
 | ID | Item | Status | Esforço | Detalhe |
 |----|------|--------|---------|---------|
-| B4.3.01 | Migration `orders` | `done` | M | buyer_id, status, currency, subtotal/shipping/total decimal, address_snapshot JSON, idempotency_key unique (incluso na branch B4.4 por dependência) |
-| B4.3.02 | Migration `order_sellers` | `done` | M | order_id, store_id, status, shipping_total, totals |
-| B4.3.03 | Migration `order_items` | `done` | M | order_seller_id, offer_id nullable, product_id, snapshots: name, slug, unit_price, quantity, store_id |
+| B4.3.01 | Migration `orders` | `done` | M | buyer_id, status, currency, subtotal/shipping/total cents, address snapshot cols, idempotency_key unique per buyer |
+| B4.3.02 | Migration `order_sellers` | `done` | M | order_id, store_id, status, shipping_* nullable (B6), totals |
+| B4.3.03 | Migration `order_items` | `done` | M | order_seller_id, offer_id nullable, product_id, snapshots: name, slug, unit_price_cents, quantity, store_id |
 | B4.3.04 | Migration `order_status_histories` | `done` | S | morph order/order_seller, from, to, actor, reason |
 | B4.3.05 | Enums OrderStatus / OrderSellerStatus | `done` | S | alinhar FSM roadmap |
 | B4.3.06 | Models + factories | `done` | M | |
