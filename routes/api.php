@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\StoreController as AdminStoreController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +28,11 @@ Route::prefix('v1')->group(function () {
             Route::get('me', [StoreController::class, 'me']);
         });
 
+    Route::prefix('categories')->group(function () {
+        Route::get('/', [CategoryController::class, 'index']);
+        Route::get('{slug}', [CategoryController::class, 'show']);
+    });
+
     Route::prefix('admin/stores')
         ->middleware(['auth:sanctum', 'abilities:access', 'role:admin'])
         ->group(function () {
@@ -33,5 +40,18 @@ Route::prefix('v1')->group(function () {
             Route::post('{store}/approve', [AdminStoreController::class, 'approve']);
             Route::post('{store}/reject', [AdminStoreController::class, 'reject']);
             Route::post('{store}/suspend', [AdminStoreController::class, 'suspend']);
+        });
+
+    Route::prefix('admin/categories')
+        ->middleware(['auth:sanctum', 'abilities:access', 'role:admin'])
+        ->group(function () {
+            Route::get('/', [AdminCategoryController::class, 'index']);
+            Route::post('/', [AdminCategoryController::class, 'store']);
+            Route::put('{category}', [AdminCategoryController::class, 'update']);
+            Route::patch('{category}', [AdminCategoryController::class, 'update']);
+            Route::delete('{category}', [AdminCategoryController::class, 'destroy']);
+            Route::post('{category}/attributes', [AdminCategoryController::class, 'storeAttribute']);
+            Route::put('{category}/attributes/{attribute}', [AdminCategoryController::class, 'updateAttribute']);
+            Route::delete('{category}/attributes/{attribute}', [AdminCategoryController::class, 'destroyAttribute']);
         });
 });

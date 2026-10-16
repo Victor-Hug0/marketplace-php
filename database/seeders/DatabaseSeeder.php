@@ -19,9 +19,11 @@ class DatabaseSeeder extends Seeder
         foreach (RoleName::cases() as $role) {
             Role::query()->firstOrCreate(
                 [
-                    'name' => $role
+                    'name' => $role,
                 ]
             );
         }
+
+        $this->call(CategorySeeder::class);
     }
 }
