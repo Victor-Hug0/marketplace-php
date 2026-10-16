@@ -27,6 +27,19 @@ final class OrderSellerResource extends JsonResource
                 'slug' => $this->store->slug,
                 'status' => $this->store->status,
             ]),
+            'order_id' => $this->order_id,
+            'order' => $this->whenLoaded('order', fn () => [
+                'id' => $this->order->id,
+                'buyer_id' => $this->order->buyer_id,
+                'status' => $this->order->status,
+                'currency' => $this->order->currency,
+                'subtotal_cents' => $this->order->subtotal_cents,
+                'shipping_cents' => $this->order->shipping_cents,
+                'total_cents' => $this->order->total_cents,
+                'created_at' => $this->order->created_at
+                    ?->timezone(config('app.timezone'))
+                    ->toIso8601String(),
+            ]),
             'items' => OrderItemResource::collection($this->whenLoaded('items')),
             'status_histories' => OrderStatusHistoryResource::collection(
                 $this->whenLoaded('statusHistories'),
