@@ -45,7 +45,7 @@ Documento derivado de [`roadmap-implementacao-api.md`](roadmap-implementacao-api
 | B2 Catálogo | `done` | Categorias, produtos, vitrine, busca |
 | B2-extra (atributos valorados, resize) | `todo` | Paralelo seguro à B3 |
 | B3 Ofertas / estoque / Buy Box | `wip` | Branch `feature/b3-offers-inventory` |
-| B4 Carrinho / checkout / pedidos | `wip` | B4.1–B4.3 done; B4.4 checkout em `cursor/b4-4-checkout-3866` |
+| B4 Carrinho / checkout / pedidos | `wip` | B4.1–B4.4 done; B4.5 FSM/cancel em `cursor/b4-5-order-fsm-3866` |
 | B5 Pagamento / ledger | `todo` | Depende B4 |
 | B6 Frete / envio | `todo` | Depende B4 (paralelo parcial a B5) |
 | B7 Pós-venda | `todo` | Depende B5+B6 |
@@ -395,14 +395,14 @@ DELETE /api/v1/cart
 
 | ID | Item | Status | Esforço | Detalhe |
 |----|------|--------|---------|---------|
-| B4.5.01 | `OrderStateMachine` (transições permitidas) | `todo` | L | tabela de transitions; 409 inválida |
-| B4.5.02 | Buyer: list/show próprios orders | `todo` | M | |
-| B4.5.03 | Seller: list/show próprios `order_sellers` | `todo` | M | Policy store ownership |
-| B4.5.04 | Admin: list/show tudo | `todo` | S | |
-| B4.5.05 | Buyer cancela em `pending_payment` → release reservas | `todo` | M | |
-| B4.5.06 | Seller cancela `order_seller` em estados iniciais | `todo` | M | release parcial |
-| B4.5.07 | Histórico de status na resposta | `todo` | S | |
-| B4.5.08 | Feature tests FSM matrix | `todo` | L | |
+| B4.5.01 | `OrderStateMachine` (transições permitidas) | `done` | L | tabela de transitions; 409 inválida |
+| B4.5.02 | Buyer: list/show próprios orders | `done` | M | |
+| B4.5.03 | Seller: list/show próprios `order_sellers` | `done` | M | Policy store ownership |
+| B4.5.04 | Admin: list/show tudo | `done` | S | |
+| B4.5.05 | Buyer cancela em `pending_payment` → release reservas | `done` | M | |
+| B4.5.06 | Seller cancela `order_seller` em estados iniciais | `done` | M | release parcial; cancela order se todos sellers cancelados |
+| B4.5.07 | Histórico de status na resposta | `done` | S | |
+| B4.5.08 | Feature tests FSM matrix | `done` | L | |
 
 **Endpoints:**
 

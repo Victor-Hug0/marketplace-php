@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\StoreController as AdminStoreController;
 use App\Http\Controllers\AuthController;
@@ -9,8 +10,10 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OfferReservationController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Seller\OfferController as SellerOfferController;
+use App\Http\Controllers\Seller\OrderSellerController as SellerOrderSellerController;
 use App\Http\Controllers\Seller\ProductController as SellerProductController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\UserController;
@@ -53,6 +56,14 @@ Route::prefix('v1')->group(function () {
 
     Route::post('checkout', [CheckoutController::class, 'store'])
         ->middleware(['auth:sanctum', 'abilities:access']);
+
+    Route::prefix('orders')
+        ->middleware(['auth:sanctum', 'abilities:access'])
+        ->group(function () {
+            Route::get('/', [OrderController::class, 'index']);
+            Route::get('{order}', [OrderController::class, 'show']);
+            Route::post('{order}/cancel', [OrderController::class, 'cancel']);
+        });
 
     Route::prefix('stores')->group(function () {
         Route::middleware(['auth:sanctum', 'abilities:access'])->group(function () {
@@ -103,6 +114,14 @@ Route::prefix('v1')->group(function () {
             Route::delete('{offer}', [SellerOfferController::class, 'destroy']);
         });
 
+    Route::prefix('seller/order-sellers')
+        ->middleware(['auth:sanctum', 'abilities:access', 'role:seller'])
+        ->group(function () {
+            Route::get('/', [SellerOrderSellerController::class, 'index']);
+            Route::get('{orderSeller}', [SellerOrderSellerController::class, 'show']);
+            Route::post('{orderSeller}/cancel', [SellerOrderSellerController::class, 'cancel']);
+        });
+
     Route::prefix('offers')
         ->middleware(['auth:sanctum', 'abilities:access'])
         ->group(function () {
@@ -142,5 +161,12 @@ Route::prefix('v1')->group(function () {
             Route::post('{product}/approve', [AdminProductController::class, 'approve']);
             Route::post('{product}/reject', [AdminProductController::class, 'reject']);
             Route::post('{product}/pause', [AdminProductController::class, 'pause']);
+        });
+
+    Route::prefix('admin/orders')
+        ->middleware(['auth:sanctum', 'abilities:access', 'role:admin'])
+        ->group(function () {
+            Route::get('/', [AdminOrderController::class, 'index']);
+            Route::get('{order}', [AdminOrderController::class, 'show']);
         });
 });
