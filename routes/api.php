@@ -5,7 +5,9 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\StoreController as AdminStoreController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\OfferReservationController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Seller\OfferController as SellerOfferController;
 use App\Http\Controllers\Seller\ProductController as SellerProductController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\UserController;
@@ -58,6 +60,26 @@ Route::prefix('v1')->group(function () {
             Route::put('{product}', [SellerProductController::class, 'update']);
             Route::patch('{product}', [SellerProductController::class, 'update']);
             Route::delete('{product}', [SellerProductController::class, 'destroy']);
+        });
+
+    Route::prefix('seller/offers')
+        ->middleware(['auth:sanctum', 'abilities:access', 'role:seller'])
+        ->group(function () {
+            Route::get('/', [SellerOfferController::class, 'index']);
+            Route::post('/', [SellerOfferController::class, 'store']);
+            Route::post('{offer}/pause', [SellerOfferController::class, 'pause']);
+            Route::post('{offer}/resume', [SellerOfferController::class, 'resume']);
+            Route::get('{offer}', [SellerOfferController::class, 'show']);
+            Route::put('{offer}', [SellerOfferController::class, 'update']);
+            Route::patch('{offer}', [SellerOfferController::class, 'update']);
+            Route::delete('{offer}', [SellerOfferController::class, 'destroy']);
+        });
+
+    Route::prefix('offers')
+        ->middleware(['auth:sanctum', 'abilities:access'])
+        ->group(function () {
+            Route::post('{offer}/reservations', [OfferReservationController::class, 'store']);
+            Route::delete('{offer}/reservations/{reservation}', [OfferReservationController::class, 'destroy']);
         });
 
     Route::prefix('admin/stores')

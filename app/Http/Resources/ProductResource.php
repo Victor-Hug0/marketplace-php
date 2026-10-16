@@ -33,6 +33,7 @@ final class ProductResource extends JsonResource
                 'slug' => $this->store->slug,
             ]),
             'images' => ProductImageResource::collection($this->whenLoaded('images')),
+            'offers' => OfferResource::collection($this->whenLoaded('offers')),
             'created_at' => $this->created_at?->timezone(config('app.timezone'))->toIso8601String(),
             'updated_at' => $this->updated_at?->timezone(config('app.timezone'))->toIso8601String(),
         ];
