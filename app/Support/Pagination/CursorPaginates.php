@@ -14,14 +14,18 @@ trait CursorPaginates
         int $defaultPerPage = 20,
         int $maxPerPage = 100,
         string $cursorColumn = 'id',
+        bool $descending = false,
     ): CursorPaginator {
         $perPage = max(1, min(
             $request->integer('per_page', $defaultPerPage),
             $maxPerPage,
         ));
 
-        return $query
-            ->orderBy($cursorColumn)
+        $ordered = $descending
+            ? $query->orderByDesc($cursorColumn)
+            : $query->orderBy($cursorColumn);
+
+        return $ordered
             ->cursorPaginate($perPage, ['*'], 'cursor')
             ->withQueryString();
     }

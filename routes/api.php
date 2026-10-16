@@ -24,12 +24,14 @@ Route::prefix('v1')->group(function () {
         Route::get('/', [UserController::class, 'index'])->middleware(['auth:sanctum', 'abilities:access', 'role:admin']);
     });
 
-    Route::prefix('stores')
-        ->middleware(['auth:sanctum', 'abilities:access'])
-        ->group(function () {
+    Route::prefix('stores')->group(function () {
+        Route::middleware(['auth:sanctum', 'abilities:access'])->group(function () {
             Route::post('/', [StoreController::class, 'store']);
             Route::get('me', [StoreController::class, 'me']);
         });
+
+        Route::get('{slug}', [StoreController::class, 'show']);
+    });
 
     Route::prefix('categories')->group(function () {
         Route::get('/', [CategoryController::class, 'index']);
