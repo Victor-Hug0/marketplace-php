@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\StoreController as AdminStoreController;
@@ -25,6 +26,18 @@ Route::prefix('v1')->group(function () {
         Route::get('me', [UserController::class, 'me'])->middleware(['auth:sanctum', 'abilities:access']);
         Route::get('/', [UserController::class, 'index'])->middleware(['auth:sanctum', 'abilities:access', 'role:admin']);
     });
+
+    Route::prefix('addresses')
+        ->middleware(['auth:sanctum', 'abilities:access'])
+        ->group(function () {
+            Route::get('/', [AddressController::class, 'index']);
+            Route::post('/', [AddressController::class, 'store']);
+            Route::post('{address}/default', [AddressController::class, 'makeDefault']);
+            Route::get('{address}', [AddressController::class, 'show']);
+            Route::put('{address}', [AddressController::class, 'update']);
+            Route::patch('{address}', [AddressController::class, 'update']);
+            Route::delete('{address}', [AddressController::class, 'destroy']);
+        });
 
     Route::prefix('stores')->group(function () {
         Route::middleware(['auth:sanctum', 'abilities:access'])->group(function () {
