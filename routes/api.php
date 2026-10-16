@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\StoreController as AdminStoreController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OfferReservationController;
 use App\Http\Controllers\ProductController;
@@ -37,6 +38,16 @@ Route::prefix('v1')->group(function () {
             Route::put('{address}', [AddressController::class, 'update']);
             Route::patch('{address}', [AddressController::class, 'update']);
             Route::delete('{address}', [AddressController::class, 'destroy']);
+        });
+
+    Route::prefix('cart')
+        ->middleware(['auth:sanctum', 'abilities:access'])
+        ->group(function () {
+            Route::get('/', [CartController::class, 'show']);
+            Route::post('items', [CartController::class, 'storeItem']);
+            Route::patch('items/{item}', [CartController::class, 'updateItem']);
+            Route::delete('items/{item}', [CartController::class, 'destroyItem']);
+            Route::delete('/', [CartController::class, 'clear']);
         });
 
     Route::prefix('stores')->group(function () {

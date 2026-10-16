@@ -59,6 +59,11 @@ class Offer extends Model
         return $this->hasMany(InventoryReservation::class);
     }
 
+    public function cartItems(): HasMany
+    {
+        return $this->hasMany(CartItem::class);
+    }
+
     public function availableStock(): int
     {
         return max(0, $this->stock - $this->reserved_stock);

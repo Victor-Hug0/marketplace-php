@@ -45,7 +45,7 @@ Documento derivado de [`roadmap-implementacao-api.md`](roadmap-implementacao-api
 | B2 Catálogo | `done` | Categorias, produtos, vitrine, busca |
 | B2-extra (atributos valorados, resize) | `todo` | Paralelo seguro à B3 |
 | B3 Ofertas / estoque / Buy Box | `wip` | Branch `feature/b3-offers-inventory` |
-| B4 Carrinho / checkout / pedidos | `todo` | Depende B3 |
+| B4 Carrinho / checkout / pedidos | `wip` | B4.1 done; B4.2 done nesta branch; falta B4.3+ |
 | B5 Pagamento / ledger | `todo` | Depende B4 |
 | B6 Frete / envio | `todo` | Depende B4 (paralelo parcial a B5) |
 | B7 Pós-venda | `todo` | Depende B5+B6 |
@@ -330,20 +330,20 @@ release/expire: só reserved diminui
 
 | ID | Item | Status | Esforço | Detalhe técnico |
 |----|------|--------|---------|-----------------|
-| B4.1.01 | Migration `addresses` | `todo` | M | user_id, label, recipient_name, phone, cep, street, number, complement, district, city, state, is_default, softDeletes |
-| B4.1.02 | Validação CEP BR (`#####-###` ou 8 dígitos) | `todo` | S | |
-| B4.1.03 | CRUD `/api/v1/addresses` + Policy owner | `todo` | M | um default por user (transaction) |
-| B4.1.04 | Feature tests IDOR endereço | `todo` | S | |
+| B4.1.01 | Migration `addresses` | `done` | M | user_id, label, recipient_name, phone, cep, street, number, complement, district, city, state, is_default, softDeletes |
+| B4.1.02 | Validação CEP BR (`#####-###` ou 8 dígitos) | `done` | S | |
+| B4.1.03 | CRUD `/api/v1/addresses` + Policy owner | `done` | M | um default por user (transaction) |
+| B4.1.04 | Feature tests IDOR endereço | `done` | S | |
 
 ### Slice B4.2 — Carrinho
 
 | ID | Item | Status | Esforço | Detalhe |
 |----|------|--------|---------|---------|
-| B4.2.01 | Migration `carts` + `cart_items` | `todo` | M | cart 1:1 user; item unique `(cart_id, offer_id)` |
-| B4.2.02 | `CartService::add/update/remove/clear` | `todo` | L | valida offer active, store active, available stock |
-| B4.2.03 | Recalcular totais no Resource (não persistir preço ainda) | `todo` | S | preço vigente da offer |
-| B4.2.04 | Endpoints `/api/v1/cart` | `todo` | M | GET/POST items/PATCH/DELETE |
-| B4.2.05 | Feature tests carrinho multi-seller | `todo` | M | |
+| B4.2.01 | Migration `carts` + `cart_items` | `done` | M | cart 1:1 user; item unique `(cart_id, offer_id)` |
+| B4.2.02 | `CartService::add/update/remove/clear` | `done` | L | valida offer active, store active, available stock |
+| B4.2.03 | Recalcular totais no Resource (não persistir preço ainda) | `done` | S | preço vigente da offer |
+| B4.2.04 | Endpoints `/api/v1/cart` | `done` | M | GET/POST items/PATCH/DELETE |
+| B4.2.05 | Feature tests carrinho multi-seller | `done` | M | |
 
 **Endpoints:**
 
