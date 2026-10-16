@@ -1,9 +1,12 @@
 <?php
 
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\StoreController as AdminStoreController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Seller\ProductController as SellerProductController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -33,6 +36,28 @@ Route::prefix('v1')->group(function () {
         Route::get('{slug}', [CategoryController::class, 'show']);
     });
 
+    Route::prefix('products')->group(function () {
+        Route::get('/', [ProductController::class, 'index']);
+        Route::get('{slug}', [ProductController::class, 'show']);
+    });
+
+    Route::prefix('seller/products')
+        ->middleware(['auth:sanctum', 'abilities:access', 'role:seller'])
+        ->group(function () {
+            Route::get('/', [SellerProductController::class, 'index']);
+            Route::post('/', [SellerProductController::class, 'store']);
+            Route::post('{product}/submit', [SellerProductController::class, 'submit']);
+            Route::post('{product}/pause', [SellerProductController::class, 'pause']);
+            Route::post('{product}/resume', [SellerProductController::class, 'resume']);
+            Route::post('{product}/images', [SellerProductController::class, 'storeImage']);
+            Route::put('{product}/images/reorder', [SellerProductController::class, 'reorderImages']);
+            Route::delete('{product}/images/{image}', [SellerProductController::class, 'destroyImage']);
+            Route::get('{product}', [SellerProductController::class, 'show']);
+            Route::put('{product}', [SellerProductController::class, 'update']);
+            Route::patch('{product}', [SellerProductController::class, 'update']);
+            Route::delete('{product}', [SellerProductController::class, 'destroy']);
+        });
+
     Route::prefix('admin/stores')
         ->middleware(['auth:sanctum', 'abilities:access', 'role:admin'])
         ->group(function () {
@@ -53,5 +78,17 @@ Route::prefix('v1')->group(function () {
             Route::post('{category}/attributes', [AdminCategoryController::class, 'storeAttribute']);
             Route::put('{category}/attributes/{attribute}', [AdminCategoryController::class, 'updateAttribute']);
             Route::delete('{category}/attributes/{attribute}', [AdminCategoryController::class, 'destroyAttribute']);
+        });
+
+    Route::prefix('admin/products')
+        ->middleware(['auth:sanctum', 'abilities:access', 'role:admin'])
+        ->group(function () {
+            Route::get('/', [AdminProductController::class, 'index']);
+            Route::get('{product}', [AdminProductController::class, 'show']);
+            Route::put('{product}', [AdminProductController::class, 'update']);
+            Route::patch('{product}', [AdminProductController::class, 'update']);
+            Route::post('{product}/approve', [AdminProductController::class, 'approve']);
+            Route::post('{product}/reject', [AdminProductController::class, 'reject']);
+            Route::post('{product}/pause', [AdminProductController::class, 'pause']);
         });
 });

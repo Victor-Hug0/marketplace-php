@@ -19,7 +19,7 @@ class ProductImage extends Model
         'product_id',
         'path',
         'position',
-        'alt_text',
+        'alt',
     ];
 
     protected function casts(): array

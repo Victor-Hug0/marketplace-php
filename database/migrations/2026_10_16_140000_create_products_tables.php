@@ -12,21 +12,18 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('store_id')
-                ->constrained('stores')
-                ->restrictOnDelete();
-            $table->foreignUuid('category_id')
-                ->constrained('categories')
-                ->restrictOnDelete();
+            $table->foreignUuid('store_id')->constrained('stores')->restrictOnDelete();
+            $table->foreignUuid('category_id')->constrained('categories')->restrictOnDelete();
             $table->string('name', 180);
-            $table->string('slug');
+            $table->string('slug')->unique();
             $table->text('description')->nullable();
-            $table->string('status')->default('draft');
+            $table->string('status');
             $table->text('rejection_reason')->nullable();
+            $table->foreignUuid('reviewed_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('reviewed_at')->nullable();
             $table->softDeletes();
             $table->timestamps();
 
-            $table->unique(['store_id', 'slug']);
             $table->index('store_id');
             $table->index('category_id');
             $table->index('status');
@@ -35,12 +32,10 @@ return new class extends Migration
 
         Schema::create('product_images', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('product_id')
-                ->constrained('products')
-                ->cascadeOnDelete();
+            $table->foreignUuid('product_id')->constrained('products')->cascadeOnDelete();
             $table->string('path');
             $table->unsignedInteger('position')->default(0);
-            $table->string('alt_text', 255)->nullable();
+            $table->string('alt', 180)->nullable();
             $table->timestamps();
 
             $table->index(['product_id', 'position']);

@@ -48,13 +48,14 @@ final class ProductModelTest extends TestCase
         ]);
     }
 
-    public function test_store_slug_combination_must_be_unique(): void
+    public function test_slug_must_be_globally_unique(): void
     {
-        $store = Store::factory()->create();
+        $storeA = Store::factory()->active()->create();
+        $storeB = Store::factory()->active()->create();
         $category = Category::factory()->create();
 
         Product::factory()->create([
-            'store_id' => $store->id,
+            'store_id' => $storeA->id,
             'category_id' => $category->id,
             'slug' => 'notebook-x',
         ]);
@@ -62,7 +63,7 @@ final class ProductModelTest extends TestCase
         $this->expectException(QueryException::class);
 
         Product::factory()->create([
-            'store_id' => $store->id,
+            'store_id' => $storeB->id,
             'category_id' => $category->id,
             'slug' => 'notebook-x',
         ]);
@@ -70,7 +71,7 @@ final class ProductModelTest extends TestCase
 
     public function test_store_and_product_image_relations_load(): void
     {
-        $store = Store::factory()->create();
+        $store = Store::factory()->active()->create();
         $product = Product::factory()->active()->create([
             'store_id' => $store->id,
         ]);

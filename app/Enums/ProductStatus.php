@@ -7,7 +7,8 @@ namespace App\Enums;
 enum ProductStatus: string
 {
     case DRAFT = 'draft';
+    case PENDING_MODERATION = 'pending_moderation';
     case ACTIVE = 'active';
-    case PAUSED = 'paused';
     case REJECTED = 'rejected';
+    case PAUSED = 'paused';
 }

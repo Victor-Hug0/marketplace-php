@@ -26,12 +26,15 @@ class Product extends Model
         'description',
         'status',
         'rejection_reason',
+        'reviewed_by',
+        'reviewed_at',
     ];
 
     protected function casts(): array
     {
         return [
             'status' => ProductStatus::class,
+            'reviewed_at' => 'datetime',
         ];
     }
 
@@ -50,9 +53,22 @@ class Product extends Model
         return $this->hasMany(ProductImage::class)->orderBy('position');
     }
 
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
     public function isActive(): bool
     {
         return $this->status === ProductStatus::ACTIVE;
+    }
+
+    public function isEditableBySeller(): bool
+    {
+        return in_array($this->status, [
+            ProductStatus::DRAFT,
+            ProductStatus::REJECTED,
+        ], true);
     }
 
     public function coverImage(): ?ProductImage

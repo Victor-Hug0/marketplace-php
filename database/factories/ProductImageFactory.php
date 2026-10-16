@@ -21,8 +21,8 @@ final class ProductImageFactory extends Factory
         return [
             'product_id' => Product::factory(),
             'path' => "products/{$uuid}/1.jpg",
-            'position' => fake()->numberBetween(1, 10),
-            'alt_text' => fake()->optional()->sentence(3),
+            'position' => 0,
+            'alt' => fake()->optional()->sentence(3),
         ];
     }
 
