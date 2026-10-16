@@ -19,6 +19,7 @@ class InventoryReservation extends Model
     protected $fillable = [
         'offer_id',
         'user_id',
+        'order_id',
         'quantity',
         'status',
         'expires_at',
@@ -41,6 +42,11 @@ class InventoryReservation extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class);
     }
 
     public function isActive(): bool
