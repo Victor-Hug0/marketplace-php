@@ -108,6 +108,12 @@ final class CategoryService
                 );
             }
 
+            if ($category->products()->exists()) {
+                throw new ConflictHttpException(
+                    'Não é possível remover uma categoria que possui produtos.',
+                );
+            }
+
             $category->delete();
 
             $this->audit($actor, $category, 'category.deleted', [

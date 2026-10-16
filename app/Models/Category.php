@@ -49,6 +49,11 @@ class Category extends Model
         return $this->hasMany(CategoryAttribute::class)->orderBy('position');
     }
 
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
     public function isRoot(): bool
     {
         return $this->parent_id === null;
