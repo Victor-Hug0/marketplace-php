@@ -53,6 +53,11 @@ class Product extends Model
         return $this->hasMany(ProductImage::class)->orderBy('position');
     }
 
+    public function offers(): HasMany
+    {
+        return $this->hasMany(Offer::class);
+    }
+
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by');
