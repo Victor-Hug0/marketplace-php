@@ -18,21 +18,21 @@ class AuthController extends Controller
 {
     public function __construct(
         private readonly AuthService $authService
-    ) {
-    }
+    ) {}
+
     public function login(LoginRequest $request): JsonResponse
     {
         $credentials = $request->validated();
-        $key = 'login:' . $request->ip();
+        $key = 'login:'.$request->ip();
 
         if (RateLimiter::tooManyAttempts($key, 10)) {
             return ApiErrorResponse::create('Muitas tentativas de login. Por favor, tente novamente mais tarde.', 429)
                 ->withHeaders([
-                    'Retry-After' => RateLimiter::availableIn($key)
+                    'Retry-After' => RateLimiter::availableIn($key),
                 ]);
         }
 
-        if (!$this->authService->isValidCredentials($credentials)) {
+        if (! $this->authService->isValidCredentials($credentials)) {
             RateLimiter::hit($key, 60);
 
             return ApiErrorResponse::create('Credenciais inválidas', 401);
@@ -62,12 +62,12 @@ class AuthController extends Controller
     public function register(RegisterRequest $request): JsonResponse
     {
         $data = $request->validated();
-        $key = 'register:' . $request->ip() . ':' . $data['email'];
+        $key = 'register:'.$request->ip().':'.$data['email'];
 
         if (RateLimiter::tooManyAttempts($key, 10)) {
             return ApiErrorResponse::create('Muitas tentativas de cadastro. Por favor, tente novamente mais tarde.', 429)
                 ->withHeaders([
-                    'Retry-After' => RateLimiter::availableIn($key)
+                    'Retry-After' => RateLimiter::availableIn($key),
                 ]);
         }
 
@@ -90,7 +90,7 @@ class AuthController extends Controller
         return response()
             ->json([
                 'message' => 'Usuário registrado com sucesso',
-                'user' => new UserResource($user)
+                'user' => new UserResource($user),
             ], 201);
     }
 
@@ -115,16 +115,17 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
-        if (!$this->authService->isUserRefreshTokenValid($user)) {
+        if (! $this->authService->isUserRefreshTokenValid($user)) {
             AuditLog::create([
                 'action' => 'auth.refresh.invalid',
                 'actor_id' => $user->id,
                 'actor_type' => $user->getMorphClass(),
-                'payload' => ['email' => $user->email, 'token' => $request->bearerToken(), 'msg' => 'Token de atualização inválido'],
+                'payload' => ['email' => $user->email, 'msg' => 'Token de atualização inválido'],
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
                 'created_at' => now(),
             ]);
+
             return ApiErrorResponse::create('Token de atualização inválido', 401);
         }
 

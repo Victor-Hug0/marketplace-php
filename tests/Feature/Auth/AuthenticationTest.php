@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\AuditLog;
+use App\Enums\RoleName;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -35,6 +35,7 @@ class AuthenticationTest extends TestCase
         $user = User::query()->where('email', $payload['email'])->first();
         $this->assertNotNull($user);
         $this->assertTrue(Hash::check($payload['password'], $user->password));
+        $this->assertTrue($user->hasRole(RoleName::BUYER));
 
         $this->assertDatabaseHas('audit_logs', [
             'action' => 'auth.register',
