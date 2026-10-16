@@ -5,32 +5,41 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Enums\ProductStatus;
+use App\Enums\StoreStatus;
+use App\Http\Requests\SearchProductsRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
+use App\Services\ProductService;
 use App\Support\Pagination\CursorPaginates;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 final class ProductController extends Controller
 {
     use CursorPaginates;
 
-    public function index(Request $request): AnonymousResourceCollection
-    {
-        $query = Product::query()
-            ->where('status', ProductStatus::ACTIVE)
-            ->with([
-                'images',
-                'store:id,store_name,slug',
-                'category:id,name,slug',
-            ]);
+    public function __construct(
+        private readonly ProductService $productService,
+    ) {}
 
-        if ($request->filled('category_id')) {
-            $query->where('category_id', $request->string('category_id')->value());
-        }
+    public function index(SearchProductsRequest $request): AnonymousResourceCollection
+    {
+        $query = $this->productService->publicCatalogQuery(
+            $request->safe()->only([
+                'q',
+                'category_id',
+                'category',
+                'store_id',
+                'store',
+            ]),
+        );
 
         return ProductResource::collection(
-            $this->cursorPaginate($query, $request),
+            $this->cursorPaginate(
+                $query,
+                $request,
+                cursorColumn: 'id',
+                descending: true,
+            ),
         );
     }
 
@@ -39,9 +48,13 @@ final class ProductController extends Controller
         $product = Product::query()
             ->where('slug', $slug)
             ->where('status', ProductStatus::ACTIVE)
+            ->whereHas(
+                'store',
+                fn ($query) => $query->where('status', StoreStatus::ACTIVE),
+            )
             ->with([
                 'images',
-                'store:id,store_name,slug',
+                'store:id,store_name,slug,status',
                 'category:id,name,slug',
             ])
             ->firstOrFail();

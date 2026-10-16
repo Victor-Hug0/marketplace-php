@@ -13,6 +13,7 @@ use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\Store;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -24,6 +25,63 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 final class ProductService
 {
     private const MAX_IMAGES = 8;
+
+    /**
+     * @param  array{
+     *     q?: string|null,
+     *     category_id?: string|null,
+     *     category?: string|null,
+     *     store_id?: string|null,
+     *     store?: string|null
+     * }  $filters
+     * @return Builder<Product>
+     */
+    public function publicCatalogQuery(array $filters = []): Builder
+    {
+        $query = Product::query()
+            ->where('status', ProductStatus::ACTIVE)
+            ->whereHas('store', fn (Builder $storeQuery) => $storeQuery->where('status', StoreStatus::ACTIVE))
+            ->with([
+                'images',
+                'store:id,store_name,slug,status',
+                'category:id,name,slug',
+            ]);
+
+        if (! empty($filters['q'])) {
+            $term = trim((string) $filters['q']);
+            $like = '%'.$term.'%';
+
+            $query->where(function (Builder $builder) use ($like): void {
+                $builder
+                    ->where('name', 'ilike', $like)
+                    ->orWhere('description', 'ilike', $like);
+            });
+        }
+
+        if (! empty($filters['category_id'])) {
+            $query->where('category_id', $filters['category_id']);
+        } elseif (! empty($filters['category'])) {
+            $query->whereHas(
+                'category',
+                fn (Builder $categoryQuery) => $categoryQuery
+                    ->where('slug', $filters['category'])
+                    ->where('is_active', true),
+            );
+        }
+
+        if (! empty($filters['store_id'])) {
+            $query->where('store_id', $filters['store_id']);
+        } elseif (! empty($filters['store'])) {
+            $query->whereHas(
+                'store',
+                fn (Builder $storeQuery) => $storeQuery
+                    ->where('slug', $filters['store'])
+                    ->where('status', StoreStatus::ACTIVE),
+            );
+        }
+
+        return $query;
+    }
 
     /**
      * @param  array<string, mixed>  $data
