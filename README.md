@@ -2,7 +2,8 @@
 
 API de marketplace em **Laravel 12** + **PHP 8.4**, com autenticação via **Laravel Sanctum**, **PostgreSQL**, **Redis** (filas) e Docker Compose.
 
-Roadmap completo: [`docs/roadmap-implementacao-api.md`](docs/roadmap-implementacao-api.md).
+Roadmap de negócio: [`docs/roadmap-implementacao-api.md`](docs/roadmap-implementacao-api.md).  
+Backlog técnico (itens quebrados): [`docs/roadmap-backlog-tecnico.md`](docs/roadmap-backlog-tecnico.md).
 
 ## Stack
 
@@ -145,22 +146,27 @@ app/
 compose.yml             app + postgres + redis + worker
 compose.test.yml        infra e runner de testes
 docs/roadmap-implementacao-api.md
+docs/roadmap-backlog-tecnico.md
 tests/Feature/Auth/
 ```
 
 ## Próximos passos (roadmap)
 
-O roadmap prioriza **regra de negócio** antes de higiene de conta. Ordem sugerida:
+O roadmap prioriza **regra de negócio** antes de higiene de conta. Fluxo Git: `feature/*` → `develop` → `main`.
 
-1. **B1** — Papéis + onboarding seller (sem e-mail verify / reset)
-2. **B2** — Catálogo
-3. **B3** — Ofertas, estoque e preços (Buy Box)
-4. **B4** — Carrinho, checkout e pedidos multi-seller
-5. **B5** — Pagamento mock + comissão + ledger
-6. **B6** — Frete simulado + tracking
-7. Só depois: verificação de e-mail, reset de senha, social, cupons, OpenAPI
+| Fase | Status |
+|------|--------|
+| **B1** — Papéis + onboarding seller | Feito |
+| **B2** — Catálogo (categorias, produtos, vitrine, busca) | Feito |
+| **B3** — Ofertas, estoque e preços (Buy Box) | Em andamento |
+| **B4** — Carrinho, checkout e pedidos multi-seller | Próximo |
+| **B5** — Pagamento mock + comissão + ledger | Depois |
+| **B6** — Frete simulado + tracking | Depois |
+| **B7** — Review + disputa/RMA mínimas | Depois |
+| **L\*** — Conta, marketing, OpenAPI | Later |
 
-Detalhes: [`docs/roadmap-implementacao-api.md`](docs/roadmap-implementacao-api.md).
+Detalhamento por ticket: [`docs/roadmap-backlog-tecnico.md`](docs/roadmap-backlog-tecnico.md).  
+Narrativa de negócio: [`docs/roadmap-implementacao-api.md`](docs/roadmap-implementacao-api.md).
 
 ## Licença
 

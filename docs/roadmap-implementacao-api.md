@@ -2,8 +2,11 @@
 
 Documento vivo focado em **regras de negócio do marketplace**. Conta (recuperação de senha, verificação de e-mail, login social, etc.) só entra **depois** do fluxo comprar/vender estar fechado de ponta a ponta.
 
+**Backlog técnico quebrado em itens:** [`roadmap-backlog-tecnico.md`](roadmap-backlog-tecnico.md) (IDs `B*.*.**`, schema, endpoints, testes, status).
+
 **Stack:** PHP 8.4 · Laravel 12 · Sanctum · PostgreSQL · Redis  
 **API:** `/api/v1`  
+**Git:** `feature/*` → `develop` → `main`  
 **Objetivo:** portfólio / aprendizado — priorizar domínio, não features de conta
 
 ---
@@ -72,17 +75,37 @@ Enquanto essa jornada não existir com testes, **não** investir em e-mail verif
 
 ---
 
-## 3. Estado atual do repositório (base técnica já feita)
+## 3. Estado atual do repositório
 
-Já disponível (tratar como pré-requisito, não como “fase de negócio”):
+### Fundação (pré-requisito)
 
 - Auth Sanctum (register, login, logout, refresh) com abilities `access` / `refresh`
-- User UUID + soft delete + CPF/telefone/status
-- Roles (`roles` / `role_user`) e enum `RoleName` em andamento
+- User UUID + soft delete + CPF/telefone + `Password::defaults()`
+- Roles (`roles` / `role_user`) + enum `RoleName`
 - Audit log, erros JSON, cursor pagination, Redis + worker, testes de auth
 - Docker: app, postgres, redis, worker + `compose.test.yml`
+- Branch `develop` como integração; features nascem a partir dela
 
-Isso **libera** o time para focar no domínio. Não reabrir fundação salvo bug bloqueante.
+### Domínio já entregue em `develop` / `main`
+
+| Fase | Entrega |
+|------|---------|
+| **B1** | Loja seller: solicitar / aprovar / rejeitar / suspender; role seller na aprovação; Policies + `role` middleware |
+| **B2** | Categorias + atributos; produtos + imagens + moderação; vitrine `GET /stores/{slug}`; busca pública `q`/categoria/loja |
+
+### Em andamento
+
+| Fase | Branch | Foco |
+|------|--------|------|
+| **B3** | `feature/b3-offers-inventory` | Ofertas, estoque, Buy Box, reservas |
+
+### Próximo após merge da B3
+
+**B4** — carrinho, endereços, checkout idempotente, pedidos multi-seller + FSM.
+
+Detalhamento item a item: [`roadmap-backlog-tecnico.md`](roadmap-backlog-tecnico.md).
+
+Não reabrir fundação salvo bug bloqueante.
 
 ---
 
@@ -600,8 +623,12 @@ Quando isso estiver marcado, o marketplace **prova o negócio**. Aí sim vale po
 
 | Área | Caminho |
 |------|---------|
+| Backlog técnico | [`roadmap-backlog-tecnico.md`](roadmap-backlog-tecnico.md) |
 | Rotas | [`routes/api.php`](../routes/api.php) |
 | Auth | [`app/Http/Controllers/AuthController.php`](../app/Http/Controllers/AuthController.php) |
+| Store | [`app/Services/StoreService.php`](../app/Services/StoreService.php) |
+| Category | [`app/Services/CategoryService.php`](../app/Services/CategoryService.php) |
+| Product | [`app/Services/ProductService.php`](../app/Services/ProductService.php) |
 | Roles | [`app/Models/Role.php`](../app/Models/Role.php), [`app/Enums/RoleName.php`](../app/Enums/RoleName.php) |
 | User | [`app/Models/User.php`](../app/Models/User.php) |
 | Docker | [`compose.yml`](../compose.yml), [`compose.test.yml`](../compose.test.yml) |
@@ -610,4 +637,4 @@ Quando isso estiver marcado, o marketplace **prova o negócio**. Aí sim vale po
 
 ---
 
-_Documento focado em regra de negócio. Conta e marketing são later de propósito. Atualize decisões de produto aqui antes de cada fase B\*_
+_Documento focado em regra de negócio. Conta e marketing são later de propósito. Atualize decisões de produto aqui antes de cada fase B\*. Para execução diária (tickets), use o backlog técnico._
