@@ -74,6 +74,11 @@ class Order extends Model
         return $this->morphMany(OrderStatusHistory::class, 'statusable')->latest();
     }
 
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(InventoryReservation::class);
+    }
+
     /**
      * @return array{
      *     recipient_name: string,

@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\StoreController as AdminStoreController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OfferReservationController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Seller\OfferController as SellerOfferController;
@@ -49,6 +50,9 @@ Route::prefix('v1')->group(function () {
             Route::delete('items/{item}', [CartController::class, 'destroyItem']);
             Route::delete('/', [CartController::class, 'clear']);
         });
+
+    Route::post('checkout', [CheckoutController::class, 'store'])
+        ->middleware(['auth:sanctum', 'abilities:access']);
 
     Route::prefix('stores')->group(function () {
         Route::middleware(['auth:sanctum', 'abilities:access'])->group(function () {
