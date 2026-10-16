@@ -6,10 +6,10 @@ use App\Enums\RoleName;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AuthService
 {
-
     public function isValidCredentials(array $credentials): bool
     {
         return Auth::attempt($credentials);
@@ -17,15 +17,17 @@ class AuthService
 
     public function register(array $data): User
     {
-        $user = User::create($data);
+        return DB::transaction(function () use ($data): User {
+            $user = User::create($data);
 
-        $buyerRoleId = Role::query()
-            ->where('name', RoleName::BUYER)
-            ->value('id');
+            $buyerRole = Role::query()->firstOrCreate([
+                'name' => RoleName::BUYER,
+            ]);
 
-        $user->roles()->attach($buyerRoleId);
+            $user->roles()->syncWithoutDetaching([$buyerRole->id]);
 
-        return $user;
+            return $user;
+        });
     }
 
     public function deleteUserTokens(User $user): void
@@ -37,7 +39,7 @@ class AuthService
     {
         $refresh_token = $user->currentAccessToken();
 
-        if ($refresh_token->name !== 'refresh_token' || !$refresh_token->can('refresh')) {
+        if ($refresh_token->name !== 'refresh_token' || ! $refresh_token->can('refresh')) {
             return false;
         }
 

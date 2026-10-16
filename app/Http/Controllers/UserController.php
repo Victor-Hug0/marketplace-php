@@ -10,13 +10,14 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-
     use CursorPaginates;
 
     public function me(Request $request)
     {
+        $user = $request->user()->load(['roles', 'store']);
+
         return response()->json([
-            'user' => new UserResource($request->user())
+            'user' => new UserResource($user),
         ]);
     }
 

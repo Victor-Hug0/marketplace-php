@@ -20,8 +20,15 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'cpf' => $this->cpf,
             'phone_number' => $this->phone_number,
-            'created_at' => $this->created_at->timezone('America/Sao_Paulo')->toISO8601String(),
-            'updated_at' => $this->updated_at->timezone('America/Sao_Paulo')->toISO8601String(),
+            'roles' => $this->whenLoaded(
+                'roles',
+                fn () => $this->roles
+                    ->map(fn ($role) => $role->name->value)
+                    ->values(),
+            ),
+            'store' => new StoreResource($this->whenLoaded('store')),
+            'created_at' => $this->created_at?->timezone(config('app.timezone'))->toIso8601String(),
+            'updated_at' => $this->updated_at?->timezone(config('app.timezone'))->toIso8601String(),
         ];
     }
 }

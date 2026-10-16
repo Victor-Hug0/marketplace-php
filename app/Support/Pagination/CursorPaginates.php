@@ -15,7 +15,10 @@ trait CursorPaginates
         int $maxPerPage = 100,
         string $cursorColumn = 'id',
     ): CursorPaginator {
-        $perPage = max(1, min((int) $request->integer('per_page'), $defaultPerPage), $maxPerPage);
+        $perPage = max(1, min(
+            $request->integer('per_page', $defaultPerPage),
+            $maxPerPage,
+        ));
 
         return $query
             ->orderBy($cursorColumn)
