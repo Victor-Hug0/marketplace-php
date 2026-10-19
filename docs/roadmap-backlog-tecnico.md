@@ -45,8 +45,8 @@ Documento derivado de [`roadmap-implementacao-api.md`](roadmap-implementacao-api
 | B2 Catálogo | `done` | Categorias, produtos, vitrine, busca |
 | B2-extra (atributos valorados, resize) | `todo` | Paralelo seguro à B3 |
 | B3 Ofertas / estoque / Buy Box | `wip` | Branch `feature/b3-offers-inventory` |
-| B4 Carrinho / checkout / pedidos | `wip` | B4.1–B4.4 done; B4.5 FSM/cancel em `cursor/b4-5-order-fsm-3866` |
-| B5 Pagamento / ledger | `todo` | Depende B4 |
+| B4 Carrinho / checkout / pedidos | `done` | B4.1–B4.5 em `develop` |
+| B5 Pagamento / ledger | `wip` | B5.1 pagamentos mock em `feature/b5-1-payments-mock` |
 | B6 Frete / envio | `todo` | Depende B4 (paralelo parcial a B5) |
 | B7 Pós-venda | `todo` | Depende B5+B6 |
 | L1–L3 | `later` | Após jornada core verde |
@@ -426,12 +426,26 @@ GET    /api/v1/admin/orders
 
 | ID | Item | Status | Esforço | Detalhe |
 |----|------|--------|---------|---------|
-| B5.1.01 | Migration `payments` | `todo` | M | order_id, method enum, status, external_id, amount_cents, payload mock JSON |
-| B5.1.02 | Migration `payment_webhook_events` | `todo` | S | unique event_id, processed_at |
-| B5.1.03 | `PaymentService::createIntent` | `todo` | M | pix/card/boleto payloads fake |
-| B5.1.04 | Webhook mock `POST /webhooks/payments/mock` | `todo` | L | secret header; idempotente; marca paid |
-| B5.1.05 | Ao pagar: commit reservas + FSM order/order_sellers → paid | `todo` | L | |
-| B5.1.06 | Testes 3 métodos + webhook duplicado | `todo` | M | |
+| B5.1.01 | Migration `payments` | `done` | M | order_id, method enum, status, external_id, amount_cents, payload mock JSON; índice parcial: 1 pagamento `pending`/`paid` por order |
+| B5.1.02 | Migration `payment_webhook_events` | `done` | S | unique (provider, event_id), processed_at, result |
+| B5.1.03 | `PaymentService::createIntent` | `done` | M | pix/card/boleto payloads fake; `Idempotency-Key`; novo intent cancela o pendente anterior |
+| B5.1.04 | Webhook mock `POST /api/v1/webhooks/payments/mock` | `done` | L | header `X-Mock-Webhook-Secret` (fail-closed); idempotente; Job `ProcessPaymentWebhookEvent` |
+| B5.1.05 | Ao pagar: commit reservas + FSM order/order_sellers → paid | `done` | L | subpedidos cancelados não são cobrados nem transicionados |
+| B5.1.06 | Testes 3 métodos + webhook duplicado | `done` | M | `tests/Feature/Payment/PaymentWorkflowTest.php` |
+
+**Endpoints:**
+
+```http
+GET    /api/v1/orders/{order}/payments
+POST   /api/v1/orders/{order}/payments          # Idempotency-Key; { "method": "pix|credit_card|boleto" }
+POST   /api/v1/webhooks/payments/mock           # X-Mock-Webhook-Secret; { event_id, type: payment.paid|payment.failed, data.external_id }
+```
+
+**Regras de consistência:**
+
+- Cancelar pedido (buyer) ou subpedido (seller) em `pending_payment` cancela intents pendentes — o valor a pagar mudou.
+- Webhook `payment.paid` para pagamento não pendente ou pedido fora de `pending_payment` é registrado como no-op (`result`), sem alterar estado.
+- Ordem de lock: order → payment → order_sellers → reservations (mesma do cancelamento, evita deadlock).
 
 ### Slice B5.2 — Comissão e ledger
 

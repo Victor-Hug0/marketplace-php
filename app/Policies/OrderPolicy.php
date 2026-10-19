@@ -29,6 +29,11 @@ final class OrderPolicy
         return $order->buyer_id === $user->id;
     }
 
+    public function pay(User $user, Order $order): bool
+    {
+        return $order->buyer_id === $user->id;
+    }
+
     public function viewAnyAsAdmin(User $user): bool
     {
         return $user->hasRole(RoleName::ADMIN);

@@ -11,6 +11,8 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OfferReservationController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderPaymentController;
+use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Seller\OfferController as SellerOfferController;
 use App\Http\Controllers\Seller\OrderSellerController as SellerOrderSellerController;
@@ -63,7 +65,13 @@ Route::prefix('v1')->group(function () {
             Route::get('/', [OrderController::class, 'index']);
             Route::get('{order}', [OrderController::class, 'show']);
             Route::post('{order}/cancel', [OrderController::class, 'cancel']);
+            Route::get('{order}/payments', [OrderPaymentController::class, 'index']);
+            Route::post('{order}/payments', [OrderPaymentController::class, 'store'])
+                ->middleware('throttle:20,1');
         });
+
+    Route::post('webhooks/payments/mock', [PaymentWebhookController::class, 'mock'])
+        ->middleware(['throttle:120,1', 'payments.mock-webhook']);
 
     Route::prefix('stores')->group(function () {
         Route::middleware(['auth:sanctum', 'abilities:access'])->group(function () {

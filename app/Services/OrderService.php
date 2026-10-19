@@ -6,12 +6,14 @@ namespace App\Services;
 
 use App\Enums\OrderSellerStatus;
 use App\Enums\OrderStatus;
+use App\Enums\PaymentStatus;
 use App\Enums\ReservationStatus;
 use App\Models\AuditLog;
 use App\Models\InventoryReservation;
 use App\Models\Order;
 use App\Models\OrderSeller;
 use App\Models\OrderStatusHistory;
+use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -115,6 +117,7 @@ final class OrderService
             }
 
             $this->releaseOrderReservations($order);
+            $this->cancelPendingPayments($order);
             $this->audit($buyer, $order, 'order.cancelled_by_buyer', [
                 'reason' => $reason,
             ]);
@@ -126,6 +129,8 @@ final class OrderService
     public function cancelBySeller(User $seller, OrderSeller $orderSeller, ?string $reason = null): OrderSeller
     {
         return DB::transaction(function () use ($seller, $orderSeller, $reason): OrderSeller {
+            $order = Order::query()->lockForUpdate()->findOrFail($orderSeller->order_id);
+
             $orderSeller = OrderSeller::query()
                 ->with('store')
                 ->lockForUpdate()
@@ -150,7 +155,10 @@ final class OrderService
 
             $this->releaseOrderSellerReservations($orderSeller);
 
-            $order = Order::query()->lockForUpdate()->findOrFail($orderSeller->order_id);
+            if ($order->status === OrderStatus::PENDING_PAYMENT) {
+                $this->cancelPendingPayments($order);
+            }
+
             $activeSellersRemain = OrderSeller::query()
                 ->where('order_id', $order->id)
                 ->where('status', '!=', OrderSellerStatus::CANCELLED)
@@ -175,10 +183,45 @@ final class OrderService
         });
     }
 
+    /**
+     * Caller must hold a lock on the order row inside a transaction.
+     */
+    public function markPaid(Order $order, string $reason): Order
+    {
+        $sellers = OrderSeller::query()
+            ->where('order_id', $order->id)
+            ->lockForUpdate()
+            ->get();
+
+        foreach ($sellers as $seller) {
+            if ($seller->status === OrderSellerStatus::CANCELLED) {
+                continue;
+            }
+
+            $this->transitionOrderSeller($seller, OrderSellerStatus::PAID, null, $reason);
+        }
+
+        $this->transitionOrder($order, OrderStatus::PAID, null, $reason);
+        $this->commitOrderReservations($order);
+
+        return $order;
+    }
+
+    /**
+     * Sum of active sub-orders; cancelled sellers are not charged.
+     */
+    public function payableAmountCents(Order $order): int
+    {
+        return (int) OrderSeller::query()
+            ->where('order_id', $order->id)
+            ->where('status', '!=', OrderSellerStatus::CANCELLED)
+            ->sum('total_cents');
+    }
+
     public function transitionOrder(
         Order $order,
         OrderStatus $to,
-        User $actor,
+        ?User $actor,
         ?string $reason = null,
     ): Order {
         $this->stateMachine->assertCanTransitionOrder($order->status, $to);
@@ -194,7 +237,7 @@ final class OrderService
     public function transitionOrderSeller(
         OrderSeller $orderSeller,
         OrderSellerStatus $to,
-        User $actor,
+        ?User $actor,
         ?string $reason = null,
     ): OrderSeller {
         $this->stateMachine->assertCanTransitionOrderSeller($orderSeller->status, $to);
@@ -218,6 +261,32 @@ final class OrderService
         foreach ($reservations as $reservation) {
             $this->inventoryService->release($reservation);
         }
+    }
+
+    private function commitOrderReservations(Order $order): void
+    {
+        $reservations = InventoryReservation::query()
+            ->where('order_id', $order->id)
+            ->where('status', ReservationStatus::ACTIVE)
+            ->lockForUpdate()
+            ->get();
+
+        foreach ($reservations as $reservation) {
+            $this->inventoryService->commit($reservation);
+        }
+    }
+
+    private function cancelPendingPayments(Order $order): void
+    {
+        Payment::query()
+            ->where('order_id', $order->id)
+            ->where('status', PaymentStatus::PENDING)
+            ->lockForUpdate()
+            ->get()
+            ->each(static fn (Payment $payment): bool => $payment->update([
+                'status' => PaymentStatus::CANCELLED,
+                'cancelled_at' => now(),
+            ]));
     }
 
     private function releaseOrderSellerReservations(OrderSeller $orderSeller): void
@@ -244,7 +313,7 @@ final class OrderService
         Order|OrderSeller $statusable,
         ?string $fromStatus,
         string $toStatus,
-        User $actor,
+        ?User $actor,
         ?string $reason = null,
     ): void {
         OrderStatusHistory::query()->create([
@@ -252,7 +321,7 @@ final class OrderService
             'statusable_type' => $statusable->getMorphClass(),
             'from_status' => $fromStatus,
             'to_status' => $toStatus,
-            'actor_id' => $actor->id,
+            'actor_id' => $actor?->id,
             'reason' => $reason,
         ]);
     }
