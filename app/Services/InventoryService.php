@@ -108,6 +108,26 @@ final class InventoryService
         });
     }
 
+    /**
+     * Returns committed units to stock (e.g. refund before shipping).
+     */
+    public function restock(string $offerId, int $quantity): void
+    {
+        if ($quantity < 1) {
+            return;
+        }
+
+        $offer = Offer::query()->lockForUpdate()->find($offerId);
+
+        if ($offer === null) {
+            return;
+        }
+
+        $offer->update([
+            'stock' => $offer->stock + $quantity,
+        ]);
+    }
+
     public function releaseExpired(): int
     {
         $expiredIds = InventoryReservation::query()

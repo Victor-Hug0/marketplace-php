@@ -46,7 +46,7 @@ Documento derivado de [`roadmap-implementacao-api.md`](roadmap-implementacao-api
 | B2-extra (atributos valorados, resize) | `todo` | Paralelo seguro à B3 |
 | B3 Ofertas / estoque / Buy Box | `wip` | Branch `feature/b3-offers-inventory` |
 | B4 Carrinho / checkout / pedidos | `done` | B4.1–B4.5 em `develop` |
-| B5 Pagamento / ledger | `wip` | B5.1 em `develop`; B5.2 comissão/ledger em `feature/b5-2-commission-ledger` |
+| B5 Pagamento / ledger | `wip` | B5.1–B5.2 em `develop`; B5.3 reembolso/payout em `feature/b5-3-refunds-payouts` |
 | B6 Frete / envio | `todo` | Depende B4 (paralelo parcial a B5) |
 | B7 Pós-venda | `todo` | Depende B5+B6 |
 | L1–L3 | `later` | Após jornada core verde |
@@ -474,12 +474,34 @@ GET    /api/v1/seller/ledger-entries     # cursor
 
 | ID | Item | Status | Esforço | Detalhe |
 |----|------|--------|---------|---------|
-| B5.3.01 | Migration `refunds` | `todo` | M | |
-| B5.3.02 | Reembolso total/parcial + ledger contrário | `todo` | L | |
-| B5.3.03 | Migration `payouts` | `todo` | M | requested/paid/failed |
-| B5.3.04 | Seller request payout do disponível | `todo` | M | |
-| B5.3.05 | Admin marcar payout paid (mock) | `todo` | S | |
-| B5.3.06 | Testes financeiros (somas batem) | `todo` | L | |
+| B5.3.01 | Migration `refunds` | `done` | M | por `order_seller`; payment_id, amount_cents > 0, reason, restocked, idempotency_key única por subpedido |
+| B5.3.02 | Reembolso total/parcial + ledger contrário | `done` | L | admin; automático no cancelamento pelo seller de subpedido pago; comissão estornada proporcionalmente |
+| B5.3.03 | Migration `payouts` | `done` | M | requested/paid/failed; idempotency_key única por loja |
+| B5.3.04 | Seller request payout do disponível | `done` | M | disponível = SUM(ledger) − payouts `requested`; lock na loja |
+| B5.3.05 | Admin marcar payout paid (mock) | `done` | S | `paid` lança débito `payout` no ledger; `failed` libera o valor |
+| B5.3.06 | Testes financeiros (somas batem) | `done` | L | capturado − reembolsado − sacado = SUM(ledger) |
+
+**Endpoints:**
+
+```http
+POST   /api/v1/admin/order-sellers/{orderSeller}/refunds   # Idempotency-Key; { amount_cents?, reason }
+GET    /api/v1/seller/payouts                              # cursor
+POST   /api/v1/seller/payouts                              # Idempotency-Key; { amount_cents }
+GET    /api/v1/admin/payouts?status=                       # cursor
+POST   /api/v1/admin/payouts/{payout}/mark-paid
+POST   /api/v1/admin/payouts/{payout}/mark-failed          # { reason }
+GET    /api/v1/seller/balance                              # balance_cents, pending_payout_cents, available_cents
+```
+
+**Regras decididas:**
+
+- Reembolso é por subpedido, até `total_cents − já reembolsado`. Sem `amount_cents`, reembolsa o restante.
+- Ledger contrário: plataforma devolve a comissão proporcional (half-up); o reembolso que zera o subpedido estorna o resto exato (sem drift de arredondamento). Seller cobre o restante.
+- Quem reembolsa: admin (total/parcial) e reembolso total automático quando o seller cancela subpedido `paid`/`processing`. Comprador continua cancelando só em `pending_payment`.
+- Reembolso total em `paid`/`processing` → subpedido `refunded` e estoque devolvido. Após `shipped` o status não muda e não há reposição (devolução física fica para B7).
+- Pedido pai: todos os subpedidos `cancelled` → `cancelled`; mistura de `cancelled`/`refunded` → `refunded`.
+- FSM: adicionado `processing → refunded` (order e order_seller).
+- Saque: todo o saldo creditado é sacável (sem hold no MVP). Reembolso após saque pode deixar saldo negativo, o que bloqueia novos saques. Loja não ativa não saca.
 
 ---
 

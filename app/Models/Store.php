@@ -68,6 +68,11 @@ class Store extends Model
         return $this->hasMany(OrderSeller::class);
     }
 
+    public function payouts(): HasMany
+    {
+        return $this->hasMany(Payout::class);
+    }
+
     public function isActive(): bool
     {
         return $this->status === StoreStatus::ACTIVE;

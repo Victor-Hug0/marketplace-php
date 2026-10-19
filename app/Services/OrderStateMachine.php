@@ -28,6 +28,7 @@ final class OrderStateMachine
             OrderStatus::PROCESSING->value => [
                 OrderStatus::SHIPPED->value,
                 OrderStatus::CANCELLED->value,
+                OrderStatus::REFUNDED->value,
             ],
             OrderStatus::SHIPPED->value => [
                 OrderStatus::DELIVERED->value,
@@ -56,6 +57,7 @@ final class OrderStateMachine
             OrderSellerStatus::PROCESSING->value => [
                 OrderSellerStatus::SHIPPED->value,
                 OrderSellerStatus::CANCELLED->value,
+                OrderSellerStatus::REFUNDED->value,
             ],
             OrderSellerStatus::SHIPPED->value => [
                 OrderSellerStatus::DELIVERED->value,

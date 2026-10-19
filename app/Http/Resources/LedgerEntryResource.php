@@ -23,6 +23,8 @@ final class LedgerEntryResource extends JsonResource
             'amount_cents' => $this->amount_cents,
             'currency' => $this->currency,
             'order_seller_id' => $this->order_seller_id,
+            'refund_id' => $this->refund_id,
+            'payout_id' => $this->payout_id,
             'commission' => [
                 'base_cents' => $metadata['commission_base_cents'] ?? null,
                 'fee_cents' => $metadata['fee_cents'] ?? null,
