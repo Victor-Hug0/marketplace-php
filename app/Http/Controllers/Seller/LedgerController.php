@@ -25,11 +25,16 @@ final class LedgerController extends Controller
     {
         $store = $this->ownStore($request);
 
+        $balance = $this->ledgerService->sellerBalanceCents($store);
+        $pendingPayouts = $this->ledgerService->pendingPayoutCents($store);
+
         return new JsonResponse([
             'data' => [
                 'store_id' => $store->id,
                 'currency' => 'BRL',
-                'balance_cents' => $this->ledgerService->sellerBalanceCents($store),
+                'balance_cents' => $balance,
+                'pending_payout_cents' => $pendingPayouts,
+                'available_cents' => $balance - $pendingPayouts,
             ],
         ]);
     }

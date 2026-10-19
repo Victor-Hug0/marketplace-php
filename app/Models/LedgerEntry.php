@@ -22,6 +22,8 @@ class LedgerEntry extends Model
         'store_id',
         'order_seller_id',
         'payment_id',
+        'refund_id',
+        'payout_id',
         'platform_fee_rule_id',
         'reason',
         'amount_cents',

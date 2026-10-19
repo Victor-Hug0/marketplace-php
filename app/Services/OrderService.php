@@ -14,6 +14,7 @@ use App\Models\Order;
 use App\Models\OrderSeller;
 use App\Models\OrderStatusHistory;
 use App\Models\Payment;
+use App\Models\Refund;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -25,6 +26,7 @@ final class OrderService
     public function __construct(
         private readonly OrderStateMachine $stateMachine,
         private readonly InventoryService $inventoryService,
+        private readonly RefundService $refundService,
     ) {}
 
     public function buyerOrdersQuery(User $buyer): Builder
@@ -62,6 +64,7 @@ final class OrderService
         return $order->load([
             'sellers.store:id,store_name,slug,status,user_id',
             'sellers.items',
+            'sellers.refunds',
             'statusHistories',
             'sellers.statusHistories',
         ]);
@@ -72,6 +75,7 @@ final class OrderService
         return $orderSeller->load([
             'store:id,store_name,slug,status,user_id',
             'items',
+            'refunds',
             'statusHistories',
             'order:id,buyer_id,status,currency,subtotal_cents,shipping_cents,total_cents,created_at',
         ]);
@@ -147,6 +151,11 @@ final class OrderService
                 );
             }
 
+            $wasPaid = in_array($orderSeller->status, [
+                OrderSellerStatus::PAID,
+                OrderSellerStatus::PROCESSING,
+            ], true);
+
             $this->transitionOrderSeller(
                 $orderSeller,
                 OrderSellerStatus::CANCELLED,
@@ -160,27 +169,97 @@ final class OrderService
                 $this->cancelPendingPayments($order);
             }
 
-            $activeSellersRemain = OrderSeller::query()
-                ->where('order_id', $order->id)
-                ->where('status', '!=', OrderSellerStatus::CANCELLED)
-                ->exists();
-
-            if (! $activeSellersRemain && $order->status !== OrderStatus::CANCELLED) {
-                $this->transitionOrder(
-                    $order,
-                    OrderStatus::CANCELLED,
+            $refund = null;
+            if ($wasPaid && $this->refundService->remainingCents($orderSeller) > 0) {
+                $refund = $this->refundService->issue(
+                    $orderSeller,
+                    $this->refundService->paidPaymentFor($orderSeller),
+                    $this->refundService->remainingCents($orderSeller),
                     $seller,
-                    $reason ?? 'Todos os subpedidos foram cancelados.',
+                    $reason ?? 'Reembolso automático por cancelamento do vendedor.',
+                    "seller-cancel:{$orderSeller->id}",
+                    restockOnFullRefund: true,
                 );
-                $this->releaseOrderReservations($order);
             }
+
+            $this->syncOrderWithSellers(
+                $order,
+                $seller,
+                $reason ?? 'Todos os subpedidos foram encerrados.',
+            );
 
             $this->audit($seller, $order, 'order_seller.cancelled_by_seller', [
                 'order_seller_id' => $orderSeller->id,
                 'reason' => $reason,
+                'refund_id' => $refund?->id,
+                'refund_amount_cents' => $refund?->amount_cents,
             ]);
 
             return $this->loadOrderSeller($orderSeller->refresh());
+        });
+    }
+
+    /**
+     * @return array{refund: Refund, created: bool}
+     */
+    public function refundByAdmin(
+        User $admin,
+        OrderSeller $orderSeller,
+        ?int $amountCents,
+        string $reason,
+        string $idempotencyKey,
+    ): array {
+        return DB::transaction(function () use ($admin, $orderSeller, $amountCents, $reason, $idempotencyKey): array {
+            $order = Order::query()->lockForUpdate()->findOrFail($orderSeller->order_id);
+            $orderSeller = OrderSeller::query()->lockForUpdate()->findOrFail($orderSeller->id);
+
+            $replay = $this->refundService->findByIdempotencyKey($orderSeller, $idempotencyKey);
+            if ($replay !== null) {
+                if ($amountCents !== null && $replay->amount_cents !== $amountCents) {
+                    throw new ConflictHttpException(
+                        'A chave de idempotência já foi usada com outro valor de reembolso.',
+                    );
+                }
+
+                return ['refund' => $replay, 'created' => false];
+            }
+
+            $payment = $this->refundService->paidPaymentFor($orderSeller);
+            $restock = in_array($orderSeller->status, [
+                OrderSellerStatus::PAID,
+                OrderSellerStatus::PROCESSING,
+            ], true);
+
+            $refund = $this->refundService->issue(
+                $orderSeller,
+                $payment,
+                $amountCents ?? $this->refundService->remainingCents($orderSeller),
+                $admin,
+                $reason,
+                $idempotencyKey,
+                restockOnFullRefund: $restock,
+            );
+
+            $fullyRefunded = $this->refundService->remainingCents($orderSeller) === 0;
+
+            if (
+                $fullyRefunded
+                && $this->stateMachine->canTransitionOrderSeller($orderSeller->status, OrderSellerStatus::REFUNDED)
+            ) {
+                $this->transitionOrderSeller($orderSeller, OrderSellerStatus::REFUNDED, $admin, $reason);
+            }
+
+            $this->syncOrderWithSellers($order, $admin, $reason);
+
+            $this->audit($admin, $order, 'order_seller.refunded_by_admin', [
+                'order_seller_id' => $orderSeller->id,
+                'refund_id' => $refund->id,
+                'amount_cents' => $refund->amount_cents,
+                'fully_refunded' => $fullyRefunded,
+                'restocked' => $refund->restocked,
+            ]);
+
+            return ['refund' => $refund, 'created' => true];
         });
     }
 
@@ -260,6 +339,43 @@ final class OrderService
 
         foreach ($reservations as $reservation) {
             $this->inventoryService->release($reservation);
+        }
+    }
+
+    /**
+     * Closes the parent order once no sub-order is still active:
+     * all cancelled → cancelled; cancelled/refunded mix → refunded.
+     */
+    private function syncOrderWithSellers(Order $order, User $actor, string $reason): void
+    {
+        $statuses = OrderSeller::query()
+            ->where('order_id', $order->id)
+            ->get(['status'])
+            ->pluck('status');
+
+        $allCancelled = $statuses->every(
+            static fn (OrderSellerStatus $status): bool => $status === OrderSellerStatus::CANCELLED,
+        );
+        $allClosed = $statuses->every(
+            static fn (OrderSellerStatus $status): bool => in_array($status, [
+                OrderSellerStatus::CANCELLED,
+                OrderSellerStatus::REFUNDED,
+            ], true),
+        );
+
+        if ($allCancelled && $order->status !== OrderStatus::CANCELLED) {
+            $this->transitionOrder($order, OrderStatus::CANCELLED, $actor, $reason);
+            $this->releaseOrderReservations($order);
+
+            return;
+        }
+
+        if (
+            $allClosed
+            && ! $allCancelled
+            && $this->stateMachine->canTransitionOrder($order->status, OrderStatus::REFUNDED)
+        ) {
+            $this->transitionOrder($order, OrderStatus::REFUNDED, $actor, $reason);
         }
     }
 

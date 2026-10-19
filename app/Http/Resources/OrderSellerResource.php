@@ -41,6 +41,8 @@ final class OrderSellerResource extends JsonResource
                     ->toIso8601String(),
             ]),
             'items' => OrderItemResource::collection($this->whenLoaded('items')),
+            'refunded_cents' => $this->whenLoaded('refunds', fn (): int => (int) $this->refunds->sum('amount_cents')),
+            'refunds' => RefundResource::collection($this->whenLoaded('refunds')),
             'status_histories' => OrderStatusHistoryResource::collection(
                 $this->whenLoaded('statusHistories'),
             ),

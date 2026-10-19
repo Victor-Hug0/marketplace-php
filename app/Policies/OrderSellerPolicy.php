@@ -26,6 +26,11 @@ final class OrderSellerPolicy
         return $user->hasRole(RoleName::ADMIN);
     }
 
+    public function refund(User $user, OrderSeller $orderSeller): bool
+    {
+        return $user->hasRole(RoleName::ADMIN);
+    }
+
     public function cancel(User $user, OrderSeller $orderSeller): bool
     {
         $orderSeller->loadMissing('store');

@@ -3,7 +3,9 @@
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\PayoutController as AdminPayoutController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\RefundController as AdminRefundController;
 use App\Http\Controllers\Admin\StoreController as AdminStoreController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
@@ -17,6 +19,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Seller\LedgerController as SellerLedgerController;
 use App\Http\Controllers\Seller\OfferController as SellerOfferController;
 use App\Http\Controllers\Seller\OrderSellerController as SellerOrderSellerController;
+use App\Http\Controllers\Seller\PayoutController as SellerPayoutController;
 use App\Http\Controllers\Seller\ProductController as SellerProductController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\UserController;
@@ -136,6 +139,8 @@ Route::prefix('v1')->group(function () {
         ->group(function () {
             Route::get('balance', [SellerLedgerController::class, 'balance']);
             Route::get('ledger-entries', [SellerLedgerController::class, 'entries']);
+            Route::get('payouts', [SellerPayoutController::class, 'index']);
+            Route::post('payouts', [SellerPayoutController::class, 'store'])->middleware('throttle:10,1');
         });
 
     Route::prefix('offers')
@@ -184,5 +189,19 @@ Route::prefix('v1')->group(function () {
         ->group(function () {
             Route::get('/', [AdminOrderController::class, 'index']);
             Route::get('{order}', [AdminOrderController::class, 'show']);
+        });
+
+    Route::prefix('admin/order-sellers')
+        ->middleware(['auth:sanctum', 'abilities:access', 'role:admin'])
+        ->group(function () {
+            Route::post('{orderSeller}/refunds', [AdminRefundController::class, 'store']);
+        });
+
+    Route::prefix('admin/payouts')
+        ->middleware(['auth:sanctum', 'abilities:access', 'role:admin'])
+        ->group(function () {
+            Route::get('/', [AdminPayoutController::class, 'index']);
+            Route::post('{payout}/mark-paid', [AdminPayoutController::class, 'markPaid']);
+            Route::post('{payout}/mark-failed', [AdminPayoutController::class, 'markFailed']);
         });
 });

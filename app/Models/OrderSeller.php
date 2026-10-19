@@ -58,6 +58,11 @@ class OrderSeller extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(Refund::class)->latest();
+    }
+
     public function statusHistories(): MorphMany
     {
         return $this->morphMany(OrderStatusHistory::class, 'statusable')->latest();
