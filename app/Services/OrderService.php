@@ -16,6 +16,7 @@ use App\Models\OrderStatusHistory;
 use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
@@ -185,26 +186,25 @@ final class OrderService
 
     /**
      * Caller must hold a lock on the order row inside a transaction.
+     *
+     * @return EloquentCollection<int, OrderSeller> sub-orders moved to paid
      */
-    public function markPaid(Order $order, string $reason): Order
+    public function markPaid(Order $order, string $reason): EloquentCollection
     {
         $sellers = OrderSeller::query()
             ->where('order_id', $order->id)
+            ->where('status', '!=', OrderSellerStatus::CANCELLED)
             ->lockForUpdate()
             ->get();
 
         foreach ($sellers as $seller) {
-            if ($seller->status === OrderSellerStatus::CANCELLED) {
-                continue;
-            }
-
             $this->transitionOrderSeller($seller, OrderSellerStatus::PAID, null, $reason);
         }
 
         $this->transitionOrder($order, OrderStatus::PAID, null, $reason);
         $this->commitOrderReservations($order);
 
-        return $order;
+        return $sellers;
     }
 
     /**

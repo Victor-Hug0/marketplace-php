@@ -27,6 +27,7 @@ final class PaymentService
 
     public function __construct(
         private readonly OrderService $orderService,
+        private readonly LedgerService $ledgerService,
     ) {}
 
     /**
@@ -210,10 +211,14 @@ final class PaymentService
             'paid_at' => now(),
         ]);
 
-        $this->orderService->markPaid(
+        $paidSellers = $this->orderService->markPaid(
             $order,
             "Pagamento confirmado via {$payment->method->value} (mock).",
         );
+
+        foreach ($paidSellers as $orderSeller) {
+            $this->ledgerService->postSale($orderSeller, $payment);
+        }
 
         return PaymentWebhookResult::APPLIED;
     }

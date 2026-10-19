@@ -46,7 +46,7 @@ Documento derivado de [`roadmap-implementacao-api.md`](roadmap-implementacao-api
 | B2-extra (atributos valorados, resize) | `todo` | Paralelo seguro à B3 |
 | B3 Ofertas / estoque / Buy Box | `wip` | Branch `feature/b3-offers-inventory` |
 | B4 Carrinho / checkout / pedidos | `done` | B4.1–B4.5 em `develop` |
-| B5 Pagamento / ledger | `wip` | B5.1 pagamentos mock em `feature/b5-1-payments-mock` |
+| B5 Pagamento / ledger | `wip` | B5.1 em `develop`; B5.2 comissão/ledger em `feature/b5-2-commission-ledger` |
 | B6 Frete / envio | `todo` | Depende B4 (paralelo parcial a B5) |
 | B7 Pós-venda | `todo` | Depende B5+B6 |
 | L1–L3 | `later` | Após jornada core verde |
@@ -451,11 +451,24 @@ POST   /api/v1/webhooks/payments/mock           # X-Mock-Webhook-Secret; { event
 
 | ID | Item | Status | Esforço | Detalhe |
 |----|------|--------|---------|---------|
-| B5.2.01 | Migration `platform_fee_rules` | `todo` | S | percent_bps ou fixed; vigência |
-| B5.2.02 | Migration `ledger_entries` append-only | `todo` | M | account_type (seller/platform), store_id nullable, order_seller_id, amount_cents signed, reason |
-| B5.2.03 | `LedgerService::postSale(orderSeller)` | `todo` | L | crédito seller + plataforma |
-| B5.2.04 | Saldo seller = SUM(entries) | `todo` | S | query indexada |
-| B5.2.05 | Config comissão MVP global (ex. 10%) | `todo` | S | config/env + seeder rule |
+| B5.2.01 | Migration `platform_fee_rules` | `done` | S | percent_bps ou fixed; vigência (`starts_at`/`ends_at`); CHECK constraints no Postgres |
+| B5.2.02 | Migration `ledger_entries` append-only | `done` | M | account_type (seller/platform), store_id nullable, order_seller_id, payment_id, platform_fee_rule_id, amount_cents signed, reason, `idempotency_key` única; trigger bloqueia UPDATE/DELETE |
+| B5.2.03 | `LedgerService::postSale(orderSeller)` | `done` | L | crédito seller (`total − comissão`) + plataforma (comissão sobre `subtotal`); idempotente; chamado na confirmação do pagamento |
+| B5.2.04 | Saldo seller = SUM(entries) | `done` | S | índice `(account_type, store_id)`; `GET /api/v1/seller/balance` + extrato |
+| B5.2.05 | Config comissão MVP global (ex. 10%) | `done` | S | `PLATFORM_COMMISSION_BPS` (fallback) + `PlatformFeeRuleSeeder` |
+
+**Endpoints:**
+
+```http
+GET    /api/v1/seller/balance
+GET    /api/v1/seller/ledger-entries     # cursor
+```
+
+**Regras:**
+
+- Comissão percentual arredonda half-up ao centavo; taxa fixa é limitada ao subtotal do subpedido.
+- Regra vigente no momento do pagamento; sem regra no banco, usa config (`rule_source = config` no metadata).
+- Soma dos lançamentos de um pagamento = `payments.amount_cents` (subpedidos cancelados não geram lançamentos).
 
 ### Slice B5.3 — Reembolso e payout
 

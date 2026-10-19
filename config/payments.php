@@ -20,4 +20,18 @@ return [
         'checkout_base_url' => env('PAYMENTS_MOCK_CHECKOUT_URL', 'https://mock-payments.local/checkout'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Platform Commission
+    |--------------------------------------------------------------------------
+    |
+    | Fallback used when no platform_fee_rules row is in effect, and seed
+    | value for the global MVP rule. Basis points: 1000 = 10%.
+    |
+    */
+
+    'commission' => [
+        'default_percent_bps' => (int) env('PLATFORM_COMMISSION_BPS', 1000),
+    ],
+
 ];
