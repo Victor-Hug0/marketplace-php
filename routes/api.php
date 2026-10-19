@@ -14,6 +14,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderPaymentController;
 use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Seller\LedgerController as SellerLedgerController;
 use App\Http\Controllers\Seller\OfferController as SellerOfferController;
 use App\Http\Controllers\Seller\OrderSellerController as SellerOrderSellerController;
 use App\Http\Controllers\Seller\ProductController as SellerProductController;
@@ -128,6 +129,13 @@ Route::prefix('v1')->group(function () {
             Route::get('/', [SellerOrderSellerController::class, 'index']);
             Route::get('{orderSeller}', [SellerOrderSellerController::class, 'show']);
             Route::post('{orderSeller}/cancel', [SellerOrderSellerController::class, 'cancel']);
+        });
+
+    Route::prefix('seller')
+        ->middleware(['auth:sanctum', 'abilities:access', 'role:seller'])
+        ->group(function () {
+            Route::get('balance', [SellerLedgerController::class, 'balance']);
+            Route::get('ledger-entries', [SellerLedgerController::class, 'entries']);
         });
 
     Route::prefix('offers')
