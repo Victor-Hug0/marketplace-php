@@ -79,6 +79,11 @@ class Order extends Model
         return $this->hasMany(InventoryReservation::class);
     }
 
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
     /**
      * @return array{
      *     recipient_name: string,
