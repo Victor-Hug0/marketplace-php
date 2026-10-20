@@ -314,7 +314,7 @@ release: só reserved_stock diminui
 |----|------|--------|---------|---------|
 | B3.5.01 | Loja suspensa → ofertas fora do Buy Box e da reserva | `done` | S | `test_paused_offer_and_suspended_store_are_excluded_from_buy_box_and_reservations` |
 | B3.5.02 | Produto pausado/rejeitado → ofertas fora da compra | `done` | S | detalhe e busca públicos exigem produto `active`; carrinho e checkout recusam produto inativo (409) |
-| B3.5.03 | Seeder multi-oferta no mesmo produto | `done` | S | `smartphone-demo-128gb` tem oferta da "Loja Demo" (R$ 1.999,90, `ProductSeeder`) e da "Loja Rival Demo" (R$ 1.899,00, `OfferSeeder`), que vence o Buy Box |
+| B3.5.03 | Seeder multi-oferta no mesmo produto | `done` | S | `smartphone-demo-128gb` tem oferta da "Loja Demo" (R$ 1.999,90 com promoção de R$ 1.799,90 por 30 dias, `ProductSeeder`) e da "Loja Rival Demo" (R$ 1.899,00, `OfferSeeder`); o Buy Box muda de vencedora quando a promoção acaba |
 | B3.5.04 | Atualizar README + roadmap status B3 | `done` | S | atualização de documentação de 20/10/2026 |
 
 ---
@@ -624,7 +624,7 @@ GET    /api/v1/seller/balance                              # balance_cents, pend
 | L3.1.01 | Relatórios GMV / comissão / cancelamentos | `later` | L |
 | L3.1.02 | OpenAPI (Scribe) | `done` | L | `knuckleswtf/scribe` (dev); anotações por atributos nos controllers; saída estática versionada em `public/docs` (HTML, `openapi.yaml` 3.0.3, coleção Postman); exemplos de resposta via API Resources + factories; CI gera e valida o spec |
 | L3.1.03 | API seller tokens + webhooks HMAC | `later` | XL |
-| L3.1.04 | Seeders demo ricos (jornada completa) | `later` | M |
+| L3.1.04 | Seeders demo ricos (jornada completa) | `done` | M | `DemoSeeder`: admin, comprador, loja candidata, produto em moderação, 7 pedidos (do `pending_payment` ao `cancelled`, com avaliação, disputa aberta e devolução pendente) e saque pendente, montados pelos services; idempotente; recusa produção; `DatabaseSeeder` só chama em `local` |
 
 ---
 

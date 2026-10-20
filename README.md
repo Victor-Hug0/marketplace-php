@@ -12,7 +12,7 @@ Projeto de portfólio com foco em **regra de negócio**: transações, concorrê
 - **Ledger append-only:** comissão, venda, reembolso proporcional e saque como lançamentos imutáveis (bloqueados no model e por trigger no Postgres). Saldo é sempre soma.
 - **Webhook de pagamento idempotente,** processado em fila com retentativas.
 - **Autorização em três camadas:** ability do token, papel (`buyer`, `seller`, `admin`) e Policy por recurso; recurso de outro usuário responde 404.
-- **209 testes de feature** cobrindo caminho feliz, 401/403/404/409/422 e conciliação financeira.
+- **213 testes de feature** cobrindo caminho feliz, 401/403/404/409/422 e conciliação financeira.
 
 ## Stack
 
@@ -84,18 +84,47 @@ O entrypoint do container instala as dependências, cria as pastas de `storage/`
 
 | Seeder | O que cria |
 |--------|-----------|
-| `DatabaseSeeder` | papéis `buyer`, `seller`, `admin` |
+| `DatabaseSeeder` | papéis `buyer`, `seller`, `admin`; chama os demais e, só com `APP_ENV=local`, o `DemoSeeder` |
 | `PlatformFeeRuleSeeder` | regra global de comissão de 10% |
 | `ShippingRateRuleSeeder` | 18 regras de frete (2 modalidades × 3 zonas × 3 faixas) |
 | `CategorySeeder` | 5 categorias (Eletrônicos > Celulares, Notebooks; Casa > Móveis) com atributos |
-| `ProductSeeder` | seller `seller.demo@marketplace.test`, "Loja Demo", 3 produtos (`smartphone-demo-128gb` e `notebook-demo-16gb` ativos, `fone-bluetooth-demo` em rascunho) e uma oferta do smartphone a R$ 1.999,90 |
-| `OfferSeeder` | seller `seller.b.demo@marketplace.test`, "Loja Rival Demo" e uma oferta concorrente do mesmo smartphone a R$ 1.899,00, que vence o Buy Box |
+| `ProductSeeder` | seller `seller.demo@marketplace.test`, "Loja Demo", 3 produtos (`smartphone-demo-128gb` e `notebook-demo-16gb` ativos, `fone-bluetooth-demo` em rascunho) e uma oferta do smartphone a R$ 1.999,90 com promoção de R$ 1.799,90 nos 30 dias seguintes ao seed |
+| `OfferSeeder` | seller `seller.b.demo@marketplace.test`, "Loja Rival Demo" e uma oferta concorrente do mesmo smartphone a R$ 1.899,00. Enquanto a promoção da Loja Demo vale, ela vence o Buy Box; depois, vence a Rival |
+| `DemoSeeder` | a jornada completa, descrita abaixo |
 
-A senha dos dois sellers de demonstração é `Password1!`. Todos os seeders podem rodar mais de uma vez sem duplicar dados.
+Todos os seeders podem rodar mais de uma vez sem duplicar dados.
+
+### Jornada de demonstração (`DemoSeeder`)
+
+Roda sozinho em `migrate --seed` com `APP_ENV=local`, ou explicitamente com `php artisan db:seed --class=DemoSeeder`. **Recusa rodar em produção.** Os pedidos são montados pelos próprios services (carrinho, checkout, pagamento, webhook, envio, entrega), então estoque, ledger e histórico ficam coerentes, como num uso real.
+
+Contas (senha `Password1!` em todas):
+
+| E-mail | Papel | Para testar |
+|--------|-------|-------------|
+| `admin@marketplace.test` | admin | aprovar a loja candidata e o produto em moderação, resolver a disputa, processar o saque, confirmar entregas, reembolsar |
+| `comprador@marketplace.test` | buyer | pedidos em todos os estados, avaliação, disputa e devolução |
+| `seller.demo@marketplace.test` | seller (Loja Demo) | enviar o pedido pago, decidir a devolução, ver saldo |
+| `seller.b.demo@marketplace.test` | seller (Loja Rival Demo) | responder a disputa, ver o saque pendente |
+| `candidato@marketplace.test` | buyer | tem a "Loja Candidata Demo" aguardando aprovação |
+
+Pedidos do comprador (a `Idempotency-Key` de cada um é o nome do cenário):
+
+| Cenário | Estado | Detalhe |
+|---------|--------|---------|
+| `demo-aguardando-pagamento` | `pending_payment` | boleto gerado; expira em 3 dias se não for pago |
+| `demo-pago` | `paid` | dois subpedidos (Loja Rival e Loja Demo), prontos para envio |
+| `demo-enviado` | `shipped` | com código de rastreio |
+| `demo-entregue-avaliado` | `delivered` | avaliação de 5 estrelas no smartphone |
+| `demo-em-disputa` | `delivered` | disputa aberta; o saldo do subpedido está travado no saque da Loja Rival |
+| `demo-devolucao-pendente` | `delivered` | devolução pedida, aguardando decisão da Loja Demo |
+| `demo-cancelado` | `cancelled` | cancelado pelo comprador antes de pagar |
+
+Também deixa o produto `fone-bluetooth-demo` aguardando moderação e um saque de R$ 500,00 pendente da Loja Rival.
 
 ### Criando um admin
 
-Não existe seeder nem endpoint para criar admin, de propósito. Cadastre um usuário normalmente e promova pelo Tinker:
+Fora do ambiente de demonstração não existe seeder nem endpoint para criar admin, de propósito. Cadastre um usuário normalmente e promova pelo Tinker:
 
 ```bash
 docker compose exec app php artisan tinker --execute="\$u = App\Models\User::where('email', 'voce@exemplo.com')->firstOrFail(); \$u->roles()->syncWithoutDetaching([App\Models\Role::firstOrCreate(['name' => App\Enums\RoleName::ADMIN])->id]);"
@@ -159,7 +188,7 @@ curl -s -X POST $API/auth/register -H 'Content-Type: application/json' -d '{
 curl -s -X POST $API/auth/login -H 'Content-Type: application/json' \
   -d '{"email": "maria@exemplo.com", "password": "Senha@Forte1"}'
 
-# Catálogo: produto com duas ofertas; buy_box aponta a da Loja Rival Demo
+# Catálogo: produto com duas ofertas e a vencedora em buy_box
 curl -s $API/products/smartphone-demo-128gb
 
 # Endereço, carrinho, cotação e checkout
@@ -237,8 +266,9 @@ No host, dois testes falham se `storage/` pertencer a `www-data` (o entrypoint d
 | Ledger, reembolso e saque | `Ledger/`, `Refund/`, `Payout/` | 29 |
 | Frete e envio | `Shipping/` | 17 |
 | Avaliações e pós-venda | `Review/`, `PostSale/` | 20 |
+| Seeder de demonstração | `Seeders/` | 4 |
 | Health check e exemplo unitário | `ExampleTest` (feature e unit) | 2 |
-| **Total** | | **209** |
+| **Total** | | **213** |
 
 Formatação: `./vendor/bin/pint` (ou `--test` para só verificar).
 
@@ -286,7 +316,7 @@ Branches de feature saem de `develop`; `develop` vai para `main` por PR de relea
 | B6 — Frete simulado e envio | Concluída |
 | B7 — Avaliações, disputas e devoluções | Concluída |
 | Qualidade — CI, `preventLazyLoading`, limpeza de tokens | Próxima |
-| L3 — documentação OpenAPI interativa | Concluída |
+| L3 — documentação OpenAPI interativa e jornada de demonstração | Concluída |
 | L1 a L3 — conta, engajamento, relatórios e API de seller | Liberadas |
 
 Pendências opcionais e próximos passos detalhados: [`docs/roadmap-backlog-tecnico.md`](docs/roadmap-backlog-tecnico.md).
