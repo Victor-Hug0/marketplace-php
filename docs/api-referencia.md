@@ -1,6 +1,6 @@
 # Referência da API — Marketplace
 
-Referência de todos os endpoints de `/api/v1` (96 rotas). Gerada a partir de `routes/api.php`, dos Form Requests e dos controllers em 20/10/2026.
+Referência de todos os endpoints de `/api/v1` (102 rotas). Gerada a partir de `routes/api.php`, dos Form Requests e dos controllers em 20/10/2026.
 
 Regras de negócio, máquinas de estado e autorização em detalhe: [`fluxos-e-regras.md`](fluxos-e-regras.md).
 
@@ -98,6 +98,9 @@ Erro:
 |------|--------|
 | `POST /auth/login` | 10/min por IP (rota) + 10 falhas por IP em 60 s (bloqueio manual, com `Retry-After`) |
 | `POST /auth/register` | 10/min por IP (rota) + 10 tentativas por IP + e-mail |
+| `POST /auth/forgot-password` e `/auth/reset-password` | 5/min por IP; além disso, um novo link por e-mail só a cada 60 s |
+| `GET /auth/email/verify/...` e `POST /auth/email/verification-notification` | 6/min |
+| `GET /auth/google/redirect` e `/auth/google/callback` | 10/min |
 | `POST /orders/{order}/payments` | 20/min |
 | `POST /seller/payouts` | 10/min |
 | `POST /order-items/{orderItem}/reviews` | 20/min |
@@ -115,10 +118,16 @@ Erro:
 | `POST` | `/auth/login` | Público | `email`, `password` | `200` `{ message, user, access_token, refresh_token }` | `401` credenciais, `429` |
 | `POST` | `/auth/logout` | Autenticado | — | `204` | `401` |
 | `POST` | `/auth/refresh` | Bearer `refresh` | — | `200` `{ message, access_token, refresh_token }` | `401` |
+| `POST` | `/auth/forgot-password` | Público | `email` | `200` mensagem genérica (igual exista ou não a conta); e-mail em fila com link para `FRONTEND_URL/redefinir-senha?token=...&email=...`, válido por 60 min | `422`, `429` |
+| `POST` | `/auth/reset-password` | Público | `token`, `email`, `password` + `password_confirmation` (mesma regra do cadastro) | `200`; token de uso único, revoga todos os tokens do usuário e confirma o e-mail | `422` token inválido/expirado ou senha fraca, `429` |
+| `GET` | `/auth/email/verify/{id}/{hash}` | Público, URL assinada | — (`expires` e `signature` vêm no link) | `200` `{ message }`; repetir não dá erro | `403` assinatura inválida, vencida (60 min) ou hash de outro e-mail, `429` |
+| `POST` | `/auth/email/verification-notification` | Autenticado | — | `202` novo link em fila | `401`, `409` já confirmado, `429` |
+| `GET` | `/auth/google/redirect` | Público | — | `200` `{ data: { url } }` (consentimento do Google) | `503` sem `GOOGLE_CLIENT_ID`/`SECRET` |
+| `GET` | `/auth/google/callback` | Público | `code` (ou `error`) na query | `201` conta nova ou `200` existente: `{ message, user, access_token, refresh_token }` | `401` código inválido ou consentimento negado, `409` e-mail vinculado a outra conta Google ou conta desativada, `422` sem `code` ou e-mail não verificado no Google, `503` |
 | `GET` | `/users/me` | Autenticado | — | `200` `{ user }` com `roles` e resumo da `store` | `401` |
 | `GET` | `/users` | Admin | `per_page`, `cursor` | `200` lista paginada | `401`, `403` |
 
-Todo cadastro recebe o papel `buyer`.
+Todo cadastro recebe o papel `buyer`. `POST /checkout` responde `403` enquanto o e-mail não for confirmado; contas criadas pelo Google já nascem confirmadas. `user` inclui `email_verified_at`.
 
 ---
 

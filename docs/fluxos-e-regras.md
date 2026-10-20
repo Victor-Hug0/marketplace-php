@@ -434,6 +434,12 @@ Nos testes a fila roda de forma síncrona (`QUEUE_CONNECTION=sync`).
 | `SHIPPING_DEFAULT_ORIGIN_CEP` | `01310100` | origem do frete para loja sem `origin_cep` |
 | `POST_SALE_DISPUTE_WINDOW_DAYS` | 7 | janela para abrir disputa |
 | `POST_SALE_RETURN_WINDOW_DAYS` | 7 | janela para pedir devolução |
+| `MAIL_MAILER` | `log` | `resend` envia pela Resend; `log` grava em `storage/logs` |
+| `RESEND_API_KEY` | vazio | chave da API da Resend |
+| `MAIL_FROM_ADDRESS` | `onboarding@resend.dev` | remetente; o domínio precisa estar verificado na Resend para enviar a qualquer destinatário |
+| `FRONTEND_URL` | `http://localhost:3000` | base do link de redefinição de senha |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | vazio | credenciais OAuth; vazias, o login com Google responde 503 |
+| `GOOGLE_REDIRECT_URI` | `${APP_URL}/api/v1/auth/google/callback` | precisa estar cadastrada no Google Cloud |
 
 Valores fixos no código: embalagem padrão e divisor volumétrico (`config/shipping.php`), TTL de 15 min da reserva avulsa (`InventoryService`), limite de 8 imagens (`ProductService`), validade dos tokens (`AuthService`).
 
@@ -445,7 +451,7 @@ Valores fixos no código: embalagem padrão e divisor volumétrico (`config/ship
 
 | Contexto | Ações |
 |----------|-------|
-| Auth | `auth.register`, `auth.login`, `auth.logout`, `auth.refresh`, `auth.refresh.invalid`, `auth.unauthenticated`, `auth.unauthorized` |
+| Auth | `auth.register`, `auth.login`, `auth.logout`, `auth.refresh`, `auth.refresh.invalid`, `auth.unauthenticated`, `auth.unauthorized`, `auth.password_reset_requested`, `auth.password_reset`, `auth.email_verified`, `auth.email_verification_resent`, `auth.google_register`, `auth.google_login`, `auth.google_linked` |
 | Loja | `store.requested`, `store.approved`, `store.rejected`, `store.suspended` |
 | Categoria | `category.created`, `category.updated`, `category.deleted`, `category.attribute.created`, `category.attribute.updated`, `category.attribute.deleted` |
 | Produto | `product.created`, `product.updated`, `product.submitted`, `product.approved`, `product.rejected`, `product.paused`, `product.resumed`, `product.deleted`, `product.image.created`, `product.image.deleted`, `product.image.reordered` |

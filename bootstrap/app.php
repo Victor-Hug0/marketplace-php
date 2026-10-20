@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Exceptions\ApiErrorResponse;
+use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\VerifyMockPaymentWebhookSecret;
@@ -12,6 +13,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Exceptions\InvalidSignatureException;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
@@ -34,6 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'ability' => CheckForAnyAbility::class,
             'role' => EnsureUserHasRole::class,
             'payments.mock-webhook' => VerifyMockPaymentWebhookSecret::class,
+            'email.verified' => EnsureEmailIsVerified::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -95,6 +98,14 @@ return Application::configure(basePath: dirname(__DIR__))
             ]);
 
             return ApiErrorResponse::create('Usuário não autorizado.', 403);
+        });
+
+        $exceptions->render(function (InvalidSignatureException $e, Request $request) {
+            if (! $request->is('api/*')) {
+                return null;
+            }
+
+            return ApiErrorResponse::create('Link de verificação inválido ou expirado.', 403);
         });
 
         $exceptions->render(function (HttpException $e, Request $request) {

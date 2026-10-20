@@ -18,6 +18,7 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
+            'email_verified_at' => $this->email_verified_at?->timezone(config('app.timezone'))->toIso8601String(),
             'cpf' => $this->cpf,
             'phone_number' => $this->phone_number,
             'roles' => $this->whenLoaded(

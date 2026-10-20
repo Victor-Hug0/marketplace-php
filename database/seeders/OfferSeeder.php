@@ -60,6 +60,10 @@ final class OfferSeeder extends Seeder
             ],
         );
 
+        if (! $sellerB->hasVerifiedEmail()) {
+            $sellerB->markEmailAsVerified();
+        }
+
         $sellerB->roles()->syncWithoutDetaching([$buyerRole->id, $sellerRole->id]);
 
         $storeB = Store::query()->firstOrCreate(
