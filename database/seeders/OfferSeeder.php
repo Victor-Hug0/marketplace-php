@@ -37,8 +37,8 @@ final class OfferSeeder extends Seeder
                 'store_id' => $storeA->id,
             ],
             [
-                'price' => '1999.90',
-                'promotional_price' => '1799.90',
+                'price_cents' => 199990,
+                'promotional_price_cents' => 179990,
                 'promo_starts_at' => now()->subDay(),
                 'promo_ends_at' => now()->addDays(30),
                 'stock' => 25,
@@ -59,6 +59,10 @@ final class OfferSeeder extends Seeder
                 'phone_number' => '11977776666',
             ],
         );
+
+        if (! $sellerB->hasVerifiedEmail()) {
+            $sellerB->markEmailAsVerified();
+        }
 
         $sellerB->roles()->syncWithoutDetaching([$buyerRole->id, $sellerRole->id]);
 
@@ -83,8 +87,8 @@ final class OfferSeeder extends Seeder
                 'store_id' => $storeB->id,
             ],
             [
-                'price' => '1899.00',
-                'promotional_price' => null,
+                'price_cents' => 189900,
+                'promotional_price_cents' => null,
                 'stock' => 10,
                 'reserved_stock' => 0,
                 'status' => OfferStatus::ACTIVE,

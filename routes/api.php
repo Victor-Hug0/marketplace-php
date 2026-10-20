@@ -13,9 +13,12 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\EmailVerificationController;
+use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\OfferReservationController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderPaymentController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\PostSaleController;
 use App\Http\Controllers\ProductController;
@@ -38,6 +41,18 @@ Route::prefix('v1')->group(function () {
         Route::post('logout', [AuthController::class, 'logout'])->middleware(['auth:sanctum', 'abilities:access']);
         Route::post('register', [AuthController::class, 'register'])->middleware('throttle:10,1');
         Route::post('refresh', [AuthController::class, 'refresh'])->middleware(['auth:sanctum', 'abilities:refresh']);
+
+        Route::post('forgot-password', [PasswordResetController::class, 'forgot'])->middleware('throttle:5,1');
+        Route::post('reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:5,1');
+
+        Route::get('email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+            ->middleware(['signed', 'throttle:6,1'])
+            ->name('verification.verify');
+        Route::post('email/verification-notification', [EmailVerificationController::class, 'resend'])
+            ->middleware(['auth:sanctum', 'abilities:access', 'throttle:6,1']);
+
+        Route::get('google/redirect', [GoogleAuthController::class, 'redirect'])->middleware('throttle:10,1');
+        Route::get('google/callback', [GoogleAuthController::class, 'callback'])->middleware('throttle:10,1');
     });
 
     Route::prefix('users')->group(function () {
@@ -71,7 +86,7 @@ Route::prefix('v1')->group(function () {
         ->middleware(['auth:sanctum', 'abilities:access', 'throttle:60,1']);
 
     Route::post('checkout', [CheckoutController::class, 'store'])
-        ->middleware(['auth:sanctum', 'abilities:access']);
+        ->middleware(['auth:sanctum', 'abilities:access', 'email.verified']);
 
     Route::prefix('orders')
         ->middleware(['auth:sanctum', 'abilities:access'])
@@ -89,7 +104,7 @@ Route::prefix('v1')->group(function () {
 
     Route::prefix('stores')->group(function () {
         Route::middleware(['auth:sanctum', 'abilities:access'])->group(function () {
-            Route::post('/', [StoreController::class, 'store']);
+            Route::post('/', [StoreController::class, 'store'])->middleware('email.verified');
             Route::get('me', [StoreController::class, 'me']);
         });
 
@@ -164,7 +179,7 @@ Route::prefix('v1')->group(function () {
             Route::get('balance', [SellerLedgerController::class, 'balance']);
             Route::get('ledger-entries', [SellerLedgerController::class, 'entries']);
             Route::get('payouts', [SellerPayoutController::class, 'index']);
-            Route::post('payouts', [SellerPayoutController::class, 'store'])->middleware('throttle:10,1');
+            Route::post('payouts', [SellerPayoutController::class, 'store'])->middleware(['email.verified', 'throttle:10,1']);
             Route::get('disputes', [SellerPostSaleController::class, 'disputes']);
             Route::post('disputes/{dispute}/respond', [SellerPostSaleController::class, 'respondDispute']);
             Route::get('returns', [SellerPostSaleController::class, 'returns']);

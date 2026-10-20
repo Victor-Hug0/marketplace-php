@@ -35,6 +35,8 @@ final class StoreProductRequest extends FormRequest
             'length_cm' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:300'],
             'width_cm' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:300'],
             'height_cm' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:300'],
+            'attributes' => ['sometimes', 'array', 'max:50'],
+            'attributes.*' => ['nullable'],
         ];
     }
 
@@ -75,6 +77,14 @@ final class StoreProductRequest extends FormRequest
             'height_cm' => [
                 'description' => 'Altura da embalagem em cm.',
                 'example' => 8,
+            ],
+            'attributes' => [
+                'description' => 'Valores dos atributos da categoria, por código: texto, número, booleano ou uma das opções. null remove o valor; códigos omitidos não mudam. Obrigatórios são cobrados no envio para moderação.',
+                'example' => ['color' => 'preto', 'storage' => '128GB'],
+            ],
+            'attributes.*' => [
+                'description' => 'Valor de um atributo (chave = código).',
+                'example' => 'preto',
             ],
         ];
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources;
 
 use App\Enums\RoleName;
+use App\Support\Money;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -26,11 +27,14 @@ final class OfferResource extends JsonResource
         return [
             'id' => $this->id,
             'product_id' => $this->product_id,
-            'price' => (string) $this->price,
-            'promotional_price' => $this->promotional_price !== null
-                ? (string) $this->promotional_price
+            'price' => Money::format($this->price_cents),
+            'price_cents' => $this->price_cents,
+            'promotional_price' => $this->promotional_price_cents !== null
+                ? Money::format($this->promotional_price_cents)
                 : null,
+            'promotional_price_cents' => $this->promotional_price_cents,
             'current_price' => $this->currentPrice(),
+            'current_price_cents' => $this->currentPriceCents(),
             'promo_starts_at' => $this->promo_starts_at?->timezone(config('app.timezone'))->toIso8601String(),
             'promo_ends_at' => $this->promo_ends_at?->timezone(config('app.timezone'))->toIso8601String(),
             'stock' => $this->when($isOwnerOrAdmin, $this->stock),

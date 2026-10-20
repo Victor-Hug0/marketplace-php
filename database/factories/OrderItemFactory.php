@@ -47,7 +47,7 @@ final class OrderItemFactory extends Factory
 
         $price = $unitPriceCents;
         if ($price === null) {
-            $price = (int) round(((float) $offer->currentPrice()) * 100);
+            $price = $offer->currentPriceCents();
         }
 
         return $this->state(fn (): array => [

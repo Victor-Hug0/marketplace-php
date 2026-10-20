@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Enums\OfferStatus;
-use App\Enums\StoreStatus;
 use App\Models\Offer;
 use App\Models\Product;
 use Illuminate\Support\Collection;
@@ -19,12 +17,9 @@ final class BuyBoxService
     {
         return Offer::query()
             ->where('product_id', $product->id)
-            ->where('status', OfferStatus::ACTIVE)
-            ->whereHas('store', fn ($query) => $query->where('status', StoreStatus::ACTIVE))
+            ->purchasable()
             ->with('store:id,store_name,slug,status')
-            ->get()
-            ->filter(fn (Offer $offer): bool => $offer->availableStock() > 0)
-            ->values();
+            ->get();
     }
 
     public function winner(Product $product): ?Offer
@@ -37,7 +32,7 @@ final class BuyBoxService
 
         return $eligible
             ->sort(function (Offer $a, Offer $b): int {
-                $priceCmp = bccomp($a->currentPrice(), $b->currentPrice(), 2);
+                $priceCmp = $a->currentPriceCents() <=> $b->currentPriceCents();
                 if ($priceCmp !== 0) {
                     return $priceCmp;
                 }

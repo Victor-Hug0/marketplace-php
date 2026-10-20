@@ -79,6 +79,7 @@ stateDiagram-v2
   active --> suspended: admin suspende com motivo
 ```
 
+- Só quem confirmou o e-mail pode solicitar loja (403 antes disso).
 - Uma loja por usuário, inclusive contando lojas rejeitadas ou excluídas: uma segunda solicitação responde 409.
 - `document` (CPF 11 ou CNPJ 14 dígitos) é único; `slug` é gerado a partir do nome e desambiguado com sufixo.
 - Aprovar concede o papel `seller`. Rejeitar ou suspender remove o papel.
@@ -94,7 +95,10 @@ stateDiagram-v2
 
 - Árvore com **no máximo 3 níveis**; mover uma categoria revalida ciclo e profundidade da subárvore (422).
 - Exclusão é soft delete e é bloqueada se houver subcategorias ou produtos (409).
-- Atributos (`category_attributes`): `code` único na categoria; `data_type` `string`, `integer`, `decimal`, `boolean` ou `enum`; `options` obrigatório para `enum`. Valores de atributo por produto ainda não existem (B2.4).
+- Atributos (`category_attributes`): `code` único na categoria; `data_type` `string`, `integer`, `decimal`, `boolean` ou `enum`; `options` obrigatório para `enum`.
+- Valores por produto (`product_attribute_values`): um por atributo, na coluna do tipo (`value_string` para texto e opções, `value_number` para inteiro e decimal, `value_boolean`). O seller envia `attributes: {código: valor}` ao criar ou editar; opção é aceita sem diferenciar maiúsculas e gravada como cadastrada; `null` remove; códigos omitidos não mudam. Trocar a categoria apaga os valores da categoria anterior. Atributos `is_required` só são cobrados ao submeter para moderação (422 listando os que faltam), então o rascunho pode ficar incompleto.
+- Busca: `attr[código]=v1,v2` filtra por atributos `is_filterable` (vírgula = OU; códigos diferentes = E). Índices por `(atributo, valor)`, inclusive `lower(value_string)`.
+- "A partir de": a listagem pública traz o menor preço vigente (`from_price_cents`) e a quantidade de ofertas compráveis (`available_offers_count`), com a mesma regra do Buy Box (oferta ativa, loja ativa, estoque disponível, promoção dentro da janela), num subselect da própria consulta, sem N+1.
 
 ### Produto
 
@@ -123,7 +127,7 @@ stateDiagram-v2
 ### Oferta
 
 - Uma oferta por loja e produto. O seller pode ofertar produto de outra loja: é assim que o mesmo item tem vários vendedores.
-- `price` e `promotional_price` em reais (`decimal(12,2)`). O preço vigente (`currentPrice()`) é o promocional quando há promoção dentro da janela `promo_starts_at`–`promo_ends_at`; senão, `price`.
+- `price_cents` e `promotional_price_cents` em centavos (`bigint`); a API recebe reais e converte com `App\Support\Money` (bcmath, sem `float`). O banco garante preço > 0 e promoção > 0 e menor que o preço (`CHECK`). O preço vigente (`currentPriceCents()`) é o promocional quando há promoção dentro da janela `promo_starts_at`–`promo_ends_at`; senão, o regular.
 - Estados `active` ↔ `paused`. Exclusão (soft delete) só sem reservas ativas.
 - `stock` pode ser alterado, mas nunca para menos que `reserved_stock` (409).
 
@@ -208,7 +212,7 @@ Uma única transação, nesta ordem:
 2. Trava o carrinho e os itens; carrinho vazio → 409.
 3. Valida o endereço do próprio comprador (404 se for de outro).
 4. Para cada item, trava a oferta e revalida oferta, loja e produto `active` e estoque disponível (409).
-5. Converte o preço vigente para centavos (`unit_price_cents`).
+5. Congela o preço vigente da oferta, já em centavos, em `unit_price_cents`.
 6. Agrupa os itens por loja e cota o frete de cada grupo (seção 7).
 7. Cria o pedido `pending_payment` com subtotal, frete, total, cópia do endereço e `payment_due_at` = agora + 60 min.
 8. Cria um subpedido por loja e os itens com snapshot de nome, slug e preço unitário.
@@ -339,7 +343,7 @@ held_cents           = saldo de subpedidos com disputa aberta ou devolução pen
 available_cents      = balance − pending_payout − held
 ```
 
-- O seller com loja `active` pede saque de até `available_cents` (409 acima disso).
+- O seller com loja `active` e e-mail confirmado (403 sem confirmação) pede saque de até `available_cents` (409 acima disso).
 - Admin marca `paid` (gera o lançamento negativo) ou `failed` (o valor volta ao disponível, sem lançamento).
 - Um reembolso depois de um saque pode deixar o saldo negativo; nesse caso nenhum saque novo passa até o saldo voltar a ser positivo.
 
@@ -434,6 +438,12 @@ Nos testes a fila roda de forma síncrona (`QUEUE_CONNECTION=sync`).
 | `SHIPPING_DEFAULT_ORIGIN_CEP` | `01310100` | origem do frete para loja sem `origin_cep` |
 | `POST_SALE_DISPUTE_WINDOW_DAYS` | 7 | janela para abrir disputa |
 | `POST_SALE_RETURN_WINDOW_DAYS` | 7 | janela para pedir devolução |
+| `MAIL_MAILER` | `log` | `resend` envia pela Resend; `log` grava em `storage/logs` |
+| `RESEND_API_KEY` | vazio | chave da API da Resend |
+| `MAIL_FROM_ADDRESS` | `onboarding@resend.dev` | remetente; o domínio precisa estar verificado na Resend para enviar a qualquer destinatário |
+| `FRONTEND_URL` | `http://localhost:3000` | base do link de redefinição de senha |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | vazio | credenciais OAuth; vazias, o login com Google responde 503 |
+| `GOOGLE_REDIRECT_URI` | `${APP_URL}/api/v1/auth/google/callback` | precisa estar cadastrada no Google Cloud |
 
 Valores fixos no código: embalagem padrão e divisor volumétrico (`config/shipping.php`), TTL de 15 min da reserva avulsa (`InventoryService`), limite de 8 imagens (`ProductService`), validade dos tokens (`AuthService`).
 
@@ -445,7 +455,7 @@ Valores fixos no código: embalagem padrão e divisor volumétrico (`config/ship
 
 | Contexto | Ações |
 |----------|-------|
-| Auth | `auth.register`, `auth.login`, `auth.logout`, `auth.refresh`, `auth.refresh.invalid`, `auth.unauthenticated`, `auth.unauthorized` |
+| Auth | `auth.register`, `auth.login`, `auth.logout`, `auth.refresh`, `auth.refresh.invalid`, `auth.unauthenticated`, `auth.unauthorized`, `auth.password_reset_requested`, `auth.password_reset`, `auth.email_verified`, `auth.email_verification_resent`, `auth.google_register`, `auth.google_login`, `auth.google_linked` |
 | Loja | `store.requested`, `store.approved`, `store.rejected`, `store.suspended` |
 | Categoria | `category.created`, `category.updated`, `category.deleted`, `category.attribute.created`, `category.attribute.updated`, `category.attribute.deleted` |
 | Produto | `product.created`, `product.updated`, `product.submitted`, `product.approved`, `product.rejected`, `product.paused`, `product.resumed`, `product.deleted`, `product.image.created`, `product.image.deleted`, `product.image.reordered` |

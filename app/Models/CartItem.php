@@ -38,10 +38,13 @@ class CartItem extends Model
         return $this->belongsTo(Offer::class);
     }
 
-    public function lineTotal(): string
+    public function unitPriceCents(): int
     {
-        $unit = $this->offer?->currentPrice() ?? '0.00';
+        return $this->offer?->currentPriceCents() ?? 0;
+    }
 
-        return bcmul($unit, (string) $this->quantity, 2);
+    public function lineTotalCents(): int
+    {
+        return $this->unitPriceCents() * $this->quantity;
     }
 }

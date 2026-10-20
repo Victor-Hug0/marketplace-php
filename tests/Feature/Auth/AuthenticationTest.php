@@ -22,7 +22,7 @@ class AuthenticationTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonPath('message', 'Usuário registrado com sucesso')
+            ->assertJsonPath('message', 'Usuário registrado com sucesso. Enviamos um link de confirmação para o seu e-mail.')
             ->assertJsonPath('user.email', $payload['email'])
             ->assertJsonPath('user.cpf', $payload['cpf'])
             ->assertJsonMissingPath('user.password');

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\ProductAttributeValue;
 use App\Services\ProductReviewService;
+use App\Support\Money;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -37,6 +39,19 @@ final class ProductResource extends JsonResource
                 'store_name' => $this->store->store_name,
                 'slug' => $this->store->slug,
             ]),
+            'attributes' => $this->whenLoaded('attributeValues', fn (): array => $this->attributeValues
+                ->sortBy(fn (ProductAttributeValue $value): int => $value->categoryAttribute->position)
+                ->values()
+                ->map(fn (ProductAttributeValue $value): array => [
+                    'code' => $value->categoryAttribute->code,
+                    'label' => $value->categoryAttribute->label,
+                    'data_type' => $value->categoryAttribute->data_type,
+                    'value' => $value->typedValue(),
+                ])
+                ->all()),
+            'from_price' => $this->whenHas('from_price_cents', fn ($cents): ?string => $cents === null ? null : Money::format((int) $cents)),
+            'from_price_cents' => $this->whenHas('from_price_cents', fn ($cents): ?int => $cents === null ? null : (int) $cents),
+            'available_offers_count' => $this->whenHas('available_offers_count', fn ($count): int => (int) $count),
             'images' => ProductImageResource::collection($this->whenLoaded('images')),
             'offers' => OfferResource::collection($this->whenLoaded('offers')),
             'rating' => $this->whenCounted(

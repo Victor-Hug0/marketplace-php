@@ -39,6 +39,7 @@ final class ProductController extends Controller
                 'category',
                 'store_id',
                 'store',
+                'attr',
             ]),
         );
 
@@ -69,6 +70,7 @@ final class ProductController extends Controller
                 'images',
                 'store:id,store_name,slug,status',
                 'category:id,name,slug',
+                'attributeValues.categoryAttribute',
             ])
             ->withCount('reviews')
             ->withAvg('reviews', 'rating')

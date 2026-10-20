@@ -37,6 +37,8 @@ final class UpdateProductRequest extends FormRequest
             'length_cm' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:300'],
             'width_cm' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:300'],
             'height_cm' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:300'],
+            'attributes' => ['sometimes', 'array', 'max:50'],
+            'attributes.*' => ['nullable'],
         ];
     }
 

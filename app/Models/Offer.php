@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\OfferStatus;
+use App\Enums\StoreStatus;
+use App\Support\Money;
 use Database\Factories\OfferFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -22,8 +25,8 @@ class Offer extends Model
     protected $fillable = [
         'product_id',
         'store_id',
-        'price',
-        'promotional_price',
+        'price_cents',
+        'promotional_price_cents',
         'promo_starts_at',
         'promo_ends_at',
         'stock',
@@ -34,8 +37,8 @@ class Offer extends Model
     protected function casts(): array
     {
         return [
-            'price' => 'decimal:2',
-            'promotional_price' => 'decimal:2',
+            'price_cents' => 'integer',
+            'promotional_price_cents' => 'integer',
             'promo_starts_at' => 'datetime',
             'promo_ends_at' => 'datetime',
             'stock' => 'integer',
@@ -69,23 +72,52 @@ class Offer extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    /**
+     * Offers a buyer can purchase right now: active, from an active store, with stock left.
+     *
+     * @param  Builder<Offer>  $query
+     * @return Builder<Offer>
+     */
+    public function scopePurchasable(Builder $query): Builder
+    {
+        return $query
+            ->where('offers.status', OfferStatus::ACTIVE)
+            ->whereColumn('offers.stock', '>', 'offers.reserved_stock')
+            ->whereHas('store', fn (Builder $store) => $store->where('status', StoreStatus::ACTIVE));
+    }
+
+    /**
+     * SQL twin of currentPriceCents(); bind the reference time twice.
+     */
+    public static function currentPriceCentsSql(): string
+    {
+        return 'CASE WHEN offers.promotional_price_cents IS NOT NULL'
+            .' AND (offers.promo_starts_at IS NULL OR offers.promo_starts_at <= ?)'
+            .' AND (offers.promo_ends_at IS NULL OR offers.promo_ends_at >= ?)'
+            .' THEN offers.promotional_price_cents ELSE offers.price_cents END';
+    }
+
     public function availableStock(): int
     {
         return max(0, $this->stock - $this->reserved_stock);
     }
 
+    public function currentPriceCents(): int
+    {
+        return $this->hasActivePromotion() ? $this->promotional_price_cents : $this->price_cents;
+    }
+
+    /**
+     * Decimal BRL string ("1999.90") for API output.
+     */
     public function currentPrice(): string
     {
-        if ($this->hasActivePromotion()) {
-            return (string) $this->promotional_price;
-        }
-
-        return (string) $this->price;
+        return Money::format($this->currentPriceCents());
     }
 
     public function hasActivePromotion(?Carbon $at = null): bool
     {
-        if ($this->promotional_price === null) {
+        if ($this->promotional_price_cents === null) {
             return false;
         }
 

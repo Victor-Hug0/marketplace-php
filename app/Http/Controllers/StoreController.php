@@ -29,7 +29,7 @@ final class StoreController extends Controller
     ) {}
 
     #[Doc\Subgroup('Comprador')]
-    #[Doc\Endpoint('Solicitar loja', 'Cria a loja em `pending`. Uma loja por usuário, inclusive contando rejeitadas. O papel `seller` só é concedido quando o admin aprova.')]
+    #[Doc\Endpoint('Solicitar loja', 'Cria a loja em `pending`. Uma loja por usuário, inclusive contando rejeitadas. O papel `seller` só é concedido quando o admin aprova. Exige e-mail confirmado (403).')]
     #[Doc\ResponseFromApiResource(StoreResource::class, Store::class, status: 201)]
     public function store(CreateStoreRequest $request): JsonResponse
     {
@@ -77,6 +77,7 @@ final class StoreController extends Controller
                 'q' => $request->validated('q'),
                 'category_id' => $request->validated('category_id'),
                 'category' => $request->validated('category'),
+                'attr' => $request->validated('attr'),
             ]),
             $request,
             cursorColumn: 'id',

@@ -35,7 +35,10 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-av
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/99-marketplace.ini
 
-ENV COMPOSER_HOME=/tmp/composer
+# www-data's home (/var/www) belongs to root; keep Composer and PsySH (tinker) state in /tmp.
+ENV COMPOSER_HOME=/tmp/composer \
+    XDG_CONFIG_HOME=/tmp/xdg/config \
+    XDG_DATA_HOME=/tmp/xdg/data
 
 WORKDIR /var/www/html
 
@@ -47,14 +50,17 @@ RUN composer install \
     --prefer-dist \
     --no-progress \
     --no-scripts \
-    --optimize-autoloader
+    --optimize-autoloader \
+    && rm -rf "$COMPOSER_HOME"
 
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 COPY . .
 
+# Build-time Composer runs as root; drop its cache so www-data can create its own at runtime.
 RUN composer dump-autoload --optimize --no-dev --no-interaction \
+    && rm -rf "$COMPOSER_HOME" \
     && mkdir -p \
         storage/framework/cache/data \
         storage/framework/sessions \

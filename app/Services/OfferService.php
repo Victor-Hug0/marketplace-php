@@ -13,6 +13,7 @@ use App\Models\Offer;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
+use App\Support\Money;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
@@ -27,15 +28,17 @@ final class OfferService
         $this->assertSellerCanWrite($actor, $store);
         $product = $this->resolveActiveProduct($data['product_id']);
 
+        $data = $this->withPriceCents($data);
+
         return DB::transaction(function () use ($actor, $store, $product, $data): Offer {
             $this->assertUniqueOffer($product->id, $store->id);
-            $this->assertPricing($data);
+            $this->assertPricing($data['price_cents'], $data['promotional_price_cents'] ?? null);
 
             $offer = Offer::query()->create([
                 'product_id' => $product->id,
                 'store_id' => $store->id,
-                'price' => $data['price'],
-                'promotional_price' => $data['promotional_price'] ?? null,
+                'price_cents' => $data['price_cents'],
+                'promotional_price_cents' => $data['promotional_price_cents'] ?? null,
                 'promo_starts_at' => $data['promo_starts_at'] ?? null,
                 'promo_ends_at' => $data['promo_ends_at'] ?? null,
                 'stock' => $data['stock'],
@@ -46,7 +49,7 @@ final class OfferService
             $this->audit($actor, $offer, 'offer.created', [
                 'product_id' => $product->id,
                 'store_id' => $store->id,
-                'price' => (string) $offer->price,
+                'price_cents' => $offer->price_cents,
                 'stock' => $offer->stock,
             ]);
 
@@ -59,20 +62,19 @@ final class OfferService
      */
     public function update(User $actor, Offer $offer, array $data): Offer
     {
+        $data = $this->withPriceCents($data);
+
         return DB::transaction(function () use ($actor, $offer, $data): Offer {
             $offer = $this->lockedOffer($offer);
             $this->assertSellerOwnsOffer($actor, $offer);
             $this->assertSellerCanWrite($actor, $offer->store);
 
             $merged = array_merge([
-                'price' => $offer->price,
-                'promotional_price' => $offer->promotional_price,
-                'promo_starts_at' => $offer->promo_starts_at?->toIso8601String(),
-                'promo_ends_at' => $offer->promo_ends_at?->toIso8601String(),
-                'stock' => $offer->stock,
+                'price_cents' => $offer->price_cents,
+                'promotional_price_cents' => $offer->promotional_price_cents,
             ], $data);
 
-            $this->assertPricing($merged);
+            $this->assertPricing($merged['price_cents'], $merged['promotional_price_cents']);
 
             if (array_key_exists('stock', $data) && (int) $data['stock'] < $offer->reserved_stock) {
                 throw new ConflictHttpException(
@@ -81,15 +83,15 @@ final class OfferService
             }
 
             $offer->update(array_intersect_key($data, array_flip([
-                'price',
-                'promotional_price',
+                'price_cents',
+                'promotional_price_cents',
                 'promo_starts_at',
                 'promo_ends_at',
                 'stock',
             ])));
 
             $this->audit($actor, $offer, 'offer.updated', [
-                'price' => (string) $offer->price,
+                'price_cents' => $offer->price_cents,
                 'stock' => $offer->stock,
             ]);
 
@@ -200,25 +202,42 @@ final class OfferService
     }
 
     /**
+     * Requests send prices in BRL ("1999.90"); everything below the API works in integer cents.
+     *
      * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
      */
-    private function assertPricing(array $data): void
+    private function withPriceCents(array $data): array
     {
-        $price = (string) $data['price'];
-        if (bccomp($price, '0', 2) <= 0) {
+        if (array_key_exists('price', $data)) {
+            $data['price_cents'] = Money::toCents($data['price']);
+            unset($data['price']);
+        }
+
+        if (array_key_exists('promotional_price', $data)) {
+            $promo = $data['promotional_price'];
+            $data['promotional_price_cents'] = $promo === null || $promo === '' ? null : Money::toCents($promo);
+            unset($data['promotional_price']);
+        }
+
+        return $data;
+    }
+
+    private function assertPricing(int $priceCents, ?int $promotionalPriceCents): void
+    {
+        if ($priceCents <= 0) {
             throw new ConflictHttpException('O preço deve ser maior que zero.');
         }
 
-        $promo = $data['promotional_price'] ?? null;
-        if ($promo === null || $promo === '') {
+        if ($promotionalPriceCents === null) {
             return;
         }
 
-        if (bccomp((string) $promo, '0', 2) <= 0) {
+        if ($promotionalPriceCents <= 0) {
             throw new ConflictHttpException('O preço promocional deve ser maior que zero.');
         }
 
-        if (bccomp((string) $promo, $price, 2) >= 0) {
+        if ($promotionalPriceCents >= $priceCents) {
             throw new ConflictHttpException(
                 'O preço promocional deve ser menor que o preço regular.',
             );

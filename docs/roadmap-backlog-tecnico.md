@@ -29,7 +29,7 @@ Documento derivado de [`roadmap-implementacao-api.md`](roadmap-implementacao-api
 | Validação | Form Request |
 | Resposta | API Resource + `{ data, meta?, links? }` / `ApiErrorResponse` |
 | Paginação | Cursor (`CursorPaginates`) |
-| Dinheiro | Ofertas guardam preço em `decimal(12,2)` (`price`, `promotional_price`); **a partir do checkout tudo é centavos `bigint`** (`*_cents` em pedidos, itens, pagamentos, ledger, reembolsos, saques, frete). Ver X.1.02 |
+| Dinheiro | **Tudo em centavos `bigint`**: oferta (`price_cents`, `promotional_price_cents`), pedidos, itens, pagamentos, ledger, reembolsos, saques e frete. A API de oferta e carrinho aceita/devolve também reais; conversão em `App\Support\Money` (X.1.02) |
 | Concorrência | `DB::transaction` + `lockForUpdate()` em estoque/checkout/pagamento |
 | Audit | `AuditLog` sem tokens, senhas, PAN, paths absolutos |
 | Testes | Feature + factories; cenários 200/201/204/401/403/404/409/422 |
@@ -44,7 +44,7 @@ Documento derivado de [`roadmap-implementacao-api.md`](roadmap-implementacao-api
 | Fundação (auth, docker, audit) | `done` | Pré-requisito |
 | B1 Atores / loja | `done` | Store + roles + middleware |
 | B2 Catálogo | `done` | Categorias, produtos, vitrine, busca |
-| B2-extra (atributos valorados, filtros, resize) | `todo` | Opcional; B2.4.06 (limite de upload) já feito |
+| B2-extra (atributos valorados, filtros, resize) | `parcial` | Valores de atributo e filtros feitos (B2.4.01–04) e limite de upload (B2.4.06); faltam resize em fila e flag `is_platform` |
 | B3 Ofertas / estoque / Buy Box | `done` | Em `develop` (PR #3) |
 | B4 Carrinho / checkout / pedidos | `done` | B4.1–B4.5 em `develop` |
 | B5 Pagamento / ledger | `done` | B5.1–B5.3 em `develop` (PRs #9–#11) |
@@ -164,10 +164,10 @@ seller edita conteúdo só em draft|rejected
 
 | ID | Item | Status | Esforço | Detalhe técnico |
 |----|------|--------|---------|-----------------|
-| B2.4.01 | Migration `product_attribute_values` | `todo` | M | `product_id`, `category_attribute_id`, `value_string`/`value_number`/`value_boolean`, unique `(product_id, category_attribute_id)` |
-| B2.4.02 | Validação valores vs `data_type` + `options` | `todo` | M | Service no create/update produto |
-| B2.4.03 | Expor atributos no `ProductResource` | `todo` | S | |
-| B2.4.04 | Filtro público `?attr[color]=preto` | `todo` | L | joins; índices em value_* |
+| B2.4.01 | Migration `product_attribute_values` | `done` | M | `product_id`, `category_attribute_id`, `value_string`/`value_number`/`value_boolean`, unique `(product_id, category_attribute_id)` |
+| B2.4.02 | Validação valores vs `data_type` + `options` | `done` | M | `ProductAttributeService` no create/update; obrigatórios cobrados no submit; troca de categoria limpa valores |
+| B2.4.03 | Expor atributos no `ProductResource` | `done` | S | `attributes[] { code, label, data_type, value }` tipado, na ordem de `position` |
+| B2.4.04 | Filtro público `?attr[color]=preto` | `done` | L | `whereHas` por atributo filtrável; vírgula = OU, códigos = E; índices em `value_number`, `value_boolean` e `lower(value_string)` (`ProductAttributesTest`) |
 | B2.4.05 | Job `ProcessProductImage` (resize/webp) | `todo` | M | queue redis; path relativo |
 | B2.4.06 | Limite MIME/size upload reforçado | `done` | S | `StoreProductImageRequest`: `jpeg,jpg,png,webp`, até 2 MB; máximo 8 imagens por produto (409) |
 | B2.4.07 | Flag `is_platform` / store platform seeder | `todo` | S | produto da plataforma |
@@ -184,7 +184,7 @@ seller edita conteúdo só em draft|rejected
 
 | Decisão | Planejado | Implementado |
 |---------|-----------|--------------|
-| Dinheiro na oferta | `price_cents` `bigint` | `offers.price` e `promotional_price` em **`decimal(12,2)`**. A conversão para centavos acontece no checkout (`unit_price_cents` congelado no `order_item`); de pedido em diante tudo é centavos `bigint` (ver X.1.02) |
+| Dinheiro na oferta | `price_cents` `bigint` | Nasceu em `decimal(12,2)`; convertido para `price_cents`/`promotional_price_cents` `bigint` em X.1.02, com `CHECK` no banco |
 | Estoque | `stock` + `reserved_stock` denormalizado | Igual: `stock` e `reserved_stock` (`unsigned int`) atualizados sob `lockForUpdate()` na mesma transação; `availableStock() = max(0, stock − reserved_stock)` |
 | Variantes | adiar | Adiado: `offers.product_id` direto, sem `product_variants` |
 | Unicidade | `(store_id, product_id)` | unique `(product_id, store_id)`; segunda oferta da mesma loja → 409 |
@@ -200,7 +200,7 @@ seller edita conteúdo só em draft|rejected
 | B3.1.03 | Enums `OfferStatus`, `ReservationStatus` | `done` | S | `active`/`paused`; `active`/`released`/`committed` |
 | B3.1.04 | Models `Offer`, `InventoryReservation` + relations | `done` | M | `Store::offers`, `Product::offers`, `Offer::reservations`, `Offer::cartItems` |
 | B3.1.05 | Factories + states | `done` | S | `OfferFactory`: `active`, `paused`, `withStock`, `priced`, `belongingToStore`, `onProduct` |
-| B3.1.06 | Helpers de preço e estoque | `done` | S | `Offer::currentPrice()` (string decimal), `hasActivePromotion()`, `availableStock()`, `isActive()` |
+| B3.1.06 | Helpers de preço e estoque | `done` | S | `Offer::currentPriceCents()` (e `currentPrice()` formatado em reais), `hasActivePromotion()`, `availableStock()`, `isActive()` |
 
 **Schema implementado `offers`:**
 
@@ -208,8 +208,8 @@ seller edita conteúdo só em draft|rejected
 id uuid PK
 product_id uuid FK products restrict
 store_id uuid FK stores restrict
-price decimal(12,2)
-promotional_price decimal(12,2) nullable
+price_cents bigint            (era decimal(12,2) até X.1.02)
+promotional_price_cents bigint nullable
 promo_starts_at timestamp nullable
 promo_ends_at timestamp nullable
 stock unsigned int
@@ -267,7 +267,7 @@ DELETE /api/v1/seller/offers/{offer}
 | B3.3.01 | `BuyBoxService::winner(Product): ?Offer` | `done` | M | regras abaixo |
 | B3.3.02 | `BuyBoxService::eligibleOffers(Product)` | `done` | M | oferta `active`, loja `active`, `availableStock() > 0` |
 | B3.3.03 | `GET /products/{slug}` com `offers[]` + `buy_box` | `done` | M | `buy_box` vem como chave de topo, ao lado de `data` |
-| B3.3.04 | Listagem pública com "a partir de" (menor preço) | `todo` | L | não implementado; cuidado com N+1 |
+| B3.3.04 | Listagem pública com "a partir de" (menor preço) | `done` | L | subselect `MIN(preço vigente)` com `Offer::purchasable()` (mesma regra do Buy Box); `from_price`, `from_price_cents`, `available_offers_count`; teste garante número de queries constante (`FromPriceTest`) |
 | B3.3.05 | Testes: 2 sellers, empates preço/estoque/idade | `done` | M | `test_buy_box_picks_lowest_current_price_then_stock_then_oldest` |
 
 **Algoritmo Buy Box (implementado):**
@@ -596,11 +596,11 @@ GET    /api/v1/seller/balance                              # balance_cents, pend
 
 | ID | Item | Status | Esforço |
 |----|------|--------|---------|
-| L1.1.01 | Verificação de e-mail (notification + endpoint) | `later` | M |
-| L1.1.02 | Forgot/reset password | `later` | M |
-| L1.1.03 | Social login Google (Socialite) | `later` | L |
-| L1.1.04 | Exigir e-mail verificado para seller/payout (flag) | `later` | S |
-| L1.1.05 | Rate limit reforçado em reset | `later` | S |
+| L1.1.01 | Verificação de e-mail (notification + endpoint) | `done` | M |
+| L1.1.02 | Forgot/reset password | `done` | M |
+| L1.1.03 | Social login Google (Socialite) | `done` | L |
+| L1.1.04 | Exigir e-mail verificado para seller/payout (flag) | `done` | S |
+| L1.1.05 | Rate limit reforçado em reset | `done` | S |
 
 ---
 
@@ -633,7 +633,7 @@ GET    /api/v1/seller/balance                              # balance_cents, pend
 | ID | Item | Status | Esforço | Quando |
 |----|------|--------|---------|--------|
 | X.1.01 | `preventLazyLoading()` em local/testing | `done` | S | `Model::preventLazyLoading(! isProduction())` no `AppServiceProvider`; a suíte inteira passa sem violações |
-| X.1.02 | Padronizar dinheiro em centavos em todo o código | `todo` | M | só falta a oferta (`decimal(12,2)`); exige migration de `offers` + ajuste de `OfferResource`, `BuyBoxService` (`bccomp`) e `CheckoutService::priceToCents` |
+| X.1.02 | Padronizar dinheiro em centavos em todo o código | `done` | M | migration converte `offers` (`ROUND(price * 100)`) e adiciona `CHECK`; `Money` (bcmath) na borda da API; Buy Box e checkout comparam/congelam inteiros; API mantém reais e ganha `*_cents` (`OfferPriceCentsTest`, `MoneyTest`) |
 | X.1.03 | Job/Command limpeza tokens Sanctum expirados | `done` | S | `sanctum:prune-expired --hours=24` diário no scheduler; `sanctum.expiration` (1 ano) é maior que o refresh (30 dias), então só remove tokens já vencidos |
 | X.1.04 | Health check DB/redis em `/up` estendido | `done` | S | listener de `DiagnosingHealth` faz `select 1` e `PING`; 500 se algum falhar (`HealthCheckTest`) |
 | X.1.05 | Atualizar README com fluxo develop + matriz endpoints | `done` | M | README reescrito + `docs/api-referencia.md` + `docs/fluxos-e-regras.md` |
@@ -654,18 +654,18 @@ FEITO:
   + CI no GitHub Actions (X.1.07, PR #19)
   + documentação OpenAPI e jornada de demonstração (L3, PRs #21 e #22)
   + hardening: preventLazyLoading, limpeza de tokens, /up com banco e Redis (X.1.01, X.1.03, X.1.04)
+  + L1 completa: verificação de e-mail (exigida no checkout, pedido de loja e saque), reset de senha e login com Google, e-mails via Resend em fila
+  + X.1.02: preço da oferta em centavos (dinheiro inteiro de ponta a ponta)
+  + B2.4.01–04 e B3.3.04: atributos valorados, filtros ?attr[...] e preço "a partir de" na busca
 
 PENDÊNCIAS OPCIONAIS DO CORE:
   B1.3    KYC do seller
-  B2.4    atributos valorados, filtros ?attr[...], resize em fila, flag is_platform
+  B2.4    resize de imagem em fila (B2.4.05), flag is_platform (B2.4.07)
   B3.2.08 rotas admin de oferta
-  B3.3.04 "a partir de R$ X" na listagem pública
   B3.4.07 idempotência de reserva avulsa
-  X.1.02  oferta em centavos
 
 FASES LATER (liberadas):
-  L3 (OpenAPI, seeders de demo, relatórios)  — melhor retorno para portfólio
-  L1 (verificação de e-mail, reset de senha, Google) — próxima pela ordem do roadmap
+  L3 restante (relatórios admin, API seller)
   L2 (cupons, wishlist, notificações)
 ```
 

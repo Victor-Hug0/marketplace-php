@@ -94,6 +94,29 @@
                                                                                 <li class="tocify-item level-2" data-unique="autenticacao-POSTapi-v1-auth-refresh">
                                 <a href="#autenticacao-POSTapi-v1-auth-refresh">Renovar tokens</a>
                             </li>
+                                                                                <li class="tocify-item level-2" data-unique="autenticacao-POSTapi-v1-auth-forgot-password">
+                                <a href="#autenticacao-POSTapi-v1-auth-forgot-password">Esqueci minha senha</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="autenticacao-POSTapi-v1-auth-reset-password">
+                                <a href="#autenticacao-POSTapi-v1-auth-reset-password">Redefinir senha</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="autenticacao-GETapi-v1-auth-email-verify--id---hash-">
+                                <a href="#autenticacao-GETapi-v1-auth-email-verify--id---hash-">Confirmar e-mail</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="autenticacao-POSTapi-v1-auth-email-verification-notification">
+                                <a href="#autenticacao-POSTapi-v1-auth-email-verification-notification">Reenviar confirmação de e-mail</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="autenticacao-login-com-google">
+                                <a href="#autenticacao-login-com-google">Login com Google</a>
+                            </li>
+                                                            <ul id="tocify-subheader-autenticacao-login-com-google" class="tocify-subheader">
+                                                                            <li class="tocify-item level-3" data-unique="autenticacao-GETapi-v1-auth-google-redirect">
+                                            <a href="#autenticacao-GETapi-v1-auth-google-redirect">URL de login com Google</a>
+                                        </li>
+                                                                            <li class="tocify-item level-3" data-unique="autenticacao-GETapi-v1-auth-google-callback">
+                                            <a href="#autenticacao-GETapi-v1-auth-google-callback">Callback do Google</a>
+                                        </li>
+                                                                    </ul>
                                                                         </ul>
                             </ul>
                     <ul id="tocify-header-usuarios" class="tocify-header">
@@ -963,7 +986,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <p>
 </p>
 
-<p>Cria o usuário com o papel <code>buyer</code>. Senha com 8 a 64 caracteres, maiúscula, minúscula, número e símbolo. Limite de 10 tentativas por IP e e-mail.</p>
+<p>Cria o usuário com o papel <code>buyer</code> e envia (em fila) o link de confirmação de e-mail; o checkout fica bloqueado (403) até a confirmação. Senha com 8 a 64 caracteres, maiúscula, minúscula, número e símbolo. Limite de 10 tentativas por IP e e-mail.</p>
 
 <span id="example-requests-POSTapi-v1-auth-register">
 <blockquote>Example request:</blockquote>
@@ -1019,11 +1042,12 @@ fetch(url, {
                 <pre>
 
 <code class="language-json" style="max-height: 300px;">{
-    &quot;message&quot;: &quot;Usu&aacute;rio registrado com sucesso&quot;,
+    &quot;message&quot;: &quot;Usu&aacute;rio registrado com sucesso. Enviamos um link de confirma&ccedil;&atilde;o para o seu e-mail.&quot;,
     &quot;user&quot;: {
         &quot;id&quot;: &quot;01a14513-4821-7084-bb71-dbc2e1d84d94&quot;,
         &quot;name&quot;: &quot;Maria Compradora&quot;,
-        &quot;email&quot;: &quot;maria@exemplo.com&quot;
+        &quot;email&quot;: &quot;maria@exemplo.com&quot;,
+        &quot;email_verified_at&quot;: null
     }
 }</code>
  </pre>
@@ -1311,6 +1335,959 @@ You can check the Dev Tools console for debugging information.</code></pre>
             </div>
                         </form>
 
+                    <h2 id="autenticacao-POSTapi-v1-auth-forgot-password">Esqueci minha senha</h2>
+
+<p>
+</p>
+
+<p>Envia por e-mail (em fila) um link para <code>FRONTEND_URL/redefinir-senha?token=...&amp;email=...</code>. A resposta é a mesma exista ou não a conta, para não revelar e-mails cadastrados. O link vale 60 minutos e um novo só sai depois de 60 segundos. Limite de 5 requisições por minuto.</p>
+
+<span id="example-requests-POSTapi-v1-auth-forgot-password">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request POST \
+    "http://127.0.0.1:8080/api/v1/auth/forgot-password" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --data "{
+    \"email\": \"comprador@marketplace.test\"
+}"
+</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "http://127.0.0.1:8080/api/v1/auth/forgot-password"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+let body = {
+    "email": "comprador@marketplace.test"
+};
+
+fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-POSTapi-v1-auth-forgot-password">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;Se o e-mail estiver cadastrado, voc&ecirc; receber&aacute; um link para redefinir a senha.&quot;
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-POSTapi-v1-auth-forgot-password" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-POSTapi-v1-auth-forgot-password"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-POSTapi-v1-auth-forgot-password"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-POSTapi-v1-auth-forgot-password" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-POSTapi-v1-auth-forgot-password">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-POSTapi-v1-auth-forgot-password" data-method="POST"
+      data-path="api/v1/auth/forgot-password"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('POSTapi-v1-auth-forgot-password', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-POSTapi-v1-auth-forgot-password"
+                    onclick="tryItOut('POSTapi-v1-auth-forgot-password');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-POSTapi-v1-auth-forgot-password"
+                    onclick="cancelTryOut('POSTapi-v1-auth-forgot-password');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-POSTapi-v1-auth-forgot-password"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-black">POST</small>
+            <b><code>api/v1/auth/forgot-password</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="POSTapi-v1-auth-forgot-password"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="POSTapi-v1-auth-forgot-password"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
+        <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>email</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="email"                data-endpoint="POSTapi-v1-auth-forgot-password"
+               value="comprador@marketplace.test"
+               data-component="body">
+    <br>
+<p>E-mail da conta que vai receber o link. Must be a valid email address. Must not be greater than 255 characters. Example: <code>comprador@marketplace.test</code></p>
+        </div>
+        </form>
+
+                    <h2 id="autenticacao-POSTapi-v1-auth-reset-password">Redefinir senha</h2>
+
+<p>
+</p>
+
+<p>Troca a senha com o token do e-mail. O token é de uso único; a troca revoga todos os tokens de acesso do usuário (todas as sessões saem) e confirma o e-mail. Limite de 5 requisições por minuto.</p>
+
+<span id="example-requests-POSTapi-v1-auth-reset-password">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request POST \
+    "http://127.0.0.1:8080/api/v1/auth/reset-password" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json" \
+    --data "{
+    \"token\": \"3f6c1d0e9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e\",
+    \"email\": \"comprador@marketplace.test\",
+    \"password\": \"NovaSenha@123\"
+}"
+</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "http://127.0.0.1:8080/api/v1/auth/reset-password"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+let body = {
+    "token": "3f6c1d0e9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e",
+    "email": "comprador@marketplace.test",
+    "password": "NovaSenha@123"
+};
+
+fetch(url, {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-POSTapi-v1-auth-reset-password">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;Senha redefinida. Entre novamente com a nova senha.&quot;
+}</code>
+ </pre>
+            <blockquote>
+            <p>Example response (422):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;Os dados enviados s&atilde;o inv&aacute;lidos.&quot;,
+    &quot;timestamp&quot;: &quot;2026-10-20T10:00:00-03:00&quot;,
+    &quot;errors&quot;: {
+        &quot;token&quot;: [
+            &quot;O link de redefini&ccedil;&atilde;o &eacute; inv&aacute;lido ou expirou. Pe&ccedil;a um novo.&quot;
+        ]
+    }
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-POSTapi-v1-auth-reset-password" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-POSTapi-v1-auth-reset-password"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-POSTapi-v1-auth-reset-password"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-POSTapi-v1-auth-reset-password" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-POSTapi-v1-auth-reset-password">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-POSTapi-v1-auth-reset-password" data-method="POST"
+      data-path="api/v1/auth/reset-password"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('POSTapi-v1-auth-reset-password', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-POSTapi-v1-auth-reset-password"
+                    onclick="tryItOut('POSTapi-v1-auth-reset-password');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-POSTapi-v1-auth-reset-password"
+                    onclick="cancelTryOut('POSTapi-v1-auth-reset-password');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-POSTapi-v1-auth-reset-password"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-black">POST</small>
+            <b><code>api/v1/auth/reset-password</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="POSTapi-v1-auth-reset-password"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="POSTapi-v1-auth-reset-password"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <h4 class="fancy-heading-panel"><b>Body Parameters</b></h4>
+        <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>token</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="token"                data-endpoint="POSTapi-v1-auth-reset-password"
+               value="3f6c1d0e9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e"
+               data-component="body">
+    <br>
+<p>Token recebido no link do e-mail (parâmetro token). Must not be greater than 255 characters. Example: <code>3f6c1d0e9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>email</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="email"                data-endpoint="POSTapi-v1-auth-reset-password"
+               value="comprador@marketplace.test"
+               data-component="body">
+    <br>
+<p>E-mail da conta (parâmetro email do link). Must be a valid email address. Must not be greater than 255 characters. Example: <code>comprador@marketplace.test</code></p>
+        </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>password</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="password"                data-endpoint="POSTapi-v1-auth-reset-password"
+               value="NovaSenha@123"
+               data-component="body">
+    <br>
+<p>Nova senha: 8 a 64 caracteres com maiúscula, minúscula, número e símbolo. Example: <code>NovaSenha@123</code></p>
+        </div>
+        </form>
+
+                    <h2 id="autenticacao-GETapi-v1-auth-email-verify--id---hash-">Confirmar e-mail</h2>
+
+<p>
+</p>
+
+<p>Destino do link enviado no cadastro. A URL é assinada e expira em 60 minutos; assinatura inválida ou vencida responde 403. Não exige token de acesso, e abrir o link de novo não dá erro.</p>
+
+<span id="example-requests-GETapi-v1-auth-email-verify--id---hash-">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "http://127.0.0.1:8080/api/v1/auth/email/verify/01a159cb-1b3e-73da-b5a5-f225c2d77ad9/a94a8fe5ccb19ba61c4c0873d391e987982fbbd3?expires=1792512000&amp;signature=c0ffee" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "http://127.0.0.1:8080/api/v1/auth/email/verify/01a159cb-1b3e-73da-b5a5-f225c2d77ad9/a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"
+);
+
+const params = {
+    "expires": "1792512000",
+    "signature": "c0ffee",
+};
+Object.keys(params)
+    .forEach(key =&gt; url.searchParams.append(key, params[key]));
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-v1-auth-email-verify--id---hash-">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;E-mail confirmado.&quot;
+}</code>
+ </pre>
+            <blockquote>
+            <p>Example response (403):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;Link de verifica&ccedil;&atilde;o inv&aacute;lido ou expirado.&quot;,
+    &quot;timestamp&quot;: &quot;2026-10-20T10:00:00-03:00&quot;,
+    &quot;errors&quot;: []
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v1-auth-email-verify--id---hash-" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-v1-auth-email-verify--id---hash-"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-v1-auth-email-verify--id---hash-"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-v1-auth-email-verify--id---hash-" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-v1-auth-email-verify--id---hash-">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-v1-auth-email-verify--id---hash-" data-method="GET"
+      data-path="api/v1/auth/email/verify/{id}/{hash}"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v1-auth-email-verify--id---hash-', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-v1-auth-email-verify--id---hash-"
+                    onclick="tryItOut('GETapi-v1-auth-email-verify--id---hash-');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-v1-auth-email-verify--id---hash-"
+                    onclick="cancelTryOut('GETapi-v1-auth-email-verify--id---hash-');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-v1-auth-email-verify--id---hash-"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v1/auth/email/verify/{id}/{hash}</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-v1-auth-email-verify--id---hash-"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-v1-auth-email-verify--id---hash-"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>id</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="id"                data-endpoint="GETapi-v1-auth-email-verify--id---hash-"
+               value="01a159cb-1b3e-73da-b5a5-f225c2d77ad9"
+               data-component="url">
+    <br>
+<p>ID do usuário (vem no link). Example: <code>01a159cb-1b3e-73da-b5a5-f225c2d77ad9</code></p>
+            </div>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>hash</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="hash"                data-endpoint="GETapi-v1-auth-email-verify--id---hash-"
+               value="a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"
+               data-component="url">
+    <br>
+<p>SHA-1 do e-mail (vem no link). Example: <code>a94a8fe5ccb19ba61c4c0873d391e987982fbbd3</code></p>
+            </div>
+                        <h4 class="fancy-heading-panel"><b>Query Parameters</b></h4>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>expires</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="expires"                data-endpoint="GETapi-v1-auth-email-verify--id---hash-"
+               value="1792512000"
+               data-component="query">
+    <br>
+<p>Timestamp de expiração (vem no link). Example: <code>1792512000</code></p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>signature</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="signature"                data-endpoint="GETapi-v1-auth-email-verify--id---hash-"
+               value="c0ffee"
+               data-component="query">
+    <br>
+<p>Assinatura HMAC da URL (vem no link). Example: <code>c0ffee</code></p>
+            </div>
+                </form>
+
+                    <h2 id="autenticacao-POSTapi-v1-auth-email-verification-notification">Reenviar confirmação de e-mail</h2>
+
+<p>
+<small class="badge badge-darkred">requires authentication</small>
+</p>
+
+<p>Envia (em fila) um novo link de confirmação. 409 se o e-mail já foi confirmado. Limite de 6 requisições por minuto.</p>
+
+<span id="example-requests-POSTapi-v1-auth-email-verification-notification">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request POST \
+    "http://127.0.0.1:8080/api/v1/auth/email/verification-notification" \
+    --header "Authorization: Bearer {ACCESS_TOKEN}" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "http://127.0.0.1:8080/api/v1/auth/email/verification-notification"
+);
+
+const headers = {
+    "Authorization": "Bearer {ACCESS_TOKEN}",
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+
+fetch(url, {
+    method: "POST",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-POSTapi-v1-auth-email-verification-notification">
+            <blockquote>
+            <p>Example response (202):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;Enviamos um novo link de confirma&ccedil;&atilde;o para o seu e-mail.&quot;
+}</code>
+ </pre>
+            <blockquote>
+            <p>Example response (409):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;O e-mail j&aacute; foi confirmado.&quot;,
+    &quot;timestamp&quot;: &quot;2026-10-20T10:00:00-03:00&quot;,
+    &quot;errors&quot;: []
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-POSTapi-v1-auth-email-verification-notification" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-POSTapi-v1-auth-email-verification-notification"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-POSTapi-v1-auth-email-verification-notification"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-POSTapi-v1-auth-email-verification-notification" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-POSTapi-v1-auth-email-verification-notification">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-POSTapi-v1-auth-email-verification-notification" data-method="POST"
+      data-path="api/v1/auth/email/verification-notification"
+      data-authed="1"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('POSTapi-v1-auth-email-verification-notification', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-POSTapi-v1-auth-email-verification-notification"
+                    onclick="tryItOut('POSTapi-v1-auth-email-verification-notification');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-POSTapi-v1-auth-email-verification-notification"
+                    onclick="cancelTryOut('POSTapi-v1-auth-email-verification-notification');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-POSTapi-v1-auth-email-verification-notification"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-black">POST</small>
+            <b><code>api/v1/auth/email/verification-notification</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Authorization" class="auth-value"               data-endpoint="POSTapi-v1-auth-email-verification-notification"
+               value="Bearer {ACCESS_TOKEN}"
+               data-component="header">
+    <br>
+<p>Example: <code>Bearer {ACCESS_TOKEN}</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="POSTapi-v1-auth-email-verification-notification"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="POSTapi-v1-auth-email-verification-notification"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                        </form>
+
+                                <h2 id="autenticacao-login-com-google">Login com Google</h2>
+                                                    <h2 id="autenticacao-GETapi-v1-auth-google-redirect">URL de login com Google</h2>
+
+<p>
+</p>
+
+<p>Devolve a URL de consentimento do Google. O cliente redireciona o usuário para ela; ao final, o Google volta para <code>GOOGLE_REDIRECT_URI</code> com <code>code</code>. 503 se <code>GOOGLE_CLIENT_ID</code>/<code>GOOGLE_CLIENT_SECRET</code> não estiverem configurados.</p>
+
+<span id="example-requests-GETapi-v1-auth-google-redirect">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "http://127.0.0.1:8080/api/v1/auth/google/redirect" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "http://127.0.0.1:8080/api/v1/auth/google/redirect"
+);
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-v1-auth-google-redirect">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;data&quot;: {
+        &quot;url&quot;: &quot;https://accounts.google.com/o/oauth2/auth?client_id=...&amp;redirect_uri=...&amp;scope=openid+profile+email&amp;response_type=code&quot;
+    }
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v1-auth-google-redirect" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-v1-auth-google-redirect"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-v1-auth-google-redirect"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-v1-auth-google-redirect" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-v1-auth-google-redirect">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-v1-auth-google-redirect" data-method="GET"
+      data-path="api/v1/auth/google/redirect"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v1-auth-google-redirect', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-v1-auth-google-redirect"
+                    onclick="tryItOut('GETapi-v1-auth-google-redirect');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-v1-auth-google-redirect"
+                    onclick="cancelTryOut('GETapi-v1-auth-google-redirect');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-v1-auth-google-redirect"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v1/auth/google/redirect</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-v1-auth-google-redirect"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-v1-auth-google-redirect"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                        </form>
+
+                    <h2 id="autenticacao-GETapi-v1-auth-google-callback">Callback do Google</h2>
+
+<p>
+</p>
+
+<p>Troca o <code>code</code> pelo perfil do Google e devolve o par de tokens, como no login. Conta nova (201) nasce como <code>buyer</code> com e-mail confirmado; conta existente com o mesmo e-mail é vinculada (200). O e-mail precisa estar verificado no Google (422). Limite de 10 requisições por minuto.</p>
+
+<span id="example-requests-GETapi-v1-auth-google-callback">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "http://127.0.0.1:8080/api/v1/auth/google/callback?code=4%2F0AVMBsJh-exemplo&amp;error=access_denied" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "http://127.0.0.1:8080/api/v1/auth/google/callback"
+);
+
+const params = {
+    "code": "4/0AVMBsJh-exemplo",
+    "error": "access_denied",
+};
+Object.keys(params)
+    .forEach(key =&gt; url.searchParams.append(key, params[key]));
+
+const headers = {
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-v1-auth-google-callback">
+            <blockquote>
+            <p>Example response (200):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;Login com Google realizado com sucesso&quot;,
+    &quot;user&quot;: {
+        &quot;id&quot;: &quot;01a14513-4821-7084-bb71-dbc2e1d84d94&quot;,
+        &quot;name&quot;: &quot;Maria Compradora&quot;,
+        &quot;email&quot;: &quot;maria@gmail.com&quot;,
+        &quot;email_verified_at&quot;: &quot;2026-10-20T10:00:00-03:00&quot;
+    },
+    &quot;access_token&quot;: &quot;1|aBcD...&quot;,
+    &quot;refresh_token&quot;: &quot;2|eFgH...&quot;
+}</code>
+ </pre>
+            <blockquote>
+            <p>Example response (401):</p>
+        </blockquote>
+                <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;message&quot;: &quot;N&atilde;o foi poss&iacute;vel autenticar com o Google. Tente entrar novamente.&quot;,
+    &quot;timestamp&quot;: &quot;2026-10-20T10:00:00-03:00&quot;,
+    &quot;errors&quot;: []
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-v1-auth-google-callback" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-v1-auth-google-callback"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-v1-auth-google-callback"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-v1-auth-google-callback" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-v1-auth-google-callback">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-v1-auth-google-callback" data-method="GET"
+      data-path="api/v1/auth/google/callback"
+      data-authed="0"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-v1-auth-google-callback', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-v1-auth-google-callback"
+                    onclick="tryItOut('GETapi-v1-auth-google-callback');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-v1-auth-google-callback"
+                    onclick="cancelTryOut('GETapi-v1-auth-google-callback');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-v1-auth-google-callback"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/v1/auth/google/callback</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-v1-auth-google-callback"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-v1-auth-google-callback"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                            <h4 class="fancy-heading-panel"><b>Query Parameters</b></h4>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>code</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="code"                data-endpoint="GETapi-v1-auth-google-callback"
+               value="4/0AVMBsJh-exemplo"
+               data-component="query">
+    <br>
+<p>Código de autorização que o Google anexa ao redirecionar para esta URL. This field is required when <code>error</code> is not present. Must not be greater than 2048 characters. Example: <code>4/0AVMBsJh-exemplo</code></p>
+            </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>error</code></b>&nbsp;&nbsp;
+<small>string</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="error"                data-endpoint="GETapi-v1-auth-google-callback"
+               value="access_denied"
+               data-component="query">
+    <br>
+<p>Enviado pelo Google quando o usuário cancela ou nega o acesso. Must not be greater than 255 characters. Example: <code>access_denied</code></p>
+            </div>
+                </form>
+
                 <h1 id="usuarios">Usuários</h1>
 
     
@@ -1517,22 +2494,24 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: &quot;01a159fc-70cc-729e-937f-895eb0ecdbf7&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4e76-731e-b0fe-eec6c9b1db5f&quot;,
             &quot;name&quot;: &quot;Morgan Hirthe&quot;,
             &quot;email&quot;: &quot;dare.emelie@example.com&quot;,
+            &quot;email_verified_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
             &quot;cpf&quot;: &quot;41031927934&quot;,
             &quot;phone_number&quot;: &quot;16072574427&quot;,
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         },
         {
-            &quot;id&quot;: &quot;01a159fc-70d1-7031-aee5-343a8fb3aed7&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4e7c-7012-ada8-cc5392beade9&quot;,
             &quot;name&quot;: &quot;Mr. Oswald Koch&quot;,
             &quot;email&quot;: &quot;bailee15@example.org&quot;,
+            &quot;email_verified_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
             &quot;cpf&quot;: &quot;81919716147&quot;,
             &quot;phone_number&quot;: &quot;58408704390&quot;,
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         }
     ],
     &quot;links&quot;: {
@@ -1646,7 +2625,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <small class="badge badge-darkred">requires authentication</small>
 </p>
 
-<p>Cria a loja em <code>pending</code>. Uma loja por usuário, inclusive contando rejeitadas. O papel <code>seller</code> só é concedido quando o admin aprova.</p>
+<p>Cria a loja em <code>pending</code>. Uma loja por usuário, inclusive contando rejeitadas. O papel <code>seller</code> só é concedido quando o admin aprova. Exige e-mail confirmado (403).</p>
 
 <span id="example-requests-POSTapi-v1-stores">
 <blockquote>Example request:</blockquote>
@@ -1707,7 +2686,7 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-713b-7136-8f5c-9631931702d2&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4eee-70a9-92c3-f80e1fbd944c&quot;,
         &quot;store_name&quot;: &quot;Bailey Inc&quot;,
         &quot;slug&quot;: &quot;bailey-inc-9365&quot;,
         &quot;description&quot;: &quot;Velit et fugiat sunt nihil accusantium.&quot;,
@@ -1721,8 +2700,8 @@ fetch(url, {
         &quot;status&quot;: &quot;pending&quot;,
         &quot;rejection_reason&quot;: null,
         &quot;reviewed_at&quot;: null,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -1946,7 +2925,7 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-713d-705e-8b54-7f0d94e13cfe&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4ef1-70ff-9163-6eaeec128ac1&quot;,
         &quot;store_name&quot;: &quot;Price Ltd&quot;,
         &quot;slug&quot;: &quot;price-ltd-1881&quot;,
         &quot;description&quot;: &quot;Incidunt iure odit et et modi ipsum.&quot;,
@@ -1960,8 +2939,8 @@ fetch(url, {
         &quot;status&quot;: &quot;pending&quot;,
         &quot;rejection_reason&quot;: null,
         &quot;reviewed_at&quot;: null,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -2065,7 +3044,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "http://127.0.0.1:8080/api/v1/stores/architecto?q=smartphone&amp;category_id=01a159cb-4e6b-7c33-9f5a-6d7b8c9d0e1f&amp;category=smartphones&amp;store_id=01a159cb-5f7c-7d44-a06b-7e8c9d0e1f2a&amp;store=loja-demo&amp;per_page=20&amp;cursor=architecto" \
+    --get "http://127.0.0.1:8080/api/v1/stores/architecto?q=smartphone&amp;category_id=01a159cb-4e6b-7c33-9f5a-6d7b8c9d0e1f&amp;category=smartphones&amp;store_id=01a159cb-5f7c-7d44-a06b-7e8c9d0e1f2a&amp;store=loja-demo&amp;per_page=20&amp;cursor=architecto&amp;attr[]=n" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
@@ -2083,6 +3062,7 @@ const params = {
     "store": "loja-demo",
     "per_page": "20",
     "cursor": "architecto",
+    "attr[0]": "n",
 };
 Object.keys(params)
     .forEach(key =&gt; url.searchParams.append(key, params[key]));
@@ -2108,10 +3088,10 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-7141-7219-85e0-d78c16b2eaa2&quot;,
-        &quot;store_name&quot;: &quot;Bailey Ltd&quot;,
-        &quot;slug&quot;: &quot;bailey-ltd-6316&quot;,
-        &quot;description&quot;: &quot;Et fugiat sunt nihil accusantium.&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4ef4-727c-a80b-1160b73392ad&quot;,
+        &quot;store_name&quot;: &quot;Crooks LLC&quot;,
+        &quot;slug&quot;: &quot;crooks-llc-0564&quot;,
+        &quot;description&quot;: &quot;Fugiat sunt nihil accusantium harum mollitia.&quot;,
         &quot;logo_url&quot;: null,
         &quot;banner_url&quot;: null
     }
@@ -2287,6 +3267,20 @@ You can check the Dev Tools console for debugging information.</code></pre>
     <br>
 <p>Cursor devolvido em meta.next_cursor. Example: <code>architecto</code></p>
             </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>attr</code></b>&nbsp;&nbsp;
+<small>string[]</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="attr[0]"                data-endpoint="GETapi-v1-stores--slug-"
+               data-component="query">
+        <input type="text" style="display: none"
+               name="attr[1]"                data-endpoint="GETapi-v1-stores--slug-"
+               data-component="query">
+    <br>
+<p>Must not be greater than 255 characters.</p>
+            </div>
                 </form>
 
                                 <h2 id="lojas-admin">Admin</h2>
@@ -2338,58 +3332,60 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: &quot;01a159fc-7201-7294-aa9c-bfe5b2bf59b0&quot;,
-            &quot;store_name&quot;: &quot;Bergstrom, Klein and Glover&quot;,
-            &quot;slug&quot;: &quot;bergstrom-klein-and-glover-1871&quot;,
-            &quot;description&quot;: &quot;Aliquid odit blanditiis et rerum voluptas.&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4fc7-7127-9997-aeda71736fb3&quot;,
+            &quot;store_name&quot;: &quot;Dare Group&quot;,
+            &quot;slug&quot;: &quot;dare-group-8862&quot;,
+            &quot;description&quot;: &quot;Et et modi ipsum nostrum.&quot;,
             &quot;logo_url&quot;: null,
             &quot;banner_url&quot;: null,
-            &quot;commercial_email&quot;: &quot;ttoy@pollich.com&quot;,
-            &quot;commercial_phone&quot;: &quot;18948187503&quot;,
-            &quot;origin_cep&quot;: &quot;01082241&quot;,
+            &quot;commercial_email&quot;: &quot;carey67@tromp.com&quot;,
+            &quot;commercial_phone&quot;: &quot;64310643261&quot;,
+            &quot;origin_cep&quot;: &quot;23759947&quot;,
             &quot;document_type&quot;: &quot;cnpj&quot;,
-            &quot;document&quot;: &quot;88385660946456&quot;,
+            &quot;document&quot;: &quot;58408704315490&quot;,
             &quot;status&quot;: &quot;pending&quot;,
             &quot;rejection_reason&quot;: null,
             &quot;reviewed_at&quot;: null,
             &quot;owner&quot;: {
-                &quot;id&quot;: &quot;01a159fc-7200-72ba-b5c4-2c2bb1f61760&quot;,
-                &quot;name&quot;: &quot;Jaycee Herman&quot;,
-                &quot;email&quot;: &quot;walter.marietta@example.com&quot;,
-                &quot;cpf&quot;: &quot;48095938735&quot;,
-                &quot;phone_number&quot;: &quot;70282275345&quot;,
-                &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-                &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+                &quot;id&quot;: &quot;01a15a6f-4fc7-7127-9997-aeda7133cd7b&quot;,
+                &quot;name&quot;: &quot;Janick Schultz DDS&quot;,
+                &quot;email&quot;: &quot;wbatz@example.net&quot;,
+                &quot;email_verified_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                &quot;cpf&quot;: &quot;40837167997&quot;,
+                &quot;phone_number&quot;: &quot;49408015989&quot;,
+                &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
             },
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         },
         {
-            &quot;id&quot;: &quot;01a159fc-7202-7225-894b-75d3128aaa0f&quot;,
-            &quot;store_name&quot;: &quot;Gislason, Dicki and Rogahn&quot;,
-            &quot;slug&quot;: &quot;gislason-dicki-and-rogahn-2058&quot;,
-            &quot;description&quot;: &quot;Non dicta rerum repellat repellendus quia officia sequi magni.&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4fc9-7111-b349-192ccaadbdd7&quot;,
+            &quot;store_name&quot;: &quot;Pagac-Emmerich&quot;,
+            &quot;slug&quot;: &quot;pagac-emmerich-5182&quot;,
+            &quot;description&quot;: &quot;Assumenda et tenetur ab reiciendis quia.&quot;,
             &quot;logo_url&quot;: null,
             &quot;banner_url&quot;: null,
-            &quot;commercial_email&quot;: &quot;xzboncak@mckenzie.com&quot;,
-            &quot;commercial_phone&quot;: &quot;31491134510&quot;,
-            &quot;origin_cep&quot;: &quot;01251396&quot;,
+            &quot;commercial_email&quot;: &quot;garett.runolfsson@ullrich.com&quot;,
+            &quot;commercial_phone&quot;: &quot;91753796799&quot;,
+            &quot;origin_cep&quot;: &quot;95275298&quot;,
             &quot;document_type&quot;: &quot;cnpj&quot;,
-            &quot;document&quot;: &quot;15576139580239&quot;,
+            &quot;document&quot;: &quot;84970168743531&quot;,
             &quot;status&quot;: &quot;pending&quot;,
             &quot;rejection_reason&quot;: null,
             &quot;reviewed_at&quot;: null,
             &quot;owner&quot;: {
-                &quot;id&quot;: &quot;01a159fc-7202-7225-894b-75d31258221e&quot;,
-                &quot;name&quot;: &quot;Dr. Breanna Becker Jr.&quot;,
-                &quot;email&quot;: &quot;mreichert@example.net&quot;,
-                &quot;cpf&quot;: &quot;65234244314&quot;,
-                &quot;phone_number&quot;: &quot;83723217495&quot;,
-                &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-                &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+                &quot;id&quot;: &quot;01a15a6f-4fc8-72ee-801f-827791af1f55&quot;,
+                &quot;name&quot;: &quot;Pierce Stanton&quot;,
+                &quot;email&quot;: &quot;marquardt.zion@example.com&quot;,
+                &quot;email_verified_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                &quot;cpf&quot;: &quot;84131275345&quot;,
+                &quot;phone_number&quot;: &quot;80646189556&quot;,
+                &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
             },
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         }
     ],
     &quot;links&quot;: {
@@ -2539,22 +3535,22 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-7205-7049-94aa-c05ace151f3e&quot;,
-        &quot;store_name&quot;: &quot;Dare Group&quot;,
-        &quot;slug&quot;: &quot;dare-group-8862&quot;,
-        &quot;description&quot;: &quot;Et et modi ipsum nostrum.&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4fcb-73fb-96c5-a036282cebf9&quot;,
+        &quot;store_name&quot;: &quot;Baumbach Ltd&quot;,
+        &quot;slug&quot;: &quot;baumbach-ltd-7161&quot;,
+        &quot;description&quot;: &quot;Tempora ex voluptatem laboriosam praesentium quis.&quot;,
         &quot;logo_url&quot;: null,
         &quot;banner_url&quot;: null,
-        &quot;commercial_email&quot;: &quot;carey67@tromp.com&quot;,
-        &quot;commercial_phone&quot;: &quot;64310643261&quot;,
-        &quot;origin_cep&quot;: &quot;23759947&quot;,
+        &quot;commercial_email&quot;: &quot;jhaag@wisoky.com&quot;,
+        &quot;commercial_phone&quot;: &quot;36080078259&quot;,
+        &quot;origin_cep&quot;: &quot;39965127&quot;,
         &quot;document_type&quot;: &quot;cnpj&quot;,
-        &quot;document&quot;: &quot;58408704315490&quot;,
+        &quot;document&quot;: &quot;44519790587351&quot;,
         &quot;status&quot;: &quot;active&quot;,
         &quot;rejection_reason&quot;: null,
-        &quot;reviewed_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;reviewed_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -2712,22 +3708,22 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-7208-736a-bc5b-d75cab14c620&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4fce-73ba-8743-be290a8d0267&quot;,
         &quot;store_name&quot;: &quot;Okuneva, Rempel and Gulgowski&quot;,
-        &quot;slug&quot;: &quot;okuneva-rempel-and-gulgowski-8142&quot;,
-        &quot;description&quot;: &quot;Provident perspiciatis quo omnis nostrum aut adipisci quidem.&quot;,
+        &quot;slug&quot;: &quot;okuneva-rempel-and-gulgowski-6748&quot;,
+        &quot;description&quot;: &quot;Quo omnis nostrum aut adipisci.&quot;,
         &quot;logo_url&quot;: null,
         &quot;banner_url&quot;: null,
-        &quot;commercial_email&quot;: &quot;dare.emelie@baumbach.org&quot;,
-        &quot;commercial_phone&quot;: &quot;24049003444&quot;,
-        &quot;origin_cep&quot;: &quot;01221627&quot;,
+        &quot;commercial_email&quot;: &quot;theo.hauck@leuschke.com&quot;,
+        &quot;commercial_phone&quot;: &quot;41031927934&quot;,
+        &quot;origin_cep&quot;: &quot;60725744&quot;,
         &quot;document_type&quot;: &quot;cnpj&quot;,
-        &quot;document&quot;: &quot;05913505207365&quot;,
+        &quot;document&quot;: &quot;90122162735052&quot;,
         &quot;status&quot;: &quot;pending&quot;,
         &quot;rejection_reason&quot;: null,
         &quot;reviewed_at&quot;: null,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -2898,22 +3894,22 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-720b-7136-95ec-6bba320174af&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4fd1-717f-89b8-50b8416ee918&quot;,
         &quot;store_name&quot;: &quot;Ernser Group&quot;,
-        &quot;slug&quot;: &quot;ernser-group-6748&quot;,
-        &quot;description&quot;: &quot;Quo omnis nostrum aut adipisci.&quot;,
+        &quot;slug&quot;: &quot;ernser-group-8182&quot;,
+        &quot;description&quot;: &quot;Nostrum aut adipisci quidem nostrum.&quot;,
         &quot;logo_url&quot;: null,
         &quot;banner_url&quot;: null,
-        &quot;commercial_email&quot;: &quot;theo.hauck@leuschke.com&quot;,
-        &quot;commercial_phone&quot;: &quot;41031927934&quot;,
-        &quot;origin_cep&quot;: &quot;60725744&quot;,
+        &quot;commercial_email&quot;: &quot;emelie.baumbach@keebler.com&quot;,
+        &quot;commercial_phone&quot;: &quot;16072574427&quot;,
+        &quot;origin_cep&quot;: &quot;59135052&quot;,
         &quot;document_type&quot;: &quot;cnpj&quot;,
-        &quot;document&quot;: &quot;90122162735052&quot;,
+        &quot;document&quot;: &quot;05825606773351&quot;,
         &quot;status&quot;: &quot;pending&quot;,
         &quot;rejection_reason&quot;: null,
         &quot;reviewed_at&quot;: null,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -3079,26 +4075,26 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: &quot;01a159fc-7143-7093-be68-75c879565beb&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4ef7-7374-a6f7-0c22ef3d8395&quot;,
             &quot;parent_id&quot;: null,
             &quot;name&quot;: &quot;Adipisci molestias&quot;,
             &quot;slug&quot;: &quot;adipisci-molestias-7339&quot;,
             &quot;description&quot;: null,
             &quot;position&quot;: 0,
             &quot;is_active&quot;: true,
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         },
         {
-            &quot;id&quot;: &quot;01a159fc-7144-7298-bc17-743f2344c5c3&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4ef8-7372-a8c6-0be8662c5bb1&quot;,
             &quot;parent_id&quot;: null,
             &quot;name&quot;: &quot;Distinctio eum&quot;,
             &quot;slug&quot;: &quot;distinctio-eum-1859&quot;,
             &quot;description&quot;: &quot;Libero aliquam veniam corporis dolorem mollitia deleniti.&quot;,
             &quot;position&quot;: 0,
             &quot;is_active&quot;: true,
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         }
     ]
 }</code>
@@ -3221,29 +4217,29 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-7146-7122-9c2e-4ad13521664c&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4efa-7092-adaa-56601452e7bc&quot;,
         &quot;parent_id&quot;: null,
         &quot;name&quot;: &quot;Eius et&quot;,
-        &quot;slug&quot;: &quot;eius-et-0564&quot;,
-        &quot;description&quot;: &quot;Sunt nihil accusantium harum mollitia.&quot;,
+        &quot;slug&quot;: &quot;eius-et-6316&quot;,
+        &quot;description&quot;: null,
         &quot;position&quot;: 0,
         &quot;is_active&quot;: true,
         &quot;attributes&quot;: [
             {
-                &quot;id&quot;: &quot;01a159fc-7146-7122-9c2e-4ad1356861c9&quot;,
-                &quot;code&quot;: &quot;modi_deserunt&quot;,
-                &quot;label&quot;: &quot;Modi deserunt&quot;,
+                &quot;id&quot;: &quot;01a15a6f-4efa-7092-adaa-56601516d309&quot;,
+                &quot;code&quot;: &quot;et_fugiat&quot;,
+                &quot;label&quot;: &quot;Et fugiat&quot;,
                 &quot;data_type&quot;: &quot;string&quot;,
                 &quot;options&quot;: null,
                 &quot;is_required&quot;: false,
                 &quot;is_filterable&quot;: true,
                 &quot;position&quot;: 0,
-                &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-                &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+                &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
             }
         ],
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -3383,26 +4379,26 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: &quot;01a159fc-720d-7158-8cbd-fb1f6383efad&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4fd4-717d-a5fe-a71a2ed061c9&quot;,
             &quot;parent_id&quot;: null,
             &quot;name&quot;: &quot;Aut adipisci&quot;,
             &quot;slug&quot;: &quot;aut-adipisci-0949&quot;,
             &quot;description&quot;: &quot;Commodi incidunt iure odit.&quot;,
             &quot;position&quot;: 0,
             &quot;is_active&quot;: true,
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         },
         {
-            &quot;id&quot;: &quot;01a159fc-720e-7239-b234-05777c303175&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4fd5-737f-98af-fd5a4e7c75be&quot;,
             &quot;parent_id&quot;: null,
             &quot;name&quot;: &quot;Et et&quot;,
-            &quot;slug&quot;: &quot;et-et-5058&quot;,
-            &quot;description&quot;: &quot;Consequatur aut dolores enim non facere tempora.&quot;,
+            &quot;slug&quot;: &quot;et-et-1024&quot;,
+            &quot;description&quot;: &quot;Laboriosam praesentium quis adipisci molestias fugit deleniti distinctio.&quot;,
             &quot;position&quot;: 0,
             &quot;is_active&quot;: true,
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         }
     ]
 }</code>
@@ -3558,15 +4554,15 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-7211-71d6-9917-477ef71e2af1&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4fd8-71d5-a893-0d590a7bfdbd&quot;,
         &quot;parent_id&quot;: null,
         &quot;name&quot;: &quot;Architecto eius&quot;,
         &quot;slug&quot;: &quot;architecto-eius-6806&quot;,
         &quot;description&quot;: null,
         &quot;position&quot;: 0,
         &quot;is_active&quot;: true,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -3804,15 +4800,15 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-7214-71a0-bf3f-f1beab7d896f&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4fda-715e-8882-663c81c06776&quot;,
         &quot;parent_id&quot;: null,
         &quot;name&quot;: &quot;Et animi&quot;,
-        &quot;slug&quot;: &quot;et-animi-8182&quot;,
-        &quot;description&quot;: null,
+        &quot;slug&quot;: &quot;et-animi-7680&quot;,
+        &quot;description&quot;: &quot;Nostrum qui commodi incidunt iure.&quot;,
         &quot;position&quot;: 0,
         &quot;is_active&quot;: true,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -4214,7 +5210,7 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-7219-71d3-9d54-6f2ccc2cf8e8&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4fdf-716f-979a-546112e68d5b&quot;,
         &quot;code&quot;: &quot;quos_velit&quot;,
         &quot;label&quot;: &quot;Quos velit&quot;,
         &quot;data_type&quot;: &quot;string&quot;,
@@ -4222,8 +5218,8 @@ fetch(url, {
         &quot;is_required&quot;: false,
         &quot;is_filterable&quot;: true,
         &quot;position&quot;: 0,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -4506,16 +5502,16 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-721c-70d8-ad20-0aaca48c3158&quot;,
-        &quot;code&quot;: &quot;sunt_nihil&quot;,
-        &quot;label&quot;: &quot;Sunt nihil&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4fe6-700f-a366-0d209c594ddb&quot;,
+        &quot;code&quot;: &quot;accusantium_harum&quot;,
+        &quot;label&quot;: &quot;Accusantium harum&quot;,
         &quot;data_type&quot;: &quot;string&quot;,
         &quot;options&quot;: null,
         &quot;is_required&quot;: false,
         &quot;is_filterable&quot;: true,
         &quot;position&quot;: 0,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -4914,7 +5910,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "http://127.0.0.1:8080/api/v1/products?q=smartphone&amp;category_id=01a159cb-4e6b-7c33-9f5a-6d7b8c9d0e1f&amp;category=smartphones&amp;store_id=01a159cb-5f7c-7d44-a06b-7e8c9d0e1f2a&amp;store=loja-demo&amp;per_page=20&amp;cursor=architecto" \
+    --get "http://127.0.0.1:8080/api/v1/products?q=smartphone&amp;category_id=01a159cb-4e6b-7c33-9f5a-6d7b8c9d0e1f&amp;category=smartphones&amp;store_id=01a159cb-5f7c-7d44-a06b-7e8c9d0e1f2a&amp;store=loja-demo&amp;per_page=20&amp;cursor=architecto&amp;attr[]=n" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
 
@@ -4932,6 +5928,7 @@ const params = {
     "store": "loja-demo",
     "per_page": "20",
     "cursor": "architecto",
+    "attr[0]": "n",
 };
 Object.keys(params)
     .forEach(key =&gt; url.searchParams.append(key, params[key]));
@@ -4958,24 +5955,24 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: &quot;01a159fc-714e-735a-8edc-b5ae429ad788&quot;,
-            &quot;name&quot;: &quot;Ut deserunt recusandae&quot;,
-            &quot;slug&quot;: &quot;ut-deserunt-recusandae-9254&quot;,
-            &quot;description&quot;: &quot;Porro error iusto fugiat voluptates delectus libero aut. Deleniti unde soluta rerum placeat atque reprehenderit. Necessitatibus odit fugit cupiditate rem similique accusamus repudiandae.&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4f00-72b0-86c6-4fe0068caac9&quot;,
+            &quot;name&quot;: &quot;Et animi quos&quot;,
+            &quot;slug&quot;: &quot;et-animi-quos-9432&quot;,
+            &quot;description&quot;: &quot;Accusantium harum mollitia modi deserunt aut ab. Perspiciatis quo omnis nostrum aut adipisci quidem nostrum qui. Incidunt iure odit et et modi ipsum.&quot;,
             &quot;weight_grams&quot;: null,
             &quot;length_cm&quot;: null,
             &quot;width_cm&quot;: null,
             &quot;height_cm&quot;: null,
             &quot;status&quot;: &quot;active&quot;,
             &quot;rejection_reason&quot;: null,
-            &quot;reviewed_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;reviewed_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         },
         {
-            &quot;id&quot;: &quot;01a159fc-7150-7229-b29e-464d4cff7e26&quot;,
-            &quot;name&quot;: &quot;Et magnam id&quot;,
-            &quot;slug&quot;: &quot;et-magnam-id-4324&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4f02-73d7-9bdf-83edabb84691&quot;,
+            &quot;name&quot;: &quot;Odio veritatis excepturi&quot;,
+            &quot;slug&quot;: &quot;odio-veritatis-excepturi-2329&quot;,
             &quot;description&quot;: null,
             &quot;weight_grams&quot;: null,
             &quot;length_cm&quot;: null,
@@ -4983,9 +5980,9 @@ fetch(url, {
             &quot;height_cm&quot;: null,
             &quot;status&quot;: &quot;active&quot;,
             &quot;rejection_reason&quot;: null,
-            &quot;reviewed_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;reviewed_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         }
     ],
     &quot;links&quot;: {
@@ -5159,6 +6156,20 @@ You can check the Dev Tools console for debugging information.</code></pre>
     <br>
 <p>Cursor devolvido em meta.next_cursor. Example: <code>architecto</code></p>
             </div>
+                                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>attr</code></b>&nbsp;&nbsp;
+<small>string[]</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="attr[0]"                data-endpoint="GETapi-v1-products"
+               data-component="query">
+        <input type="text" style="display: none"
+               name="attr[1]"                data-endpoint="GETapi-v1-products"
+               data-component="query">
+    <br>
+<p>Must not be greater than 255 characters.</p>
+            </div>
                 </form>
 
                     <h2 id="produtos-GETapi-v1-products--slug-">Detalhar produto</h2>
@@ -5205,39 +6216,39 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-7154-712e-9c2b-4406b89c69b2&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4f06-70bc-b1e6-64efaa39fc4b&quot;,
         &quot;name&quot;: &quot;Eius et animi&quot;,
-        &quot;slug&quot;: &quot;eius-et-animi-9432&quot;,
-        &quot;description&quot;: &quot;Accusantium harum mollitia modi deserunt aut ab. Perspiciatis quo omnis nostrum aut adipisci quidem nostrum qui. Incidunt iure odit et et modi ipsum.&quot;,
+        &quot;slug&quot;: &quot;eius-et-animi-5625&quot;,
+        &quot;description&quot;: null,
         &quot;weight_grams&quot;: null,
         &quot;length_cm&quot;: null,
         &quot;width_cm&quot;: null,
         &quot;height_cm&quot;: null,
         &quot;status&quot;: &quot;active&quot;,
         &quot;rejection_reason&quot;: null,
-        &quot;reviewed_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
+        &quot;reviewed_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
         &quot;category&quot;: {
-            &quot;id&quot;: &quot;01a159fc-7154-712e-9c2b-4406b822b02a&quot;,
-            &quot;name&quot;: &quot;Est dignissimos&quot;,
-            &quot;slug&quot;: &quot;est-dignissimos-1679&quot;
+            &quot;id&quot;: &quot;01a15a6f-4f06-70bc-b1e6-64efa9f7a17b&quot;,
+            &quot;name&quot;: &quot;Libero aliquam&quot;,
+            &quot;slug&quot;: &quot;libero-aliquam-0574&quot;
         },
         &quot;store&quot;: {
-            &quot;id&quot;: &quot;01a159fc-7154-712e-9c2b-4406b7b879ec&quot;,
-            &quot;store_name&quot;: &quot;Predovic Inc&quot;,
-            &quot;slug&quot;: &quot;predovic-inc-5066&quot;
+            &quot;id&quot;: &quot;01a15a6f-4f05-734a-8c0c-50b53bed4069&quot;,
+            &quot;store_name&quot;: &quot;Gaylord and Sons&quot;,
+            &quot;slug&quot;: &quot;gaylord-and-sons-4954&quot;
         },
         &quot;images&quot;: [
             {
-                &quot;id&quot;: &quot;01a159fc-7154-712e-9c2b-4406b927ae21&quot;,
-                &quot;url&quot;: &quot;http://localhost/storage/products/1a9ce4aa-ccaf-4a4c-8d3c-b9298c1de0a1/1.jpg&quot;,
+                &quot;id&quot;: &quot;01a15a6f-4f06-70bc-b1e6-64efab052d60&quot;,
+                &quot;url&quot;: &quot;http://127.0.0.1:8080/storage/products/68ad2275-5861-45ba-a719-bf0918908462/1.jpg&quot;,
                 &quot;position&quot;: 0,
-                &quot;alt&quot;: null,
-                &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-                &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+                &quot;alt&quot;: &quot;Neque blanditiis odio veritatis.&quot;,
+                &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
             }
         ],
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -5377,10 +6388,10 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: &quot;01a159fc-7178-732c-afc2-0f1e3fd8860b&quot;,
-            &quot;name&quot;: &quot;Nostrum qui commodi&quot;,
-            &quot;slug&quot;: &quot;nostrum-qui-commodi-4902&quot;,
-            &quot;description&quot;: null,
+            &quot;id&quot;: &quot;01a15a6f-4f2c-713b-85fa-1131d570a076&quot;,
+            &quot;name&quot;: &quot;Aut tenetur voluptate&quot;,
+            &quot;slug&quot;: &quot;aut-tenetur-voluptate-4951&quot;,
+            &quot;description&quot;: &quot;Deleniti aut quia facere quasi. Vel dignissimos doloribus sit ut aut recusandae. Minus reiciendis ut necessitatibus sit. Nemo facere et et ipsa rem.&quot;,
             &quot;weight_grams&quot;: null,
             &quot;length_cm&quot;: null,
             &quot;width_cm&quot;: null,
@@ -5388,13 +6399,13 @@ fetch(url, {
             &quot;status&quot;: &quot;draft&quot;,
             &quot;rejection_reason&quot;: null,
             &quot;reviewed_at&quot;: null,
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         },
         {
-            &quot;id&quot;: &quot;01a159fc-7179-73d9-bfce-819ec3652633&quot;,
-            &quot;name&quot;: &quot;Officia est dignissimos&quot;,
-            &quot;slug&quot;: &quot;officia-est-dignissimos-0159&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4f2f-71b2-97e8-33e8dca4a2d6&quot;,
+            &quot;name&quot;: &quot;Ea praesentium quia&quot;,
+            &quot;slug&quot;: &quot;ea-praesentium-quia-8408&quot;,
             &quot;description&quot;: null,
             &quot;weight_grams&quot;: null,
             &quot;length_cm&quot;: null,
@@ -5403,8 +6414,8 @@ fetch(url, {
             &quot;status&quot;: &quot;draft&quot;,
             &quot;rejection_reason&quot;: null,
             &quot;reviewed_at&quot;: null,
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         }
     ],
     &quot;links&quot;: {
@@ -5533,7 +6544,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
     \"weight_grams\": 350,
     \"length_cm\": 20,
     \"width_cm\": 12,
-    \"height_cm\": 8
+    \"height_cm\": 8,
+    \"attributes\": [
+        \"preto\"
+    ]
 }"
 </code></pre></div>
 
@@ -5557,7 +6571,10 @@ let body = {
     "weight_grams": 350,
     "length_cm": 20,
     "width_cm": 12,
-    "height_cm": 8
+    "height_cm": 8,
+    "attributes": [
+        "preto"
+    ]
 };
 
 fetch(url, {
@@ -5576,10 +6593,10 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-717e-70ad-9622-2d9145129c6a&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4f33-70bd-8e24-790a9fe6559b&quot;,
         &quot;name&quot;: &quot;Architecto eius et&quot;,
-        &quot;slug&quot;: &quot;architecto-eius-et-5625&quot;,
-        &quot;description&quot;: null,
+        &quot;slug&quot;: &quot;architecto-eius-et-0575&quot;,
+        &quot;description&quot;: &quot;Mollitia modi deserunt aut ab provident perspiciatis quo. Nostrum aut adipisci quidem nostrum. Commodi incidunt iure odit. Et modi ipsum nostrum omnis autem et consequatur. Dolores enim non facere tempora.&quot;,
         &quot;weight_grams&quot;: null,
         &quot;length_cm&quot;: null,
         &quot;width_cm&quot;: null,
@@ -5587,8 +6604,8 @@ fetch(url, {
         &quot;status&quot;: &quot;draft&quot;,
         &quot;rejection_reason&quot;: null,
         &quot;reviewed_at&quot;: null,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -5773,6 +6790,20 @@ You can check the Dev Tools console for debugging information.</code></pre>
     <br>
 <p>Altura da embalagem em cm. Must be at least 1. Must not be greater than 300. Example: <code>8</code></p>
         </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>attributes</code></b>&nbsp;&nbsp;
+<small>string[]</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="attributes[0]"                data-endpoint="POSTapi-v1-seller-products"
+               data-component="body">
+        <input type="text" style="display: none"
+               name="attributes[1]"                data-endpoint="POSTapi-v1-seller-products"
+               data-component="body">
+    <br>
+<p>Valor de um atributo (chave = código).</p>
+        </div>
         </form>
 
                     <h2 id="produtos-POSTapi-v1-seller-products--product_id--submit">Enviar para moderação</h2>
@@ -5822,10 +6853,10 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-7181-7074-ad9f-58c1dd48357a&quot;,
-        &quot;name&quot;: &quot;Incidunt iure odit&quot;,
-        &quot;slug&quot;: &quot;incidunt-iure-odit-0034&quot;,
-        &quot;description&quot;: &quot;Nostrum omnis autem et consequatur aut. Enim non facere tempora ex voluptatem laboriosam praesentium. Adipisci molestias fugit deleniti distinctio eum doloremque id. Libero aliquam veniam corporis dolorem mollitia deleniti. Odit quia officia est dignissimos neque blanditiis odio.&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4f37-70c2-bd08-205c7e752f29&quot;,
+        &quot;name&quot;: &quot;Nostrum qui commodi&quot;,
+        &quot;slug&quot;: &quot;nostrum-qui-commodi-4902&quot;,
+        &quot;description&quot;: null,
         &quot;weight_grams&quot;: null,
         &quot;length_cm&quot;: null,
         &quot;width_cm&quot;: null,
@@ -5833,8 +6864,8 @@ fetch(url, {
         &quot;status&quot;: &quot;pending_moderation&quot;,
         &quot;rejection_reason&quot;: null,
         &quot;reviewed_at&quot;: null,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -5984,19 +7015,19 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-7184-71fe-b955-04c17622c1ec&quot;,
-        &quot;name&quot;: &quot;Et et modi&quot;,
-        &quot;slug&quot;: &quot;et-et-modi-7365&quot;,
-        &quot;description&quot;: null,
+        &quot;id&quot;: &quot;01a15a6f-4f3a-73fc-9700-5bebc0991a81&quot;,
+        &quot;name&quot;: &quot;Incidunt iure odit&quot;,
+        &quot;slug&quot;: &quot;incidunt-iure-odit-0034&quot;,
+        &quot;description&quot;: &quot;Nostrum omnis autem et consequatur aut. Enim non facere tempora ex voluptatem laboriosam praesentium. Adipisci molestias fugit deleniti distinctio eum doloremque id. Libero aliquam veniam corporis dolorem mollitia deleniti. Odit quia officia est dignissimos neque blanditiis odio.&quot;,
         &quot;weight_grams&quot;: null,
         &quot;length_cm&quot;: null,
         &quot;width_cm&quot;: null,
         &quot;height_cm&quot;: null,
         &quot;status&quot;: &quot;paused&quot;,
         &quot;rejection_reason&quot;: null,
-        &quot;reviewed_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;reviewed_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -6146,9 +7177,9 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-7187-73f1-b637-3fe8a442d6a3&quot;,
-        &quot;name&quot;: &quot;Ipsum nostrum omnis&quot;,
-        &quot;slug&quot;: &quot;ipsum-nostrum-omnis-9606&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4f40-7183-8290-c30470bfa0d7&quot;,
+        &quot;name&quot;: &quot;Et et modi&quot;,
+        &quot;slug&quot;: &quot;et-et-modi-7365&quot;,
         &quot;description&quot;: null,
         &quot;weight_grams&quot;: null,
         &quot;length_cm&quot;: null,
@@ -6156,9 +7187,9 @@ fetch(url, {
         &quot;height_cm&quot;: null,
         &quot;status&quot;: &quot;active&quot;,
         &quot;rejection_reason&quot;: null,
-        &quot;reviewed_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;reviewed_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -6280,7 +7311,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: multipart/form-data" \
     --header "Accept: application/json" \
     --form "alt=Smartphone visto de frente"\
-    --form "image=@/tmp/php3ck116u1srmka9vHbdu" </code></pre></div>
+    --form "image=@/tmp/php6f7g41f3vbj1ajq3rgw" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -6314,12 +7345,12 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-718e-730b-add8-cb4feb9ca2f9&quot;,
-        &quot;url&quot;: &quot;http://localhost/storage/products/680c65af-1c68-4743-9533-eaf5ad95cc8c/1.jpg&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4f4f-714a-8909-ded35bd56ab7&quot;,
+        &quot;url&quot;: &quot;http://127.0.0.1:8080/storage/products/186f363d-9cb7-4a99-ac06-4a41e0777ecb/1.jpg&quot;,
         &quot;position&quot;: 0,
         &quot;alt&quot;: null,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -6431,7 +7462,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
                value=""
                data-component="body">
     <br>
-<p>Arquivo JPEG, PNG ou WebP de até 2 MB. Must be a file. Must not be greater than 2048 kilobytes. Example: <code>/tmp/php3ck116u1srmka9vHbdu</code></p>
+<p>Arquivo JPEG, PNG ou WebP de até 2 MB. Must be a file. Must not be greater than 2048 kilobytes. Example: <code>/tmp/php6f7g41f3vbj1ajq3rgw</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>alt</code></b>&nbsp;&nbsp;
@@ -6506,10 +7537,10 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-7193-712e-8ddb-3acf2fe8373d&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4f58-704e-892b-d8e1e41931dd&quot;,
         &quot;name&quot;: &quot;Animi quos velit&quot;,
-        &quot;slug&quot;: &quot;animi-quos-velit-8529&quot;,
-        &quot;description&quot;: &quot;Modi deserunt aut ab provident perspiciatis. Omnis nostrum aut adipisci quidem nostrum qui commodi. Iure odit et et modi ipsum nostrum omnis. Et consequatur aut dolores enim.&quot;,
+        &quot;slug&quot;: &quot;animi-quos-velit-6343&quot;,
+        &quot;description&quot;: &quot;Deserunt aut ab provident perspiciatis quo omnis nostrum. Adipisci quidem nostrum qui commodi incidunt iure. Et et modi ipsum nostrum.&quot;,
         &quot;weight_grams&quot;: null,
         &quot;length_cm&quot;: null,
         &quot;width_cm&quot;: null,
@@ -6519,16 +7550,16 @@ fetch(url, {
         &quot;reviewed_at&quot;: null,
         &quot;images&quot;: [
             {
-                &quot;id&quot;: &quot;01a159fc-7193-712e-8ddb-3acf30d0f28f&quot;,
-                &quot;url&quot;: &quot;http://localhost/storage/products/47731465-7d60-45e7-914a-9fea19a746e6/1.jpg&quot;,
+                &quot;id&quot;: &quot;01a15a6f-4f58-704e-892b-d8e1e4d3b30f&quot;,
+                &quot;url&quot;: &quot;http://127.0.0.1:8080/storage/products/3c1bc7e0-b3b4-4903-bbb6-c820c2e41cc5/1.jpg&quot;,
                 &quot;position&quot;: 0,
-                &quot;alt&quot;: &quot;Ut et recusandae modi.&quot;,
-                &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-                &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+                &quot;alt&quot;: &quot;Laboriosam est alias.&quot;,
+                &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
             }
         ],
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -6850,10 +7881,10 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-7197-7256-9801-4ff869e0fec8&quot;,
-        &quot;name&quot;: &quot;Autem et consequatur&quot;,
-        &quot;slug&quot;: &quot;autem-et-consequatur-7515&quot;,
-        &quot;description&quot;: &quot;Tempora ex voluptatem laboriosam praesentium quis. Molestias fugit deleniti distinctio eum doloremque id. Libero aliquam veniam corporis dolorem mollitia deleniti.&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4f5f-7129-a4b9-3bd28f856b85&quot;,
+        &quot;name&quot;: &quot;Ipsum nostrum omnis&quot;,
+        &quot;slug&quot;: &quot;ipsum-nostrum-omnis-9606&quot;,
+        &quot;description&quot;: null,
         &quot;weight_grams&quot;: null,
         &quot;length_cm&quot;: null,
         &quot;width_cm&quot;: null,
@@ -6862,22 +7893,22 @@ fetch(url, {
         &quot;rejection_reason&quot;: null,
         &quot;reviewed_at&quot;: null,
         &quot;category&quot;: {
-            &quot;id&quot;: &quot;01a159fc-7197-7256-9801-4ff868e6db3a&quot;,
-            &quot;name&quot;: &quot;Et tenetur&quot;,
-            &quot;slug&quot;: &quot;et-tenetur-4519&quot;
+            &quot;id&quot;: &quot;01a15a6f-4f5e-7265-948a-c45f92a66c7e&quot;,
+            &quot;name&quot;: &quot;Dignissimos neque&quot;,
+            &quot;slug&quot;: &quot;dignissimos-neque-0159&quot;
         },
         &quot;images&quot;: [
             {
-                &quot;id&quot;: &quot;01a159fc-7198-71fb-83ed-59ee9fb2c2d6&quot;,
-                &quot;url&quot;: &quot;http://localhost/storage/products/80a8d9ad-db44-4752-9557-5c4ab4f77bdb/1.jpg&quot;,
+                &quot;id&quot;: &quot;01a15a6f-4f5f-7129-a4b9-3bd290808ed6&quot;,
+                &quot;url&quot;: &quot;http://127.0.0.1:8080/storage/products/733947b5-60c5-4fa1-b9ef-4991263fb3b5/1.jpg&quot;,
                 &quot;position&quot;: 0,
                 &quot;alt&quot;: null,
-                &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-                &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+                &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
             }
         ],
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -7006,7 +8037,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
     \"weight_grams\": 350,
     \"length_cm\": 20,
     \"width_cm\": 12,
-    \"height_cm\": 8
+    \"height_cm\": 8,
+    \"attributes\": [
+        \"preto\"
+    ]
 }"
 </code></pre></div>
 
@@ -7030,7 +8064,10 @@ let body = {
     "weight_grams": 350,
     "length_cm": 20,
     "width_cm": 12,
-    "height_cm": 8
+    "height_cm": 8,
+    "attributes": [
+        "preto"
+    ]
 };
 
 fetch(url, {
@@ -7049,10 +8086,10 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-719d-73b9-ac96-b76eb7c1382e&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4f65-7302-ae8e-b9e918aee6ae&quot;,
         &quot;name&quot;: &quot;Et fugiat sunt&quot;,
-        &quot;slug&quot;: &quot;et-fugiat-sunt-6343&quot;,
-        &quot;description&quot;: &quot;Deserunt aut ab provident perspiciatis quo omnis nostrum. Adipisci quidem nostrum qui commodi incidunt iure. Et et modi ipsum nostrum.&quot;,
+        &quot;slug&quot;: &quot;et-fugiat-sunt-0841&quot;,
+        &quot;description&quot;: null,
         &quot;weight_grams&quot;: null,
         &quot;length_cm&quot;: null,
         &quot;width_cm&quot;: null,
@@ -7060,8 +8097,8 @@ fetch(url, {
         &quot;status&quot;: &quot;draft&quot;,
         &quot;rejection_reason&quot;: null,
         &quot;reviewed_at&quot;: null,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -7259,6 +8296,20 @@ You can check the Dev Tools console for debugging information.</code></pre>
     <br>
 <p>Altura da embalagem em cm. Must be at least 1. Must not be greater than 300. Example: <code>8</code></p>
         </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>attributes</code></b>&nbsp;&nbsp;
+<small>string[]</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="attributes[0]"                data-endpoint="PUTapi-v1-seller-products--product_id-"
+               data-component="body">
+        <input type="text" style="display: none"
+               name="attributes[1]"                data-endpoint="PUTapi-v1-seller-products--product_id-"
+               data-component="body">
+    <br>
+<p>Valor de um atributo (chave = código).</p>
+        </div>
         </form>
 
                     <h2 id="produtos-DELETEapi-v1-seller-products--product_id-">Remover produto</h2>
@@ -7426,7 +8477,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"status\": \"pending_moderation\"
+    \"status\": \"rejected\"
 }"
 </code></pre></div>
 
@@ -7443,7 +8494,7 @@ const headers = {
 };
 
 let body = {
-    "status": "pending_moderation"
+    "status": "rejected"
 };
 
 fetch(url, {
@@ -7463,10 +8514,10 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: &quot;01a159fc-7222-73b3-9f40-41cac816c6ec&quot;,
-            &quot;name&quot;: &quot;Aut dolores enim&quot;,
-            &quot;slug&quot;: &quot;aut-dolores-enim-1024&quot;,
-            &quot;description&quot;: &quot;Praesentium quis adipisci molestias fugit. Distinctio eum doloremque id aut libero aliquam veniam corporis. Mollitia deleniti nemo odit quia officia. Dignissimos neque blanditiis odio.&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4feb-7139-b02a-ae3636bb4479&quot;,
+            &quot;name&quot;: &quot;Autem et consequatur&quot;,
+            &quot;slug&quot;: &quot;autem-et-consequatur-6227&quot;,
+            &quot;description&quot;: &quot;Molestias fugit deleniti distinctio eum doloremque id. Libero aliquam veniam corporis dolorem mollitia deleniti. Odit quia officia est dignissimos neque blanditiis odio. Excepturi doloribus delectus fugit qui repudiandae laboriosam.&quot;,
             &quot;weight_grams&quot;: null,
             &quot;length_cm&quot;: null,
             &quot;width_cm&quot;: null,
@@ -7474,14 +8525,14 @@ fetch(url, {
             &quot;status&quot;: &quot;draft&quot;,
             &quot;rejection_reason&quot;: null,
             &quot;reviewed_at&quot;: null,
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         },
         {
-            &quot;id&quot;: &quot;01a159fc-7224-7138-b54f-7a6d1caa06a4&quot;,
-            &quot;name&quot;: &quot;Neque recusandae et&quot;,
-            &quot;slug&quot;: &quot;neque-recusandae-et-8209&quot;,
-            &quot;description&quot;: &quot;Dicta vitae assumenda consequatur ut. Sunt quisquam sit repellendus. Eaque alias ratione dolores sed rem ea ut. Deserunt sint quis in quod.&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4fed-710a-a190-9f70d1c2b31f&quot;,
+            &quot;name&quot;: &quot;Dicta vitae assumenda&quot;,
+            &quot;slug&quot;: &quot;dicta-vitae-assumenda-1074&quot;,
+            &quot;description&quot;: &quot;Quisquam sit repellendus ut eaque alias ratione. Sed rem ea ut aut deserunt.&quot;,
             &quot;weight_grams&quot;: null,
             &quot;length_cm&quot;: null,
             &quot;width_cm&quot;: null,
@@ -7489,8 +8540,8 @@ fetch(url, {
             &quot;status&quot;: &quot;draft&quot;,
             &quot;rejection_reason&quot;: null,
             &quot;reviewed_at&quot;: null,
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         }
     ],
     &quot;links&quot;: {
@@ -7599,10 +8650,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="status"                data-endpoint="GETapi-v1-admin-products"
-               value="pending_moderation"
+               value="rejected"
                data-component="body">
     <br>
-<p>Example: <code>pending_moderation</code></p>
+<p>Example: <code>rejected</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>draft</code></li> <li><code>pending_moderation</code></li> <li><code>active</code></li> <li><code>rejected</code></li> <li><code>paused</code></li></ul>
         </div>
@@ -7655,10 +8706,10 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-7228-700d-b701-224c0dea7e99&quot;,
-        &quot;name&quot;: &quot;Non facere tempora&quot;,
-        &quot;slug&quot;: &quot;non-facere-tempora-5490&quot;,
-        &quot;description&quot;: &quot;Adipisci molestias fugit deleniti distinctio eum doloremque id. Libero aliquam veniam corporis dolorem mollitia deleniti. Odit quia officia est dignissimos neque blanditiis odio. Excepturi doloribus delectus fugit qui repudiandae laboriosam.&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4ff0-73ef-be53-3d81e481dcd0&quot;,
+        &quot;name&quot;: &quot;Aut dolores enim&quot;,
+        &quot;slug&quot;: &quot;aut-dolores-enim-0170&quot;,
+        &quot;description&quot;: null,
         &quot;weight_grams&quot;: null,
         &quot;length_cm&quot;: null,
         &quot;width_cm&quot;: null,
@@ -7667,27 +8718,27 @@ fetch(url, {
         &quot;rejection_reason&quot;: null,
         &quot;reviewed_at&quot;: null,
         &quot;category&quot;: {
-            &quot;id&quot;: &quot;01a159fc-7227-70f3-bbce-51ae967721b4&quot;,
-            &quot;name&quot;: &quot;Molestiae ut&quot;,
-            &quot;slug&quot;: &quot;molestiae-ut-1102&quot;
+            &quot;id&quot;: &quot;01a15a6f-4ff0-73ef-be53-3d81e441e73b&quot;,
+            &quot;name&quot;: &quot;Et tenetur&quot;,
+            &quot;slug&quot;: &quot;et-tenetur-4519&quot;
         },
         &quot;store&quot;: {
-            &quot;id&quot;: &quot;01a159fc-7227-70f3-bbce-51ae96520847&quot;,
-            &quot;store_name&quot;: &quot;Franecki Inc&quot;,
-            &quot;slug&quot;: &quot;franecki-inc-3974&quot;
+            &quot;id&quot;: &quot;01a15a6f-4ff0-73ef-be53-3d81e40c7bcf&quot;,
+            &quot;store_name&quot;: &quot;Hettinger, Nitzsche and Ankunding&quot;,
+            &quot;slug&quot;: &quot;hettinger-nitzsche-and-ankunding-3706&quot;
         },
         &quot;images&quot;: [
             {
-                &quot;id&quot;: &quot;01a159fc-7228-700d-b701-224c0e1ab13a&quot;,
-                &quot;url&quot;: &quot;http://localhost/storage/products/e5e8b32f-ad16-4dd3-bdb4-b208ea66138b/1.jpg&quot;,
+                &quot;id&quot;: &quot;01a15a6f-4ff1-72e9-9dd4-b31e13d6bb3c&quot;,
+                &quot;url&quot;: &quot;http://127.0.0.1:8080/storage/products/e41564a4-f66b-4b91-9b89-2429f3018796/1.jpg&quot;,
                 &quot;position&quot;: 0,
-                &quot;alt&quot;: &quot;Aut molestiae sunt.&quot;,
-                &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-                &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+                &quot;alt&quot;: null,
+                &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
             }
         ],
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -7816,7 +8867,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
     \"weight_grams\": 350,
     \"length_cm\": 20,
     \"width_cm\": 12,
-    \"height_cm\": 8
+    \"height_cm\": 8,
+    \"attributes\": [
+        \"preto\"
+    ]
 }"
 </code></pre></div>
 
@@ -7840,7 +8894,10 @@ let body = {
     "weight_grams": 350,
     "length_cm": 20,
     "width_cm": 12,
-    "height_cm": 8
+    "height_cm": 8,
+    "attributes": [
+        "preto"
+    ]
 };
 
 fetch(url, {
@@ -7859,10 +8916,10 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-722d-71f2-a1e1-9e54906feff8&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4ff6-71b6-aa38-fcadf7f2b215&quot;,
         &quot;name&quot;: &quot;Nihil accusantium harum&quot;,
-        &quot;slug&quot;: &quot;nihil-accusantium-harum-3724&quot;,
-        &quot;description&quot;: &quot;Commodi incidunt iure odit. Et modi ipsum nostrum omnis autem et consequatur. Dolores enim non facere tempora.&quot;,
+        &quot;slug&quot;: &quot;nihil-accusantium-harum-0782&quot;,
+        &quot;description&quot;: null,
         &quot;weight_grams&quot;: null,
         &quot;length_cm&quot;: null,
         &quot;width_cm&quot;: null,
@@ -7870,8 +8927,8 @@ fetch(url, {
         &quot;status&quot;: &quot;draft&quot;,
         &quot;rejection_reason&quot;: null,
         &quot;reviewed_at&quot;: null,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -8069,6 +9126,20 @@ You can check the Dev Tools console for debugging information.</code></pre>
     <br>
 <p>Altura da embalagem em cm. Must be at least 1. Must not be greater than 300. Example: <code>8</code></p>
         </div>
+                <div style=" padding-left: 28px;  clear: unset;">
+            <b style="line-height: 2;"><code>attributes</code></b>&nbsp;&nbsp;
+<small>string[]</small>&nbsp;
+<i>optional</i> &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="attributes[0]"                data-endpoint="PUTapi-v1-admin-products--product_id-"
+               data-component="body">
+        <input type="text" style="display: none"
+               name="attributes[1]"                data-endpoint="PUTapi-v1-admin-products--product_id-"
+               data-component="body">
+    <br>
+<p>Valor de um atributo (chave = código).</p>
+        </div>
         </form>
 
                     <h2 id="produtos-POSTapi-v1-admin-products--product_id--approve">Aprovar produto</h2>
@@ -8118,9 +9189,9 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-7230-723e-94a9-b801462a3238&quot;,
-        &quot;name&quot;: &quot;Praesentium quis adipisci&quot;,
-        &quot;slug&quot;: &quot;praesentium-quis-adipisci-0170&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4ffa-7178-aea7-e8f1a290aa0c&quot;,
+        &quot;name&quot;: &quot;Non facere tempora&quot;,
+        &quot;slug&quot;: &quot;non-facere-tempora-5127&quot;,
         &quot;description&quot;: null,
         &quot;weight_grams&quot;: null,
         &quot;length_cm&quot;: null,
@@ -8128,9 +9199,9 @@ fetch(url, {
         &quot;height_cm&quot;: null,
         &quot;status&quot;: &quot;active&quot;,
         &quot;rejection_reason&quot;: null,
-        &quot;reviewed_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;reviewed_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -8288,19 +9359,19 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-7235-73e2-a458-7a3967450c6e&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4ffd-72a9-847c-1979ff0b3eb9&quot;,
         &quot;name&quot;: &quot;Mollitia modi deserunt&quot;,
-        &quot;slug&quot;: &quot;mollitia-modi-deserunt-6227&quot;,
-        &quot;description&quot;: &quot;Molestias fugit deleniti distinctio eum doloremque id. Libero aliquam veniam corporis dolorem mollitia deleniti. Odit quia officia est dignissimos neque blanditiis odio. Excepturi doloribus delectus fugit qui repudiandae laboriosam.&quot;,
+        &quot;slug&quot;: &quot;mollitia-modi-deserunt-0089&quot;,
+        &quot;description&quot;: null,
         &quot;weight_grams&quot;: null,
         &quot;length_cm&quot;: null,
         &quot;width_cm&quot;: null,
         &quot;height_cm&quot;: null,
         &quot;status&quot;: &quot;rejected&quot;,
         &quot;rejection_reason&quot;: &quot;Produto fora do padr&atilde;o da plataforma.&quot;,
-        &quot;reviewed_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;reviewed_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -8463,9 +9534,9 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-7239-7065-a631-394ea5dff8d4&quot;,
-        &quot;name&quot;: &quot;Molestias fugit deleniti&quot;,
-        &quot;slug&quot;: &quot;molestias-fugit-deleniti-5127&quot;,
+        &quot;id&quot;: &quot;01a15a6f-5000-73a4-a770-cd8b9b35afee&quot;,
+        &quot;name&quot;: &quot;Praesentium quis adipisci&quot;,
+        &quot;slug&quot;: &quot;praesentium-quis-adipisci-3733&quot;,
         &quot;description&quot;: null,
         &quot;weight_grams&quot;: null,
         &quot;length_cm&quot;: null,
@@ -8473,9 +9544,9 @@ fetch(url, {
         &quot;height_cm&quot;: null,
         &quot;status&quot;: &quot;paused&quot;,
         &quot;rejection_reason&quot;: null,
-        &quot;reviewed_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;reviewed_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -8631,50 +9702,56 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: &quot;01a159fc-71a5-7116-ae41-89c7ec71224d&quot;,
-            &quot;product_id&quot;: &quot;01a159fc-71a4-7059-83b7-0352e7d77b4e&quot;,
-            &quot;price&quot;: &quot;1001.73&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4f6c-73b6-a855-301ff5e72c15&quot;,
+            &quot;product_id&quot;: &quot;01a15a6f-4f6b-7368-b71d-605ed69df68f&quot;,
+            &quot;price&quot;: &quot;663.68&quot;,
+            &quot;price_cents&quot;: 66368,
             &quot;promotional_price&quot;: null,
-            &quot;current_price&quot;: &quot;1001.73&quot;,
+            &quot;promotional_price_cents&quot;: null,
+            &quot;current_price&quot;: &quot;663.68&quot;,
+            &quot;current_price_cents&quot;: 66368,
             &quot;promo_starts_at&quot;: null,
             &quot;promo_ends_at&quot;: null,
-            &quot;available_stock&quot;: 4,
+            &quot;available_stock&quot;: 25,
             &quot;status&quot;: &quot;active&quot;,
             &quot;store&quot;: {
-                &quot;id&quot;: &quot;01a159fc-71a5-7116-ae41-89c7ebdd04ef&quot;,
-                &quot;store_name&quot;: &quot;Schoen PLC&quot;,
-                &quot;slug&quot;: &quot;schoen-plc-9019&quot;
+                &quot;id&quot;: &quot;01a15a6f-4f6b-7368-b71d-605ed81a38d3&quot;,
+                &quot;store_name&quot;: &quot;Ortiz Inc&quot;,
+                &quot;slug&quot;: &quot;ortiz-inc-1439&quot;
             },
             &quot;product&quot;: {
-                &quot;id&quot;: &quot;01a159fc-71a4-7059-83b7-0352e7d77b4e&quot;,
-                &quot;name&quot;: &quot;Neque delectus cupiditate&quot;,
-                &quot;slug&quot;: &quot;neque-delectus-cupiditate-7209&quot;
+                &quot;id&quot;: &quot;01a15a6f-4f6b-7368-b71d-605ed69df68f&quot;,
+                &quot;name&quot;: &quot;Quidem nostrum qui&quot;,
+                &quot;slug&quot;: &quot;quidem-nostrum-qui-0719&quot;
             },
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         },
         {
-            &quot;id&quot;: &quot;01a159fc-71a8-7030-b49a-1f3b084fa9af&quot;,
-            &quot;product_id&quot;: &quot;01a159fc-71a8-7030-b49a-1f3b0656a764&quot;,
-            &quot;price&quot;: &quot;2268.67&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4f6f-70a4-b4d7-d39da14efa78&quot;,
+            &quot;product_id&quot;: &quot;01a15a6f-4f6e-73b2-a73c-46d58f9b3a56&quot;,
+            &quot;price&quot;: &quot;832.67&quot;,
+            &quot;price_cents&quot;: 83267,
             &quot;promotional_price&quot;: null,
-            &quot;current_price&quot;: &quot;2268.67&quot;,
+            &quot;promotional_price_cents&quot;: null,
+            &quot;current_price&quot;: &quot;832.67&quot;,
+            &quot;current_price_cents&quot;: 83267,
             &quot;promo_starts_at&quot;: null,
             &quot;promo_ends_at&quot;: null,
-            &quot;available_stock&quot;: 8,
+            &quot;available_stock&quot;: 57,
             &quot;status&quot;: &quot;active&quot;,
             &quot;store&quot;: {
-                &quot;id&quot;: &quot;01a159fc-71a8-7030-b49a-1f3b07a1cbb1&quot;,
-                &quot;store_name&quot;: &quot;Lueilwitz, Schmidt and Wolff&quot;,
-                &quot;slug&quot;: &quot;lueilwitz-schmidt-and-wolff-5925&quot;
+                &quot;id&quot;: &quot;01a15a6f-4f6f-70a4-b4d7-d39da14531f3&quot;,
+                &quot;store_name&quot;: &quot;Nienow Ltd&quot;,
+                &quot;slug&quot;: &quot;nienow-ltd-2089&quot;
             },
             &quot;product&quot;: {
-                &quot;id&quot;: &quot;01a159fc-71a8-7030-b49a-1f3b0656a764&quot;,
-                &quot;name&quot;: &quot;Ea aspernatur similique&quot;,
-                &quot;slug&quot;: &quot;ea-aspernatur-similique-7542&quot;
+                &quot;id&quot;: &quot;01a15a6f-4f6e-73b2-a73c-46d58f9b3a56&quot;,
+                &quot;name&quot;: &quot;Recusandae et ipsam&quot;,
+                &quot;slug&quot;: &quot;recusandae-et-ipsam-6330&quot;
             },
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         }
     ],
     &quot;links&quot;: {
@@ -8842,27 +9919,30 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-71ae-739f-b10e-8102431e5535&quot;,
-        &quot;product_id&quot;: &quot;01a159fc-71ad-72aa-a635-e25a9ae919a2&quot;,
-        &quot;price&quot;: &quot;1921.36&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4f75-7107-9b12-5c9aa9e3e2a7&quot;,
+        &quot;product_id&quot;: &quot;01a15a6f-4f74-7399-9a90-2702e7f8aa1f&quot;,
+        &quot;price&quot;: &quot;2171.27&quot;,
+        &quot;price_cents&quot;: 217127,
         &quot;promotional_price&quot;: null,
-        &quot;current_price&quot;: &quot;1921.36&quot;,
+        &quot;promotional_price_cents&quot;: null,
+        &quot;current_price&quot;: &quot;2171.27&quot;,
+        &quot;current_price_cents&quot;: 217127,
         &quot;promo_starts_at&quot;: null,
         &quot;promo_ends_at&quot;: null,
         &quot;available_stock&quot;: 72,
         &quot;status&quot;: &quot;active&quot;,
         &quot;store&quot;: {
-            &quot;id&quot;: &quot;01a159fc-71ae-739f-b10e-81024244b7da&quot;,
-            &quot;store_name&quot;: &quot;Wisoky-Kshlerin&quot;,
-            &quot;slug&quot;: &quot;wisoky-kshlerin-0782&quot;
+            &quot;id&quot;: &quot;01a15a6f-4f74-7399-9a90-2702e88f5ec1&quot;,
+            &quot;store_name&quot;: &quot;O&#039;Connell, Beier and Bradtke&quot;,
+            &quot;slug&quot;: &quot;oconnell-beier-and-bradtke-8637&quot;
         },
         &quot;product&quot;: {
-            &quot;id&quot;: &quot;01a159fc-71ad-72aa-a635-e25a9ae919a2&quot;,
-            &quot;name&quot;: &quot;Et animi quos&quot;,
-            &quot;slug&quot;: &quot;et-animi-quos-0841&quot;
+            &quot;id&quot;: &quot;01a15a6f-4f74-7399-9a90-2702e7f8aa1f&quot;,
+            &quot;name&quot;: &quot;Velit et fugiat&quot;,
+            &quot;slug&quot;: &quot;velit-et-fugiat-1582&quot;
         },
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -9072,17 +10152,20 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-71b3-71ee-bf18-5cd53cd09360&quot;,
-        &quot;product_id&quot;: &quot;01a159fc-71b2-7345-87e8-ddf7334dd172&quot;,
-        &quot;price&quot;: &quot;19.93&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4f7a-72fc-aa50-9d83f4c781a0&quot;,
+        &quot;product_id&quot;: &quot;01a15a6f-4f79-70fd-ac8e-134b0206d30a&quot;,
+        &quot;price&quot;: &quot;663.68&quot;,
+        &quot;price_cents&quot;: 66368,
         &quot;promotional_price&quot;: null,
-        &quot;current_price&quot;: &quot;19.93&quot;,
+        &quot;promotional_price_cents&quot;: null,
+        &quot;current_price&quot;: &quot;663.68&quot;,
+        &quot;current_price_cents&quot;: 66368,
         &quot;promo_starts_at&quot;: null,
         &quot;promo_ends_at&quot;: null,
         &quot;available_stock&quot;: 25,
         &quot;status&quot;: &quot;paused&quot;,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -9232,17 +10315,20 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-71b7-73b7-b18e-4e1f25f2dc48&quot;,
-        &quot;product_id&quot;: &quot;01a159fc-71b6-72e7-b633-4fe95ccdfe06&quot;,
-        &quot;price&quot;: &quot;19.93&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4f7e-70d4-8678-e3b2685fc969&quot;,
+        &quot;product_id&quot;: &quot;01a15a6f-4f7d-7321-ae2e-a57543e73b21&quot;,
+        &quot;price&quot;: &quot;663.68&quot;,
+        &quot;price_cents&quot;: 66368,
         &quot;promotional_price&quot;: null,
-        &quot;current_price&quot;: &quot;19.93&quot;,
+        &quot;promotional_price_cents&quot;: null,
+        &quot;current_price&quot;: &quot;663.68&quot;,
+        &quot;current_price_cents&quot;: 66368,
         &quot;promo_starts_at&quot;: null,
         &quot;promo_ends_at&quot;: null,
         &quot;available_stock&quot;: 25,
         &quot;status&quot;: &quot;active&quot;,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -9392,27 +10478,30 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-71bb-727e-9c75-86522957d953&quot;,
-        &quot;product_id&quot;: &quot;01a159fc-71ba-7142-9173-a133bc1b1476&quot;,
-        &quot;price&quot;: &quot;19.93&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4f82-70ee-9429-19ef1707ae92&quot;,
+        &quot;product_id&quot;: &quot;01a15a6f-4f82-70ee-9429-19ef152fe07b&quot;,
+        &quot;price&quot;: &quot;663.68&quot;,
+        &quot;price_cents&quot;: 66368,
         &quot;promotional_price&quot;: null,
-        &quot;current_price&quot;: &quot;19.93&quot;,
+        &quot;promotional_price_cents&quot;: null,
+        &quot;current_price&quot;: &quot;663.68&quot;,
+        &quot;current_price_cents&quot;: 66368,
         &quot;promo_starts_at&quot;: null,
         &quot;promo_ends_at&quot;: null,
         &quot;available_stock&quot;: 25,
         &quot;status&quot;: &quot;active&quot;,
         &quot;store&quot;: {
-            &quot;id&quot;: &quot;01a159fc-71bb-727e-9c75-865228c2f95c&quot;,
-            &quot;store_name&quot;: &quot;Anderson LLC&quot;,
-            &quot;slug&quot;: &quot;anderson-llc-9722&quot;
+            &quot;id&quot;: &quot;01a15a6f-4f82-70ee-9429-19ef16843036&quot;,
+            &quot;store_name&quot;: &quot;Hammes-Brekke&quot;,
+            &quot;slug&quot;: &quot;hammes-brekke-5721&quot;
         },
         &quot;product&quot;: {
-            &quot;id&quot;: &quot;01a159fc-71ba-7142-9173-a133bc1b1476&quot;,
-            &quot;name&quot;: &quot;Odit et et&quot;,
-            &quot;slug&quot;: &quot;odit-et-et-1627&quot;
+            &quot;id&quot;: &quot;01a15a6f-4f82-70ee-9429-19ef152fe07b&quot;,
+            &quot;name&quot;: &quot;Modi ipsum nostrum&quot;,
+            &quot;slug&quot;: &quot;modi-ipsum-nostrum-5058&quot;
         },
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -9578,27 +10667,30 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-71c1-71d2-8f7a-1f6c5f42b9ad&quot;,
-        &quot;product_id&quot;: &quot;01a159fc-71c0-7096-88b7-1857e08168d0&quot;,
-        &quot;price&quot;: &quot;1921.36&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4f88-7063-9ff1-33d116c85988&quot;,
+        &quot;product_id&quot;: &quot;01a15a6f-4f87-70cb-a3ba-1637532340ae&quot;,
+        &quot;price&quot;: &quot;2171.27&quot;,
+        &quot;price_cents&quot;: 217127,
         &quot;promotional_price&quot;: null,
-        &quot;current_price&quot;: &quot;1921.36&quot;,
+        &quot;promotional_price_cents&quot;: null,
+        &quot;current_price&quot;: &quot;2171.27&quot;,
+        &quot;current_price_cents&quot;: 217127,
         &quot;promo_starts_at&quot;: null,
         &quot;promo_ends_at&quot;: null,
         &quot;available_stock&quot;: 72,
         &quot;status&quot;: &quot;active&quot;,
         &quot;store&quot;: {
-            &quot;id&quot;: &quot;01a159fc-71c1-71d2-8f7a-1f6c5e5ce800&quot;,
-            &quot;store_name&quot;: &quot;O&#039;Connell, Beier and Bradtke&quot;,
-            &quot;slug&quot;: &quot;oconnell-beier-and-bradtke-2329&quot;
+            &quot;id&quot;: &quot;01a15a6f-4f88-7063-9ff1-33d116136e92&quot;,
+            &quot;store_name&quot;: &quot;Kuhn-Kreiger&quot;,
+            &quot;slug&quot;: &quot;kuhn-kreiger-3531&quot;
         },
         &quot;product&quot;: {
-            &quot;id&quot;: &quot;01a159fc-71c0-7096-88b7-1857e08168d0&quot;,
-            &quot;name&quot;: &quot;Velit et fugiat&quot;,
-            &quot;slug&quot;: &quot;velit-et-fugiat-1582&quot;
+            &quot;id&quot;: &quot;01a15a6f-4f87-70cb-a3ba-1637532340ae&quot;,
+            &quot;name&quot;: &quot;Sunt nihil accusantium&quot;,
+            &quot;slug&quot;: &quot;sunt-nihil-accusantium-4763&quot;
         },
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -9963,13 +11055,13 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-71fa-72d1-84d2-83d0912996f7&quot;,
-        &quot;offer_id&quot;: &quot;01a159fc-71f9-712c-a537-3d6c7ca0d4c7&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4fc2-71c2-98d8-280649342adf&quot;,
+        &quot;offer_id&quot;: &quot;01a15a6f-4fc2-71c2-98d8-280648af824c&quot;,
         &quot;quantity&quot;: 1,
         &quot;status&quot;: &quot;active&quot;,
-        &quot;expires_at&quot;: &quot;2026-10-20T12:59:38-03:00&quot;,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;expires_at&quot;: &quot;2026-10-20T15:05:06-03:00&quot;,
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -10294,36 +11386,36 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: &quot;01a159fc-70da-7166-8a71-31aea9762d75&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4e84-7296-b5a3-6b37b96cdd33&quot;,
             &quot;label&quot;: null,
-            &quot;recipient_name&quot;: &quot;Clara Cronin V&quot;,
-            &quot;phone&quot;: &quot;44731071902&quot;,
-            &quot;cep&quot;: &quot;21988-862&quot;,
-            &quot;street&quot;: &quot;McLaughlin Mountain&quot;,
-            &quot;number&quot;: &quot;1769&quot;,
-            &quot;complement&quot;: null,
-            &quot;district&quot;: &quot;fort&quot;,
-            &quot;city&quot;: &quot;Careymouth&quot;,
-            &quot;state&quot;: &quot;RJ&quot;,
-            &quot;is_default&quot;: false,
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
-        },
-        {
-            &quot;id&quot;: &quot;01a159fc-70dc-7110-90fe-f4807ecbeca1&quot;,
-            &quot;label&quot;: &quot;Outro&quot;,
-            &quot;recipient_name&quot;: &quot;Akeem Hettinger&quot;,
-            &quot;phone&quot;: &quot;43996512788&quot;,
-            &quot;cep&quot;: &quot;32873-706&quot;,
-            &quot;street&quot;: &quot;Batz Manors&quot;,
-            &quot;number&quot;: &quot;2460&quot;,
-            &quot;complement&quot;: null,
-            &quot;district&quot;: &quot;borough&quot;,
-            &quot;city&quot;: &quot;Lake Noahberg&quot;,
+            &quot;recipient_name&quot;: &quot;Johanna Runolfsson&quot;,
+            &quot;phone&quot;: &quot;39643094836&quot;,
+            &quot;cep&quot;: &quot;13858-214&quot;,
+            &quot;street&quot;: &quot;Gulgowski Flats&quot;,
+            &quot;number&quot;: &quot;3271&quot;,
+            &quot;complement&quot;: &quot;Apt. 683&quot;,
+            &quot;district&quot;: &quot;haven&quot;,
+            &quot;city&quot;: &quot;New Haylee&quot;,
             &quot;state&quot;: &quot;SC&quot;,
             &quot;is_default&quot;: false,
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
+        },
+        {
+            &quot;id&quot;: &quot;01a15a6f-4e87-72ff-a811-20c9cdf99272&quot;,
+            &quot;label&quot;: &quot;Casa&quot;,
+            &quot;recipient_name&quot;: &quot;Yvette Corwin&quot;,
+            &quot;phone&quot;: &quot;53312267495&quot;,
+            &quot;cep&quot;: &quot;18716-447&quot;,
+            &quot;street&quot;: &quot;Shanny Burg&quot;,
+            &quot;number&quot;: &quot;2733&quot;,
+            &quot;complement&quot;: &quot;Suite 408&quot;,
+            &quot;district&quot;: &quot;burgh&quot;,
+            &quot;city&quot;: &quot;Rooseveltshire&quot;,
+            &quot;state&quot;: &quot;SC&quot;,
+            &quot;is_default&quot;: false,
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         }
     ]
 }</code>
@@ -10489,7 +11581,7 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-70e0-733e-8a12-f0a2e1b2a3ce&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4e8e-704d-b672-45e8f1c89e42&quot;,
         &quot;label&quot;: null,
         &quot;recipient_name&quot;: &quot;Ms. Elisabeth Okuneva&quot;,
         &quot;phone&quot;: &quot;62900056432&quot;,
@@ -10501,8 +11593,8 @@ fetch(url, {
         &quot;city&quot;: &quot;Schusterport&quot;,
         &quot;state&quot;: &quot;CE&quot;,
         &quot;is_default&quot;: false,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -10784,7 +11876,7 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-70e2-7023-ad30-747cbded0117&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4e92-732a-a982-4a121e12d1e7&quot;,
         &quot;label&quot;: null,
         &quot;recipient_name&quot;: &quot;Clara Cronin V&quot;,
         &quot;phone&quot;: &quot;44731071902&quot;,
@@ -10796,8 +11888,8 @@ fetch(url, {
         &quot;city&quot;: &quot;Careymouth&quot;,
         &quot;state&quot;: &quot;RJ&quot;,
         &quot;is_default&quot;: false,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -10947,7 +12039,7 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-70e5-73b7-b792-61c9ba1d06bc&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4e95-7357-a3c5-bce2b36e1b21&quot;,
         &quot;label&quot;: null,
         &quot;recipient_name&quot;: &quot;Clara Cronin V&quot;,
         &quot;phone&quot;: &quot;44731071902&quot;,
@@ -10959,8 +12051,8 @@ fetch(url, {
         &quot;city&quot;: &quot;Careymouth&quot;,
         &quot;state&quot;: &quot;RJ&quot;,
         &quot;is_default&quot;: false,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -11138,7 +12230,7 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-70ea-71dc-bcfa-3b0368e93366&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4e9c-7087-9bda-dd341103aca0&quot;,
         &quot;label&quot;: null,
         &quot;recipient_name&quot;: &quot;Ms. Elisabeth Okuneva&quot;,
         &quot;phone&quot;: &quot;62900056432&quot;,
@@ -11150,8 +12242,8 @@ fetch(url, {
         &quot;city&quot;: &quot;Schusterport&quot;,
         &quot;state&quot;: &quot;CE&quot;,
         &quot;is_default&quot;: false,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -11595,36 +12687,42 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-70f0-7222-8797-04947d08dd77&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4ea3-7318-9537-cb7391cba12d&quot;,
         &quot;items_count&quot;: 2,
-        &quot;subtotal&quot;: &quot;4938.04&quot;,
+        &quot;subtotal&quot;: &quot;7498.94&quot;,
+        &quot;subtotal_cents&quot;: 749894,
         &quot;currency&quot;: &quot;BRL&quot;,
         &quot;items&quot;: [
             {
-                &quot;id&quot;: &quot;01a159fc-70f5-70ac-930d-652cefe0dadc&quot;,
-                &quot;offer_id&quot;: &quot;01a159fc-70f5-70ac-930d-652cef7b0256&quot;,
+                &quot;id&quot;: &quot;01a15a6f-4eaa-73fa-9267-2d8c5e19e453&quot;,
+                &quot;offer_id&quot;: &quot;01a15a6f-4ea9-7399-ae03-d03ad3e4f3fa&quot;,
                 &quot;quantity&quot;: 2,
-                &quot;unit_price&quot;: &quot;2469.02&quot;,
-                &quot;line_total&quot;: &quot;4938.04&quot;,
+                &quot;unit_price&quot;: &quot;3749.47&quot;,
+                &quot;unit_price_cents&quot;: 374947,
+                &quot;line_total&quot;: &quot;7498.94&quot;,
+                &quot;line_total_cents&quot;: 749894,
                 &quot;offer&quot;: {
-                    &quot;id&quot;: &quot;01a159fc-70f5-70ac-930d-652cef7b0256&quot;,
-                    &quot;product_id&quot;: &quot;01a159fc-70f3-702e-a224-982f853e4e63&quot;,
-                    &quot;price&quot;: &quot;2469.02&quot;,
+                    &quot;id&quot;: &quot;01a15a6f-4ea9-7399-ae03-d03ad3e4f3fa&quot;,
+                    &quot;product_id&quot;: &quot;01a15a6f-4ea7-7103-bf59-0eae997fe212&quot;,
+                    &quot;price&quot;: &quot;3749.47&quot;,
+                    &quot;price_cents&quot;: 374947,
                     &quot;promotional_price&quot;: null,
-                    &quot;current_price&quot;: &quot;2469.02&quot;,
+                    &quot;promotional_price_cents&quot;: null,
+                    &quot;current_price&quot;: &quot;3749.47&quot;,
+                    &quot;current_price_cents&quot;: 374947,
                     &quot;promo_starts_at&quot;: null,
                     &quot;promo_ends_at&quot;: null,
                     &quot;available_stock&quot;: 10,
                     &quot;status&quot;: &quot;active&quot;,
-                    &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-                    &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+                    &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                    &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
                 },
-                &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-                &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+                &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
             }
         ],
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -11771,36 +12869,42 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-70fc-73de-a039-ac0a3b227c58&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4eaf-72db-a7ad-83ca972b13ea&quot;,
         &quot;items_count&quot;: 1,
-        &quot;subtotal&quot;: &quot;3155.33&quot;,
+        &quot;subtotal&quot;: &quot;1081.26&quot;,
+        &quot;subtotal_cents&quot;: 108126,
         &quot;currency&quot;: &quot;BRL&quot;,
         &quot;items&quot;: [
             {
-                &quot;id&quot;: &quot;01a159fc-70fe-7086-a553-015789fa9e8c&quot;,
-                &quot;offer_id&quot;: &quot;01a159fc-70fe-7086-a553-015789c78d5b&quot;,
+                &quot;id&quot;: &quot;01a15a6f-4eb2-708a-a878-5aac911c431c&quot;,
+                &quot;offer_id&quot;: &quot;01a15a6f-4eb2-708a-a878-5aac904c4ffd&quot;,
                 &quot;quantity&quot;: 1,
-                &quot;unit_price&quot;: &quot;3155.33&quot;,
-                &quot;line_total&quot;: &quot;3155.33&quot;,
+                &quot;unit_price&quot;: &quot;1081.26&quot;,
+                &quot;unit_price_cents&quot;: 108126,
+                &quot;line_total&quot;: &quot;1081.26&quot;,
+                &quot;line_total_cents&quot;: 108126,
                 &quot;offer&quot;: {
-                    &quot;id&quot;: &quot;01a159fc-70fe-7086-a553-015789c78d5b&quot;,
-                    &quot;product_id&quot;: &quot;01a159fc-70fd-717d-9406-40080c3f61ca&quot;,
-                    &quot;price&quot;: &quot;3155.33&quot;,
+                    &quot;id&quot;: &quot;01a15a6f-4eb2-708a-a878-5aac904c4ffd&quot;,
+                    &quot;product_id&quot;: &quot;01a15a6f-4eb1-7255-8331-12a775a96a79&quot;,
+                    &quot;price&quot;: &quot;1081.26&quot;,
+                    &quot;price_cents&quot;: 108126,
                     &quot;promotional_price&quot;: null,
-                    &quot;current_price&quot;: &quot;3155.33&quot;,
+                    &quot;promotional_price_cents&quot;: null,
+                    &quot;current_price&quot;: &quot;1081.26&quot;,
+                    &quot;current_price_cents&quot;: 108126,
                     &quot;promo_starts_at&quot;: null,
                     &quot;promo_ends_at&quot;: null,
                     &quot;available_stock&quot;: 10,
                     &quot;status&quot;: &quot;active&quot;,
-                    &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-                    &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+                    &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                    &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
                 },
-                &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-                &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+                &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
             }
         ],
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -11970,36 +13074,42 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-7102-7061-b685-825a63fce653&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4eb5-7081-baf7-89ae4e645213&quot;,
         &quot;items_count&quot;: 1,
-        &quot;subtotal&quot;: &quot;3581.02&quot;,
+        &quot;subtotal&quot;: &quot;3904.19&quot;,
+        &quot;subtotal_cents&quot;: 390419,
         &quot;currency&quot;: &quot;BRL&quot;,
         &quot;items&quot;: [
             {
-                &quot;id&quot;: &quot;01a159fc-7104-707b-b367-0ae5a36c3946&quot;,
-                &quot;offer_id&quot;: &quot;01a159fc-7104-707b-b367-0ae5a296b6f4&quot;,
+                &quot;id&quot;: &quot;01a15a6f-4eb8-7166-ad1b-662e4f12cd60&quot;,
+                &quot;offer_id&quot;: &quot;01a15a6f-4eb8-7166-ad1b-662e4e20a16f&quot;,
                 &quot;quantity&quot;: 1,
-                &quot;unit_price&quot;: &quot;3581.02&quot;,
-                &quot;line_total&quot;: &quot;3581.02&quot;,
+                &quot;unit_price&quot;: &quot;3904.19&quot;,
+                &quot;unit_price_cents&quot;: 390419,
+                &quot;line_total&quot;: &quot;3904.19&quot;,
+                &quot;line_total_cents&quot;: 390419,
                 &quot;offer&quot;: {
-                    &quot;id&quot;: &quot;01a159fc-7104-707b-b367-0ae5a296b6f4&quot;,
-                    &quot;product_id&quot;: &quot;01a159fc-7103-7336-82d0-afd00b8f6d9d&quot;,
-                    &quot;price&quot;: &quot;3581.02&quot;,
+                    &quot;id&quot;: &quot;01a15a6f-4eb8-7166-ad1b-662e4e20a16f&quot;,
+                    &quot;product_id&quot;: &quot;01a15a6f-4eb7-70ff-b42a-0130bec9fa68&quot;,
+                    &quot;price&quot;: &quot;3904.19&quot;,
+                    &quot;price_cents&quot;: 390419,
                     &quot;promotional_price&quot;: null,
-                    &quot;current_price&quot;: &quot;3581.02&quot;,
+                    &quot;promotional_price_cents&quot;: null,
+                    &quot;current_price&quot;: &quot;3904.19&quot;,
+                    &quot;current_price_cents&quot;: 390419,
                     &quot;promo_starts_at&quot;: null,
                     &quot;promo_ends_at&quot;: null,
                     &quot;available_stock&quot;: 10,
                     &quot;status&quot;: &quot;active&quot;,
-                    &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-                    &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+                    &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                    &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
                 },
-                &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-                &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+                &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
             }
         ],
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -12162,36 +13272,42 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-710e-71e4-9732-1425855a77bf&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4ec2-707a-b967-c6cc5a4fb374&quot;,
         &quot;items_count&quot;: 2,
-        &quot;subtotal&quot;: &quot;1524.60&quot;,
+        &quot;subtotal&quot;: &quot;8165.98&quot;,
+        &quot;subtotal_cents&quot;: 816598,
         &quot;currency&quot;: &quot;BRL&quot;,
         &quot;items&quot;: [
             {
-                &quot;id&quot;: &quot;01a159fc-7111-71fc-95d1-beccd6892f4d&quot;,
-                &quot;offer_id&quot;: &quot;01a159fc-7111-71fc-95d1-beccd687d29e&quot;,
+                &quot;id&quot;: &quot;01a15a6f-4ec4-738f-b2ce-d2990ed2c2c2&quot;,
+                &quot;offer_id&quot;: &quot;01a15a6f-4ec4-738f-b2ce-d2990e12b06c&quot;,
                 &quot;quantity&quot;: 2,
-                &quot;unit_price&quot;: &quot;762.30&quot;,
-                &quot;line_total&quot;: &quot;1524.60&quot;,
+                &quot;unit_price&quot;: &quot;4082.99&quot;,
+                &quot;unit_price_cents&quot;: 408299,
+                &quot;line_total&quot;: &quot;8165.98&quot;,
+                &quot;line_total_cents&quot;: 816598,
                 &quot;offer&quot;: {
-                    &quot;id&quot;: &quot;01a159fc-7111-71fc-95d1-beccd687d29e&quot;,
-                    &quot;product_id&quot;: &quot;01a159fc-7110-71c6-a9c8-4151a580c0fb&quot;,
-                    &quot;price&quot;: &quot;762.30&quot;,
+                    &quot;id&quot;: &quot;01a15a6f-4ec4-738f-b2ce-d2990e12b06c&quot;,
+                    &quot;product_id&quot;: &quot;01a15a6f-4ec3-7179-807b-a7293c842ef4&quot;,
+                    &quot;price&quot;: &quot;4082.99&quot;,
+                    &quot;price_cents&quot;: 408299,
                     &quot;promotional_price&quot;: null,
-                    &quot;current_price&quot;: &quot;762.30&quot;,
+                    &quot;promotional_price_cents&quot;: null,
+                    &quot;current_price&quot;: &quot;4082.99&quot;,
+                    &quot;current_price_cents&quot;: 408299,
                     &quot;promo_starts_at&quot;: null,
                     &quot;promo_ends_at&quot;: null,
                     &quot;available_stock&quot;: 10,
                     &quot;status&quot;: &quot;active&quot;,
-                    &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-                    &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+                    &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                    &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
                 },
-                &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-                &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+                &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
             }
         ],
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -12688,7 +13804,7 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-7119-70d3-ba5f-85cebadbf5bf&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4ecc-706c-9900-24fa31dc643f&quot;,
         &quot;status&quot;: &quot;pending_payment&quot;,
         &quot;currency&quot;: &quot;BRL&quot;,
         &quot;subtotal_cents&quot;: 217127,
@@ -12706,12 +13822,12 @@ fetch(url, {
             &quot;city&quot;: &quot;Schusterport&quot;,
             &quot;state&quot;: &quot;RS&quot;
         },
-        &quot;idempotency_key&quot;: &quot;07af2fa9-109f-4d1d-b556-2a9f73237a9e&quot;,
+        &quot;idempotency_key&quot;: &quot;276c890d-1fcb-4f37-b1b4-7ca59d0ee1ff&quot;,
         &quot;payment_due_at&quot;: null,
         &quot;sellers&quot;: [
             {
-                &quot;id&quot;: &quot;01a159fc-711b-7212-b2d5-38c997741300&quot;,
-                &quot;store_id&quot;: &quot;01a159fc-711a-70d4-92e3-a9d0ecb30c80&quot;,
+                &quot;id&quot;: &quot;01a15a6f-4ece-7169-8173-89dbe334e95b&quot;,
+                &quot;store_id&quot;: &quot;01a15a6f-4ecd-71bc-b8e8-35bb093b5926&quot;,
                 &quot;status&quot;: &quot;pending_payment&quot;,
                 &quot;subtotal_cents&quot;: 36581,
                 &quot;shipping_cents&quot;: 2691,
@@ -12722,13 +13838,13 @@ fetch(url, {
                     &quot;eta_days&quot;: null,
                     &quot;quoted_at&quot;: null
                 },
-                &quot;order_id&quot;: &quot;01a159fc-7119-70d3-ba5f-85cebadbf5bf&quot;,
-                &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-                &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+                &quot;order_id&quot;: &quot;01a15a6f-4ecc-706c-9900-24fa31dc643f&quot;,
+                &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
             }
         ],
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -12919,7 +14035,7 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: &quot;01a159fc-711f-7180-83a7-a76201e01732&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4ed2-7286-80bf-6853ceb3833f&quot;,
             &quot;status&quot;: &quot;pending_payment&quot;,
             &quot;currency&quot;: &quot;BRL&quot;,
             &quot;subtotal_cents&quot;: 66368,
@@ -12937,13 +14053,13 @@ fetch(url, {
                 &quot;city&quot;: &quot;Baileemouth&quot;,
                 &quot;state&quot;: &quot;MG&quot;
             },
-            &quot;idempotency_key&quot;: &quot;5a7d7be8-9bc3-4694-9a49-9adaef388804&quot;,
+            &quot;idempotency_key&quot;: &quot;887c447c-008a-4575-999d-0dc9933b4af2&quot;,
             &quot;payment_due_at&quot;: null,
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         },
         {
-            &quot;id&quot;: &quot;01a159fc-7120-70a1-8046-8cdc1cbdbf92&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4ed3-73dd-9987-84790e8dc914&quot;,
             &quot;status&quot;: &quot;pending_payment&quot;,
             &quot;currency&quot;: &quot;BRL&quot;,
             &quot;subtotal_cents&quot;: 352382,
@@ -12961,10 +14077,10 @@ fetch(url, {
                 &quot;city&quot;: &quot;East Nedra&quot;,
                 &quot;state&quot;: &quot;PR&quot;
             },
-            &quot;idempotency_key&quot;: &quot;aa626b47-d7fe-4f9f-8e8f-391911f544e1&quot;,
+            &quot;idempotency_key&quot;: &quot;363b16c5-2bf6-4ce7-9426-e085f373f5ab&quot;,
             &quot;payment_due_at&quot;: null,
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         }
     ],
     &quot;links&quot;: {
@@ -13114,7 +14230,7 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-7123-7271-bf74-aa13a3d839b6&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4ed6-72a2-ac1e-63a911ccb506&quot;,
         &quot;status&quot;: &quot;pending_payment&quot;,
         &quot;currency&quot;: &quot;BRL&quot;,
         &quot;subtotal_cents&quot;: 66368,
@@ -13132,12 +14248,12 @@ fetch(url, {
             &quot;city&quot;: &quot;Baileemouth&quot;,
             &quot;state&quot;: &quot;MG&quot;
         },
-        &quot;idempotency_key&quot;: &quot;8b52dbf1-8a70-475f-9250-ae3960540b65&quot;,
+        &quot;idempotency_key&quot;: &quot;eed3f28a-f808-49d2-ba8f-c96b05c09517&quot;,
         &quot;payment_due_at&quot;: null,
         &quot;sellers&quot;: [
             {
-                &quot;id&quot;: &quot;01a159fc-7125-7192-9252-afe7e48af5a2&quot;,
-                &quot;store_id&quot;: &quot;01a159fc-7125-7192-9252-afe7e4379e18&quot;,
+                &quot;id&quot;: &quot;01a15a6f-4ed7-7314-9993-a4ccaeeb09d9&quot;,
+                &quot;store_id&quot;: &quot;01a15a6f-4ed7-7314-9993-a4ccae99bd4f&quot;,
                 &quot;status&quot;: &quot;pending_payment&quot;,
                 &quot;subtotal_cents&quot;: 124393,
                 &quot;shipping_cents&quot;: 1830,
@@ -13148,22 +14264,22 @@ fetch(url, {
                     &quot;eta_days&quot;: null,
                     &quot;quoted_at&quot;: null
                 },
-                &quot;order_id&quot;: &quot;01a159fc-7123-7271-bf74-aa13a3d839b6&quot;,
-                &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-                &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+                &quot;order_id&quot;: &quot;01a15a6f-4ed6-72a2-ac1e-63a911ccb506&quot;,
+                &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
             }
         ],
         &quot;status_histories&quot;: [
             {
-                &quot;id&quot;: &quot;01a159fc-7125-7192-9252-afe7e4f7b7f5&quot;,
+                &quot;id&quot;: &quot;01a15a6f-4ed8-71e1-a8c3-1f2512e2573d&quot;,
                 &quot;from_status&quot;: null,
                 &quot;to_status&quot;: &quot;pending_payment&quot;,
                 &quot;reason&quot;: null,
-                &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+                &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
             }
         ],
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -13321,7 +14437,7 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-712a-7112-a921-9dc03dd2181b&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4edc-705a-b34b-b4c0ed6471e1&quot;,
         &quot;status&quot;: &quot;pending_payment&quot;,
         &quot;currency&quot;: &quot;BRL&quot;,
         &quot;subtotal_cents&quot;: 217127,
@@ -13339,10 +14455,10 @@ fetch(url, {
             &quot;city&quot;: &quot;Schusterport&quot;,
             &quot;state&quot;: &quot;RS&quot;
         },
-        &quot;idempotency_key&quot;: &quot;7836ade7-2985-4f83-9e00-418a272c9244&quot;,
+        &quot;idempotency_key&quot;: &quot;5ce7a668-340d-419b-b3f8-3c519e73186f&quot;,
         &quot;payment_due_at&quot;: null,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -13507,8 +14623,8 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: &quot;01a159fc-71c7-709a-851e-b7d76d32eb10&quot;,
-            &quot;store_id&quot;: &quot;01a159fc-71c6-70a5-8661-9d07ada5417c&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4f8d-7114-9284-a906c82b32a5&quot;,
+            &quot;store_id&quot;: &quot;01a15a6f-4f8d-7114-9284-a906c79e6916&quot;,
             &quot;status&quot;: &quot;pending_payment&quot;,
             &quot;subtotal_cents&quot;: 159868,
             &quot;shipping_cents&quot;: 1979,
@@ -13519,28 +14635,28 @@ fetch(url, {
                 &quot;eta_days&quot;: null,
                 &quot;quoted_at&quot;: null
             },
-            &quot;order_id&quot;: &quot;01a159fc-71c6-70a5-8661-9d07ac4d44c6&quot;,
+            &quot;order_id&quot;: &quot;01a15a6f-4f8c-700f-aeaf-6b2d02aaa111&quot;,
             &quot;items&quot;: [
                 {
-                    &quot;id&quot;: &quot;01a159fc-71c9-71fb-97ae-6cab46d609eb&quot;,
+                    &quot;id&quot;: &quot;01a15a6f-4f90-70c2-abd1-7f243ecc739a&quot;,
                     &quot;offer_id&quot;: null,
-                    &quot;product_id&quot;: &quot;01a159fc-71c8-709e-87eb-545475a66820&quot;,
-                    &quot;store_id&quot;: &quot;01a159fc-71c9-71fb-97ae-6cab46592735&quot;,
-                    &quot;product_name&quot;: &quot;corporis nesciunt ut&quot;,
-                    &quot;product_slug&quot;: &quot;corporis-nesciunt-ut-531&quot;,
-                    &quot;unit_price_cents&quot;: 21827,
-                    &quot;quantity&quot;: 4,
-                    &quot;line_total_cents&quot;: 87308,
-                    &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-                    &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+                    &quot;product_id&quot;: &quot;01a15a6f-4f8f-70fa-b03b-84bb9950e95a&quot;,
+                    &quot;store_id&quot;: &quot;01a15a6f-4f90-70c2-abd1-7f243dea24ac&quot;,
+                    &quot;product_name&quot;: &quot;rem est esse&quot;,
+                    &quot;product_slug&quot;: &quot;rem-est-esse-937&quot;,
+                    &quot;unit_price_cents&quot;: 37423,
+                    &quot;quantity&quot;: 2,
+                    &quot;line_total_cents&quot;: 74846,
+                    &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                    &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
                 }
             ],
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         },
         {
-            &quot;id&quot;: &quot;01a159fc-71cc-72ba-884a-454362a963db&quot;,
-            &quot;store_id&quot;: &quot;01a159fc-71cb-725e-8cda-10321e3aa5e8&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4f92-721a-9f46-236cd6d79312&quot;,
+            &quot;store_id&quot;: &quot;01a15a6f-4f92-721a-9f46-236cd6d54903&quot;,
             &quot;status&quot;: &quot;pending_payment&quot;,
             &quot;subtotal_cents&quot;: 23933,
             &quot;shipping_cents&quot;: 1725,
@@ -13551,24 +14667,24 @@ fetch(url, {
                 &quot;eta_days&quot;: null,
                 &quot;quoted_at&quot;: null
             },
-            &quot;order_id&quot;: &quot;01a159fc-71cb-725e-8cda-10321da48526&quot;,
+            &quot;order_id&quot;: &quot;01a15a6f-4f91-7237-be90-6a98c1f2d222&quot;,
             &quot;items&quot;: [
                 {
-                    &quot;id&quot;: &quot;01a159fc-71ce-718b-a5ea-6126dac29a89&quot;,
+                    &quot;id&quot;: &quot;01a15a6f-4f95-70f0-80ac-5d470c89935a&quot;,
                     &quot;offer_id&quot;: null,
-                    &quot;product_id&quot;: &quot;01a159fc-71cd-7200-b77c-9f1cd040476c&quot;,
-                    &quot;store_id&quot;: &quot;01a159fc-71ce-718b-a5ea-6126daa70bfb&quot;,
+                    &quot;product_id&quot;: &quot;01a15a6f-4f94-7009-8d12-c16809526481&quot;,
+                    &quot;store_id&quot;: &quot;01a15a6f-4f94-7009-8d12-c16809bcec5f&quot;,
                     &quot;product_name&quot;: &quot;et itaque nihil&quot;,
                     &quot;product_slug&quot;: &quot;et-itaque-nihil-334&quot;,
                     &quot;unit_price_cents&quot;: 25694,
                     &quot;quantity&quot;: 2,
                     &quot;line_total_cents&quot;: 51388,
-                    &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-                    &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+                    &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                    &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
                 }
             ],
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         }
     ],
     &quot;links&quot;: {
@@ -13718,8 +14834,8 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-71d3-70d8-801f-b96372aa9ba4&quot;,
-        &quot;store_id&quot;: &quot;01a159fc-71d3-70d8-801f-b9637217ba92&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4f99-7062-b98f-9eeb4f412ca7&quot;,
+        &quot;store_id&quot;: &quot;01a15a6f-4f99-7062-b98f-9eeb4f1d9058&quot;,
         &quot;status&quot;: &quot;pending_payment&quot;,
         &quot;subtotal_cents&quot;: 159868,
         &quot;shipping_cents&quot;: 1979,
@@ -13731,33 +14847,33 @@ fetch(url, {
             &quot;quoted_at&quot;: null
         },
         &quot;shipment&quot;: {
-            &quot;id&quot;: &quot;01a159fc-71d6-7086-b2c9-397c7a1b42ad&quot;,
-            &quot;tracking_code&quot;: &quot;SM688147387BR&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4f9c-721d-a5da-38376ce84cea&quot;,
+            &quot;tracking_code&quot;: &quot;SM953098916BR&quot;,
             &quot;carrier&quot;: &quot;simulated&quot;,
             &quot;service_code&quot;: &quot;simulated_standard&quot;,
             &quot;status&quot;: &quot;in_transit&quot;,
-            &quot;shipped_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;estimated_delivery_at&quot;: &quot;2026-10-25T12:44:38-03:00&quot;,
+            &quot;shipped_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;estimated_delivery_at&quot;: &quot;2026-10-25T14:50:06-03:00&quot;,
             &quot;delivered_at&quot;: null
         },
-        &quot;order_id&quot;: &quot;01a159fc-71d2-712d-a2ed-28c19cf0b7e3&quot;,
+        &quot;order_id&quot;: &quot;01a15a6f-4f98-7041-a56a-87b309eb3d0a&quot;,
         &quot;items&quot;: [
             {
-                &quot;id&quot;: &quot;01a159fc-71d5-700b-b855-18d431d59fd9&quot;,
+                &quot;id&quot;: &quot;01a15a6f-4f9c-721d-a5da-38376c8d3807&quot;,
                 &quot;offer_id&quot;: null,
-                &quot;product_id&quot;: &quot;01a159fc-71d4-718b-8d4a-0bf1605dc3bd&quot;,
-                &quot;store_id&quot;: &quot;01a159fc-71d5-700b-b855-18d43154f3fd&quot;,
-                &quot;product_name&quot;: &quot;dolorem et ut&quot;,
-                &quot;product_slug&quot;: &quot;dolorem-et-ut-381&quot;,
-                &quot;unit_price_cents&quot;: 10872,
-                &quot;quantity&quot;: 5,
-                &quot;line_total_cents&quot;: 54360,
-                &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-                &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+                &quot;product_id&quot;: &quot;01a15a6f-4f9b-72ca-ac75-983512a11db7&quot;,
+                &quot;store_id&quot;: &quot;01a15a6f-4f9b-72ca-ac75-983513b1cb81&quot;,
+                &quot;product_name&quot;: &quot;esse sint aut&quot;,
+                &quot;product_slug&quot;: &quot;esse-sint-aut-721&quot;,
+                &quot;unit_price_cents&quot;: 2923,
+                &quot;quantity&quot;: 2,
+                &quot;line_total_cents&quot;: 5846,
+                &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
             }
         ],
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -13915,8 +15031,8 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-71db-71bb-86b1-0dcc8a940e15&quot;,
-        &quot;store_id&quot;: &quot;01a159fc-71db-71bb-86b1-0dcc8a6b2a59&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4fa1-717a-a200-36cd23e0d959&quot;,
+        &quot;store_id&quot;: &quot;01a15a6f-4fa1-717a-a200-36cd23c5014b&quot;,
         &quot;status&quot;: &quot;pending_payment&quot;,
         &quot;subtotal_cents&quot;: 99642,
         &quot;shipping_cents&quot;: 1926,
@@ -13927,9 +15043,9 @@ fetch(url, {
             &quot;eta_days&quot;: null,
             &quot;quoted_at&quot;: null
         },
-        &quot;order_id&quot;: &quot;01a159fc-71da-71f8-b59c-160d7bbcf80c&quot;,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;order_id&quot;: &quot;01a15a6f-4fa0-7203-bfd5-6f1bc2bd4f8f&quot;,
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -14094,7 +15210,7 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: &quot;01a159fc-723c-70bb-a9d5-7fc08aea216f&quot;,
+            &quot;id&quot;: &quot;01a15a6f-5003-728a-bded-dc16b91d6490&quot;,
             &quot;status&quot;: &quot;pending_payment&quot;,
             &quot;currency&quot;: &quot;BRL&quot;,
             &quot;subtotal_cents&quot;: 66368,
@@ -14112,13 +15228,13 @@ fetch(url, {
                 &quot;city&quot;: &quot;Baileemouth&quot;,
                 &quot;state&quot;: &quot;MG&quot;
             },
-            &quot;idempotency_key&quot;: &quot;439288d7-562c-4e56-a3bc-e021c97ec82c&quot;,
+            &quot;idempotency_key&quot;: &quot;717bb2c7-414d-439c-baf5-5fe18245ec0e&quot;,
             &quot;payment_due_at&quot;: null,
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         },
         {
-            &quot;id&quot;: &quot;01a159fc-723d-702d-8cf1-0bbd104ef346&quot;,
+            &quot;id&quot;: &quot;01a15a6f-5004-72a2-bcd0-46d7732401e5&quot;,
             &quot;status&quot;: &quot;pending_payment&quot;,
             &quot;currency&quot;: &quot;BRL&quot;,
             &quot;subtotal_cents&quot;: 96001,
@@ -14136,10 +15252,10 @@ fetch(url, {
                 &quot;city&quot;: &quot;East Eltonhaven&quot;,
                 &quot;state&quot;: &quot;RS&quot;
             },
-            &quot;idempotency_key&quot;: &quot;e35b4de3-3b3b-4d82-a97e-ef7d54d9415b&quot;,
+            &quot;idempotency_key&quot;: &quot;286e528e-1dcf-4d5b-ad66-76e208126570&quot;,
             &quot;payment_due_at&quot;: null,
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         }
     ],
     &quot;links&quot;: {
@@ -14289,7 +15405,7 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-723f-7396-ab03-daeed0d5d593&quot;,
+        &quot;id&quot;: &quot;01a15a6f-5007-717c-96ff-ac27025076d9&quot;,
         &quot;status&quot;: &quot;pending_payment&quot;,
         &quot;currency&quot;: &quot;BRL&quot;,
         &quot;subtotal_cents&quot;: 66368,
@@ -14307,29 +15423,29 @@ fetch(url, {
             &quot;city&quot;: &quot;Baileemouth&quot;,
             &quot;state&quot;: &quot;MG&quot;
         },
-        &quot;idempotency_key&quot;: &quot;34448ea8-c922-4a93-a3a8-16bad146451f&quot;,
+        &quot;idempotency_key&quot;: &quot;e2e76d71-d143-4251-a2ef-b2c01ee9c216&quot;,
         &quot;payment_due_at&quot;: null,
         &quot;sellers&quot;: [
             {
-                &quot;id&quot;: &quot;01a159fc-7241-7347-aad8-1934cc455327&quot;,
-                &quot;store_id&quot;: &quot;01a159fc-7240-7081-ab01-2f16127fc85a&quot;,
+                &quot;id&quot;: &quot;01a15a6f-5008-715e-b0cd-78fb1f0e0767&quot;,
+                &quot;store_id&quot;: &quot;01a15a6f-5007-717c-96ff-ac27032926ed&quot;,
                 &quot;status&quot;: &quot;pending_payment&quot;,
-                &quot;subtotal_cents&quot;: 92292,
-                &quot;shipping_cents&quot;: 1772,
-                &quot;total_cents&quot;: 94064,
+                &quot;subtotal_cents&quot;: 194684,
+                &quot;shipping_cents&quot;: 2619,
+                &quot;total_cents&quot;: 197303,
                 &quot;shipping&quot;: {
                     &quot;service_code&quot;: null,
                     &quot;service_name&quot;: null,
                     &quot;eta_days&quot;: null,
                     &quot;quoted_at&quot;: null
                 },
-                &quot;order_id&quot;: &quot;01a159fc-723f-7396-ab03-daeed0d5d593&quot;,
-                &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-                &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+                &quot;order_id&quot;: &quot;01a15a6f-5007-717c-96ff-ac27025076d9&quot;,
+                &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+                &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
             }
         ],
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -14484,36 +15600,36 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: &quot;01a159fc-712f-7137-8553-51cdc2814a0b&quot;,
-            &quot;order_id&quot;: &quot;01a159fc-712e-72ad-b2f8-6971cf3b1564&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4ee1-7371-9738-cd67a2a0fc2a&quot;,
+            &quot;order_id&quot;: &quot;01a15a6f-4ee0-73ac-b7df-26597ecd5ee3&quot;,
             &quot;provider&quot;: &quot;mock&quot;,
             &quot;method&quot;: &quot;pix&quot;,
             &quot;status&quot;: &quot;pending&quot;,
-            &quot;external_id&quot;: &quot;mock_pay_01m5czrw9dtes6qfgzmrme5den&quot;,
+            &quot;external_id&quot;: &quot;mock_pay_01m5d6ykpzd9wnjk8wvbmz5p8g&quot;,
             &quot;currency&quot;: &quot;BRL&quot;,
             &quot;amount_cents&quot;: 66368,
             &quot;instructions&quot;: [],
             &quot;paid_at&quot;: null,
             &quot;failed_at&quot;: null,
             &quot;cancelled_at&quot;: null,
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         },
         {
-            &quot;id&quot;: &quot;01a159fc-7131-7299-9b51-504c31a47c50&quot;,
-            &quot;order_id&quot;: &quot;01a159fc-7130-72fd-8802-3ea01e21abd4&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4ee3-70c1-9530-c1381cf68fdb&quot;,
+            &quot;order_id&quot;: &quot;01a15a6f-4ee2-72af-a75e-ec8e7afa27b9&quot;,
             &quot;provider&quot;: &quot;mock&quot;,
             &quot;method&quot;: &quot;pix&quot;,
             &quot;status&quot;: &quot;pending&quot;,
-            &quot;external_id&quot;: &quot;mock_pay_01m5czrw9g2pk9mf0q498nkcj9&quot;,
+            &quot;external_id&quot;: &quot;mock_pay_01m5d6ykq209p4scnw8md5d5wz&quot;,
             &quot;currency&quot;: &quot;BRL&quot;,
             &quot;amount_cents&quot;: 350238,
             &quot;instructions&quot;: [],
             &quot;paid_at&quot;: null,
             &quot;failed_at&quot;: null,
             &quot;cancelled_at&quot;: null,
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         }
     ]
 }</code>
@@ -14674,20 +15790,20 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-7134-7189-acd7-b605b46baffd&quot;,
-        &quot;order_id&quot;: &quot;01a159fc-7134-7189-acd7-b605b407022f&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4ee6-7256-ab18-73dddd647ff1&quot;,
+        &quot;order_id&quot;: &quot;01a15a6f-4ee5-739e-9fa8-35d75d8aabff&quot;,
         &quot;provider&quot;: &quot;mock&quot;,
         &quot;method&quot;: &quot;pix&quot;,
         &quot;status&quot;: &quot;pending&quot;,
-        &quot;external_id&quot;: &quot;mock_pay_01m5czrw9kjg72hhef4x1j29gh&quot;,
+        &quot;external_id&quot;: &quot;mock_pay_01m5d6ykq593a202szqh0t2ekp&quot;,
         &quot;currency&quot;: &quot;BRL&quot;,
         &quot;amount_cents&quot;: 66368,
         &quot;instructions&quot;: [],
         &quot;paid_at&quot;: null,
         &quot;failed_at&quot;: null,
         &quot;cancelled_at&quot;: null,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -15075,21 +16191,21 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-71e0-733f-8b44-8305eaa53695&quot;,
-        &quot;store_id&quot;: &quot;01a159fc-71e0-733f-8b44-8305e9db722a&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4fa8-70b4-aef2-ee70a0c56323&quot;,
+        &quot;store_id&quot;: &quot;01a15a6f-4fa8-70b4-aef2-ee70a03599d2&quot;,
         &quot;status&quot;: &quot;pending_payment&quot;,
-        &quot;subtotal_cents&quot;: 159868,
-        &quot;shipping_cents&quot;: 1979,
-        &quot;total_cents&quot;: 161847,
+        &quot;subtotal_cents&quot;: 68420,
+        &quot;shipping_cents&quot;: 2959,
+        &quot;total_cents&quot;: 71379,
         &quot;shipping&quot;: {
             &quot;service_code&quot;: null,
             &quot;service_name&quot;: null,
             &quot;eta_days&quot;: null,
             &quot;quoted_at&quot;: null
         },
-        &quot;order_id&quot;: &quot;01a159fc-71df-70b4-ad98-aae0af403079&quot;,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;order_id&quot;: &quot;01a15a6f-4fa7-732a-b9ab-696a8add6271&quot;,
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -15239,8 +16355,8 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-71e3-703e-825e-3ae221637c33&quot;,
-        &quot;store_id&quot;: &quot;01a159fc-71e3-703e-825e-3ae220dc2ade&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4fac-7220-8cfa-bae5637d9af9&quot;,
+        &quot;store_id&quot;: &quot;01a15a6f-4fac-7220-8cfa-bae562f3f13d&quot;,
         &quot;status&quot;: &quot;pending_payment&quot;,
         &quot;subtotal_cents&quot;: 159868,
         &quot;shipping_cents&quot;: 1979,
@@ -15252,18 +16368,18 @@ fetch(url, {
             &quot;quoted_at&quot;: null
         },
         &quot;shipment&quot;: {
-            &quot;id&quot;: &quot;01a159fc-71e4-7125-b7d1-a6b4908a7f96&quot;,
-            &quot;tracking_code&quot;: &quot;SM301465347BR&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4fac-7220-8cfa-bae563ee113e&quot;,
+            &quot;tracking_code&quot;: &quot;SM231385721BR&quot;,
             &quot;carrier&quot;: &quot;simulated&quot;,
             &quot;service_code&quot;: &quot;simulated_standard&quot;,
             &quot;status&quot;: &quot;in_transit&quot;,
-            &quot;shipped_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;estimated_delivery_at&quot;: &quot;2026-10-25T12:44:38-03:00&quot;,
+            &quot;shipped_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;estimated_delivery_at&quot;: &quot;2026-10-25T14:50:06-03:00&quot;,
             &quot;delivered_at&quot;: null
         },
-        &quot;order_id&quot;: &quot;01a159fc-71e2-7347-940c-e183cd6ea6ec&quot;,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;order_id&quot;: &quot;01a15a6f-4fab-73e9-b240-6388ebec16e2&quot;,
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -15413,8 +16529,8 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-71e8-7298-a206-515f26ae31fd&quot;,
-        &quot;store_id&quot;: &quot;01a159fc-71e7-7257-9ecd-be2e3a03a425&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4fb0-72e3-a25f-4643c317c437&quot;,
+        &quot;store_id&quot;: &quot;01a15a6f-4fb0-72e3-a25f-4643c3058a7f&quot;,
         &quot;status&quot;: &quot;pending_payment&quot;,
         &quot;subtotal_cents&quot;: 159868,
         &quot;shipping_cents&quot;: 1979,
@@ -15426,18 +16542,18 @@ fetch(url, {
             &quot;quoted_at&quot;: null
         },
         &quot;shipment&quot;: {
-            &quot;id&quot;: &quot;01a159fc-71e8-7298-a206-515f26df9bcf&quot;,
-            &quot;tracking_code&quot;: &quot;SM865321074BR&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4fb0-72e3-a25f-4643c337438b&quot;,
+            &quot;tracking_code&quot;: &quot;SM025646330BR&quot;,
             &quot;carrier&quot;: &quot;simulated&quot;,
             &quot;service_code&quot;: &quot;simulated_standard&quot;,
             &quot;status&quot;: &quot;in_transit&quot;,
-            &quot;shipped_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;estimated_delivery_at&quot;: &quot;2026-10-25T12:44:38-03:00&quot;,
+            &quot;shipped_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;estimated_delivery_at&quot;: &quot;2026-10-25T14:50:06-03:00&quot;,
             &quot;delivered_at&quot;: null
         },
-        &quot;order_id&quot;: &quot;01a159fc-71e7-7257-9ecd-be2e3892deb2&quot;,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;order_id&quot;: &quot;01a15a6f-4faf-73c4-9413-4b75390f551c&quot;,
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -15588,12 +16704,12 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-724a-70b2-983f-358400700e96&quot;,
-        &quot;store_id&quot;: &quot;01a159fc-724a-70b2-983f-3583ffedab29&quot;,
+        &quot;id&quot;: &quot;01a15a6f-500e-7210-89eb-ec54d2a3c721&quot;,
+        &quot;store_id&quot;: &quot;01a15a6f-500e-7210-89eb-ec54d22cfcbb&quot;,
         &quot;status&quot;: &quot;pending_payment&quot;,
-        &quot;subtotal_cents&quot;: 12123,
-        &quot;shipping_cents&quot;: 2303,
-        &quot;total_cents&quot;: 14426,
+        &quot;subtotal_cents&quot;: 159868,
+        &quot;shipping_cents&quot;: 1979,
+        &quot;total_cents&quot;: 161847,
         &quot;shipping&quot;: {
             &quot;service_code&quot;: null,
             &quot;service_name&quot;: null,
@@ -15601,18 +16717,18 @@ fetch(url, {
             &quot;quoted_at&quot;: null
         },
         &quot;shipment&quot;: {
-            &quot;id&quot;: &quot;01a159fc-724b-7024-8554-d9678b83283b&quot;,
-            &quot;tracking_code&quot;: &quot;SM982864732BR&quot;,
+            &quot;id&quot;: &quot;01a15a6f-500f-71bb-aff9-f92fd8cb8a36&quot;,
+            &quot;tracking_code&quot;: &quot;SM204317937BR&quot;,
             &quot;carrier&quot;: &quot;simulated&quot;,
             &quot;service_code&quot;: &quot;simulated_standard&quot;,
             &quot;status&quot;: &quot;in_transit&quot;,
-            &quot;shipped_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-            &quot;estimated_delivery_at&quot;: &quot;2026-10-25T12:44:38-03:00&quot;,
+            &quot;shipped_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+            &quot;estimated_delivery_at&quot;: &quot;2026-10-25T14:50:06-03:00&quot;,
             &quot;delivered_at&quot;: null
         },
-        &quot;order_id&quot;: &quot;01a159fc-7249-7022-837e-ade8b0d2a694&quot;,
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;,
-        &quot;updated_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;order_id&quot;: &quot;01a15a6f-500d-706d-b5cc-4ba969a77a98&quot;,
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;,
+        &quot;updated_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>
@@ -16212,7 +17328,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <small class="badge badge-darkred">requires authentication</small>
 </p>
 
-<p>Até o valor disponível; exige loja <code>active</code>. Mesma <code>Idempotency-Key</code> devolve o saque existente com 200.</p>
+<p>Até o valor disponível; exige loja <code>active</code> e e-mail confirmado (403). Mesma <code>Idempotency-Key</code> devolve o saque existente com 200.</p>
 
 <span id="example-requests-POSTapi-v1-seller-payouts">
 <blockquote>Example request:</blockquote>
@@ -17163,26 +18279,26 @@ fetch(url, {
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: [
         {
-            &quot;id&quot;: &quot;01a159fc-7160-72cf-a83c-8a0f2186391b&quot;,
-            &quot;product_id&quot;: &quot;01a159fc-715e-7007-9c90-a1595ca20bc7&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4f12-72bc-9b93-365136febd0d&quot;,
+            &quot;product_id&quot;: &quot;01a15a6f-4f0f-712d-8e10-ea23864ec0e4&quot;,
             &quot;rating&quot;: 2,
             &quot;title&quot;: &quot;Quos velit et fugiat sunt nihil.&quot;,
             &quot;body&quot;: &quot;Modi deserunt aut ab provident perspiciatis. Omnis nostrum aut adipisci quidem nostrum qui commodi. Iure odit et et modi ipsum nostrum omnis. Et consequatur aut dolores enim.&quot;,
             &quot;author&quot;: {
                 &quot;name&quot;: &quot;Prof.&quot;
             },
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         },
         {
-            &quot;id&quot;: &quot;01a159fc-7166-71e3-89c4-f5668f41162a&quot;,
-            &quot;product_id&quot;: &quot;01a159fc-7165-7263-b9aa-39509408d206&quot;,
+            &quot;id&quot;: &quot;01a15a6f-4f18-7095-b54b-44484bb7bbd0&quot;,
+            &quot;product_id&quot;: &quot;01a15a6f-4f16-7117-8ad3-94cb10621682&quot;,
             &quot;rating&quot;: 2,
             &quot;title&quot;: &quot;In aliquid facilis.&quot;,
             &quot;body&quot;: null,
             &quot;author&quot;: {
                 &quot;name&quot;: &quot;Reva&quot;
             },
-            &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+            &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
         }
     ],
     &quot;links&quot;: {
@@ -17350,15 +18466,15 @@ fetch(url, {
 
 <code class="language-json" style="max-height: 300px;">{
     &quot;data&quot;: {
-        &quot;id&quot;: &quot;01a159fc-7172-7095-bacc-c63cc917f3db&quot;,
-        &quot;product_id&quot;: &quot;01a159fc-7170-7041-884a-3c05035ce7b9&quot;,
+        &quot;id&quot;: &quot;01a15a6f-4f25-70ee-ae45-e10c201a290e&quot;,
+        &quot;product_id&quot;: &quot;01a15a6f-4f23-702f-b14e-b9ddb108dc5c&quot;,
         &quot;rating&quot;: 1,
         &quot;title&quot;: null,
         &quot;body&quot;: &quot;Velit et fugiat sunt nihil accusantium. Mollitia modi deserunt aut ab provident perspiciatis quo. Nostrum aut adipisci quidem nostrum. Commodi incidunt iure odit.&quot;,
         &quot;author&quot;: {
             &quot;name&quot;: &quot;Dr.&quot;
         },
-        &quot;created_at&quot;: &quot;2026-10-20T12:44:38-03:00&quot;
+        &quot;created_at&quot;: &quot;2026-10-20T14:50:06-03:00&quot;
     }
 }</code>
  </pre>

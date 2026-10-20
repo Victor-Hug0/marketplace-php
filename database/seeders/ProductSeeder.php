@@ -12,6 +12,7 @@ use App\Models\Product;
 use App\Models\Role;
 use App\Models\Store;
 use App\Models\User;
+use App\Services\ProductAttributeService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -31,6 +32,10 @@ final class ProductSeeder extends Seeder
                 'phone_number' => '11988887777',
             ],
         );
+
+        if (! $seller->hasVerifiedEmail()) {
+            $seller->markEmailAsVerified();
+        }
 
         $seller->roles()->syncWithoutDetaching([$buyerRole->id, $sellerRole->id]);
 
@@ -59,7 +64,7 @@ final class ProductSeeder extends Seeder
             return;
         }
 
-        Product::query()->firstOrCreate(
+        $smartphone = Product::query()->firstOrCreate(
             ['slug' => 'smartphone-demo-128gb'],
             [
                 'store_id' => $store->id,
@@ -83,7 +88,7 @@ final class ProductSeeder extends Seeder
             ],
         );
 
-        Product::query()->firstOrCreate(
+        $headphones = Product::query()->firstOrCreate(
             ['slug' => 'fone-bluetooth-demo'],
             [
                 'store_id' => $store->id,
@@ -93,5 +98,9 @@ final class ProductSeeder extends Seeder
                 'status' => ProductStatus::DRAFT,
             ],
         );
+
+        $attributes = app(ProductAttributeService::class);
+        $attributes->apply($smartphone, ['color' => 'preto', 'storage' => '128GB']);
+        $attributes->apply($headphones, ['color' => 'branco', 'storage' => '64GB']);
     }
 }

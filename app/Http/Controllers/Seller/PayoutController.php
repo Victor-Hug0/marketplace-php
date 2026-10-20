@@ -47,7 +47,7 @@ final class PayoutController extends Controller
     }
 
     #[Doc\Subgroup('Seller')]
-    #[Doc\Endpoint('Solicitar saque', 'Até o valor disponível; exige loja `active`. Mesma `Idempotency-Key` devolve o saque existente com 200.')]
+    #[Doc\Endpoint('Solicitar saque', 'Até o valor disponível; exige loja `active` e e-mail confirmado (403). Mesma `Idempotency-Key` devolve o saque existente com 200.')]
     #[Doc\Header('Idempotency-Key', 'f3c1b2a4-0001')]
     #[Doc\Response('{"data":{"id":"01a14640-9a8b-7c6d-5e4f-3a2b1c0d9e8f","store_id":"01a14513-0e23-726f-b299-104a96511ebb","status":"requested","amount_cents":5000,"currency":"BRL","failure_reason":null,"paid_at":null,"failed_at":null,"created_at":"2026-10-20T10:00:00-03:00","updated_at":"2026-10-20T10:00:00-03:00"},"message":"Saque solicitado com sucesso."}', status: 201)]
     #[Doc\Response('{"message":"Saldo disponível insuficiente para o saque.","timestamp":"2026-10-20T10:00:00-03:00","errors":[]}', status: 409)]

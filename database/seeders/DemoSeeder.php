@@ -179,6 +179,10 @@ final class DemoSeeder extends Seeder
             ],
         );
 
+        if (! $user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
+
         $user->roles()->syncWithoutDetaching(
             collect($roles)->map(fn (RoleName $role): int => Role::query()->firstOrCreate(['name' => $role])->id)->all(),
         );
@@ -236,7 +240,7 @@ final class DemoSeeder extends Seeder
         return Offer::query()->firstOrCreate(
             ['product_id' => $notebook->id, 'store_id' => $store->id],
             [
-                'price' => '4599.00',
+                'price_cents' => 459900,
                 'stock' => 15,
                 'reserved_stock' => 0,
                 'status' => OfferStatus::ACTIVE,

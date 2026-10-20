@@ -8,6 +8,7 @@ use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\AuditLog;
 use App\Services\AuthService;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -65,9 +66,9 @@ class AuthController extends Controller
         ]);
     }
 
-    #[Doc\Endpoint('Cadastrar comprador', 'Cria o usuário com o papel `buyer`. Senha com 8 a 64 caracteres, maiúscula, minúscula, número e símbolo. Limite de 10 tentativas por IP e e-mail.')]
+    #[Doc\Endpoint('Cadastrar comprador', 'Cria o usuário com o papel `buyer` e envia (em fila) o link de confirmação de e-mail; o checkout fica bloqueado (403) até a confirmação. Senha com 8 a 64 caracteres, maiúscula, minúscula, número e símbolo. Limite de 10 tentativas por IP e e-mail.')]
     #[Doc\Unauthenticated]
-    #[Doc\Response('{"message":"Usuário registrado com sucesso","user":{"id":"01a14513-4821-7084-bb71-dbc2e1d84d94","name":"Maria Compradora","email":"maria@exemplo.com"}}', status: 201)]
+    #[Doc\Response('{"message":"Usuário registrado com sucesso. Enviamos um link de confirmação para o seu e-mail.","user":{"id":"01a14513-4821-7084-bb71-dbc2e1d84d94","name":"Maria Compradora","email":"maria@exemplo.com","email_verified_at":null}}', status: 201)]
     public function register(RegisterRequest $request): JsonResponse
     {
         $data = $request->validated();
@@ -84,6 +85,8 @@ class AuthController extends Controller
 
         $user = $this->authService->register($data);
 
+        event(new Registered($user));
+
         RateLimiter::clear($key);
 
         AuditLog::create([
@@ -98,7 +101,7 @@ class AuthController extends Controller
 
         return response()
             ->json([
-                'message' => 'Usuário registrado com sucesso',
+                'message' => 'Usuário registrado com sucesso. Enviamos um link de confirmação para o seu e-mail.',
                 'user' => new UserResource($user),
             ], 201);
     }

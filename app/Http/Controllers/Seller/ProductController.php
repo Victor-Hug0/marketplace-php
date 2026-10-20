@@ -43,7 +43,7 @@ final class ProductController extends Controller
         $products = $this->cursorPaginate(
             Product::query()
                 ->where('store_id', $store->id)
-                ->with(['images', 'store:id,store_name,slug', 'category:id,name,slug']),
+                ->with(['images', 'store:id,store_name,slug', 'category:id,name,slug', 'attributeValues.categoryAttribute']),
             $request,
         );
 
@@ -78,7 +78,7 @@ final class ProductController extends Controller
         $this->ensureSellerProduct($request, $product);
         $this->authorize('view', $product);
 
-        $product->load(['images', 'store:id,store_name,slug', 'category:id,name,slug']);
+        $product->load(['images', 'store:id,store_name,slug', 'category:id,name,slug', 'attributeValues.categoryAttribute']);
 
         return new ProductResource($product);
     }

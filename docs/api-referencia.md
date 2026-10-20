@@ -1,6 +1,6 @@
 # Referência da API — Marketplace
 
-Referência de todos os endpoints de `/api/v1` (96 rotas). Gerada a partir de `routes/api.php`, dos Form Requests e dos controllers em 20/10/2026.
+Referência de todos os endpoints de `/api/v1` (102 rotas). Gerada a partir de `routes/api.php`, dos Form Requests e dos controllers em 20/10/2026.
 
 Regras de negócio, máquinas de estado e autorização em detalhe: [`fluxos-e-regras.md`](fluxos-e-regras.md).
 
@@ -89,8 +89,9 @@ Erro:
 
 ### Dinheiro
 
-- **Ofertas** recebem e devolvem preço em reais com duas casas, como string decimal: `price`, `promotional_price`, `current_price` (ex.: `"99.90"`). O carrinho também mostra `unit_price`, `line_total` e `subtotal` nesse formato.
-- **Do checkout em diante** tudo é inteiro em centavos, com sufixo `_cents`: pedidos, itens, frete, pagamentos, ledger, reembolsos e saques (ex.: `9990`).
+- **Armazenamento:** todo valor é inteiro em centavos, inclusive o preço da oferta.
+- **Ofertas** recebem preço em reais com até duas casas (`price`, `promotional_price`: `"99.90"` ou `99.9`) e devolvem os dois formatos: `price`/`promotional_price`/`current_price` em reais (string, ex.: `"99.90"`) e `price_cents`/`promotional_price_cents`/`current_price_cents` em centavos (ex.: `9990`). O carrinho faz o mesmo com `unit_price`, `line_total` e `subtotal` (+ `_cents`).
+- **Do checkout em diante** os valores saem só em centavos, com sufixo `_cents`: pedidos, itens, frete, pagamentos, ledger, reembolsos e saques.
 
 ### Rate limits
 
@@ -98,6 +99,9 @@ Erro:
 |------|--------|
 | `POST /auth/login` | 10/min por IP (rota) + 10 falhas por IP em 60 s (bloqueio manual, com `Retry-After`) |
 | `POST /auth/register` | 10/min por IP (rota) + 10 tentativas por IP + e-mail |
+| `POST /auth/forgot-password` e `/auth/reset-password` | 5/min por IP; além disso, um novo link por e-mail só a cada 60 s |
+| `GET /auth/email/verify/...` e `POST /auth/email/verification-notification` | 6/min |
+| `GET /auth/google/redirect` e `/auth/google/callback` | 10/min |
 | `POST /orders/{order}/payments` | 20/min |
 | `POST /seller/payouts` | 10/min |
 | `POST /order-items/{orderItem}/reviews` | 20/min |
@@ -115,10 +119,16 @@ Erro:
 | `POST` | `/auth/login` | Público | `email`, `password` | `200` `{ message, user, access_token, refresh_token }` | `401` credenciais, `429` |
 | `POST` | `/auth/logout` | Autenticado | — | `204` | `401` |
 | `POST` | `/auth/refresh` | Bearer `refresh` | — | `200` `{ message, access_token, refresh_token }` | `401` |
+| `POST` | `/auth/forgot-password` | Público | `email` | `200` mensagem genérica (igual exista ou não a conta); e-mail em fila com link para `FRONTEND_URL/redefinir-senha?token=...&email=...`, válido por 60 min | `422`, `429` |
+| `POST` | `/auth/reset-password` | Público | `token`, `email`, `password` + `password_confirmation` (mesma regra do cadastro) | `200`; token de uso único, revoga todos os tokens do usuário e confirma o e-mail | `422` token inválido/expirado ou senha fraca, `429` |
+| `GET` | `/auth/email/verify/{id}/{hash}` | Público, URL assinada | — (`expires` e `signature` vêm no link) | `200` `{ message }`; repetir não dá erro | `403` assinatura inválida, vencida (60 min) ou hash de outro e-mail, `429` |
+| `POST` | `/auth/email/verification-notification` | Autenticado | — | `202` novo link em fila | `401`, `409` já confirmado, `429` |
+| `GET` | `/auth/google/redirect` | Público | — | `200` `{ data: { url } }` (consentimento do Google) | `503` sem `GOOGLE_CLIENT_ID`/`SECRET` |
+| `GET` | `/auth/google/callback` | Público | `code` (ou `error`) na query | `201` conta nova ou `200` existente: `{ message, user, access_token, refresh_token }` | `401` código inválido ou consentimento negado, `409` e-mail vinculado a outra conta Google ou conta desativada, `422` sem `code` ou e-mail não verificado no Google, `503` |
 | `GET` | `/users/me` | Autenticado | — | `200` `{ user }` com `roles` e resumo da `store` | `401` |
 | `GET` | `/users` | Admin | `per_page`, `cursor` | `200` lista paginada | `401`, `403` |
 
-Todo cadastro recebe o papel `buyer`.
+Todo cadastro recebe o papel `buyer`. `POST /checkout`, `POST /stores` e `POST /seller/payouts` respondem `403` enquanto o e-mail não for confirmado; contas criadas pelo Google já nascem confirmadas. `user` inclui `email_verified_at`.
 
 ---
 
@@ -126,9 +136,9 @@ Todo cadastro recebe o papel `buyer`.
 
 | Método | Rota | Acesso | Corpo / Query | Sucesso | Erros |
 |--------|------|--------|---------------|---------|-------|
-| `POST` | `/stores` | Autenticado (buyer) | `store_name`, `document_type` (`cpf`\|`cnpj`), `document` (11 ou 14 dígitos, único), `description?`, `commercial_email?`, `commercial_phone?` (10–15 dígitos), `origin_cep?` (CEP; gravado só com dígitos) | `201` loja `pending` | `409` usuário já tem loja (inclusive rejeitada), `422` |
+| `POST` | `/stores` | Autenticado (buyer) | `store_name`, `document_type` (`cpf`\|`cnpj`), `document` (11 ou 14 dígitos, único), `description?`, `commercial_email?`, `commercial_phone?` (10–15 dígitos), `origin_cep?` (CEP; gravado só com dígitos) | `201` loja `pending` | `403` e-mail não confirmado, `409` usuário já tem loja (inclusive rejeitada), `422` |
 | `GET` | `/stores/me` | Autenticado + Dono | — | `200` loja completa | `404` sem loja |
-| `GET` | `/stores/{slug}` | Público | `q`, `category`, `category_id`, `per_page`, `cursor` | `200` vitrine (`data` sem documento nem motivo de rejeição; `data.rating`) + `products` paginados | `404` loja inexistente ou não `active` |
+| `GET` | `/stores/{slug}` | Público | `q`, `category`, `category_id`, `attr[código]`, `per_page`, `cursor` | `200` vitrine (`data` sem documento nem motivo de rejeição; `data.rating`) + `products` paginados (com `from_price` e `attributes`) | `404` loja inexistente ou não `active` |
 | `GET` | `/admin/stores` | Admin | `per_page`, `cursor` | `200` lista com dono | `403` |
 | `POST` | `/admin/stores/{store}/approve` | Admin | — | `200` loja `active`; dono ganha papel `seller` | `409` não está `pending` |
 | `POST` | `/admin/stores/{store}/reject` | Admin | `reason` (10–2000) | `200` loja `rejected` | `409`, `422` |
@@ -158,7 +168,7 @@ Todo cadastro recebe o papel `buyer`.
 
 | Método | Rota | Query | Sucesso | Observações |
 |--------|------|-------|---------|-------------|
-| `GET` | `/products` | `q` (nome/descrição, até 120), `category` (slug) ou `category_id`, `store` (slug) ou `store_id`, `per_page`, `cursor` | `200` lista | só produto `active` de loja `active`; mais recentes primeiro |
+| `GET` | `/products` | `q` (nome/descrição, até 120), `category` (slug) ou `category_id`, `store` (slug) ou `store_id`, `attr[código]=v1,v2` (até 10; vírgula = OU, códigos diferentes = E; só atributos filtráveis; texto e opções sem diferenciar maiúsculas), `per_page`, `cursor` | `200` lista; cada item com `attributes[]`, `from_price`/`from_price_cents` (menor preço vigente entre as ofertas compráveis; `null` sem oferta) e `available_offers_count` | só produto `active` de loja `active`; mais recentes primeiro; `422` código de atributo inválido |
 | `GET` | `/products/{slug}` | — | `200` produto + `images[]` + `offers[]` elegíveis + `rating { average, count }`; `buy_box` como chave de topo | `404` se produto ou loja não estiver `active` |
 | `GET` | `/products/{slug}/reviews` | `per_page`, `cursor` | `200` avaliações (autor só com primeiro nome) + `summary { average, count }` | `404` |
 
@@ -167,11 +177,11 @@ Todo cadastro recebe o papel `buyer`.
 | Método | Rota | Corpo | Sucesso | Erros |
 |--------|------|-------|---------|-------|
 | `GET` | `/seller/products` | `per_page`, `cursor` | `200` produtos da própria loja | `403` |
-| `POST` | `/seller/products` | `category_id` (ativa), `name` (3–180), `slug?`, `description?`, `weight_grams?` (1–100000), `length_cm?`, `width_cm?`, `height_cm?` (1–300) | `201` produto `draft` | `403` loja não ativa, `422` |
+| `POST` | `/seller/products` | `category_id` (ativa), `name` (3–180), `slug?`, `description?`, `weight_grams?` (1–100000), `length_cm?`, `width_cm?`, `height_cm?` (1–300), `attributes?` (`{código: valor}`, validado pelo `data_type` e `options` do atributo; `null` remove) | `201` produto `draft` com `attributes[]` | `403` loja não ativa, `422` (inclusive código fora da categoria ou valor inválido em `attributes.<código>`) |
 | `GET` | `/seller/products/{product}` | — | `200` | `404` de outra loja |
 | `PUT`/`PATCH` | `/seller/products/{product}` | mesmos campos, opcionais | `200` | `409` fora de `draft`/`rejected` |
 | `DELETE` | `/seller/products/{product}` | — | `204` (soft delete, apaga as imagens do disco) | `409` fora de `draft`/`rejected`/`paused` |
-| `POST` | `/seller/products/{product}/submit` | — | `200` `pending_moderation` | `409` fora de `draft`/`rejected` |
+| `POST` | `/seller/products/{product}/submit` | — | `200` `pending_moderation` | `409` fora de `draft`/`rejected`, `422` atributo obrigatório sem valor (`attributes.<código>`) |
 | `POST` | `/seller/products/{product}/pause` | — | `200` `paused` | `409` não está `active` |
 | `POST` | `/seller/products/{product}/resume` | — | `200` `active` | `409` não está `paused` |
 | `POST` | `/seller/products/{product}/images` | multipart: `image` (jpeg, jpg, png, webp; até 2 MB), `alt?` | `201` imagem; a primeira vira capa (`position` 0) | `409` limite de 8 imagens, `422` |
@@ -226,7 +236,7 @@ Para o público, a oferta expõe `current_price` e `available_stock`; `stock` e 
 
 | Método | Rota | Acesso | Corpo | Sucesso | Erros |
 |--------|------|--------|-------|---------|-------|
-| `GET` | `/cart` | Autenticado | — | `200` `{ items[], items_count, subtotal, currency }` (preços vigentes, em reais) | `401` |
+| `GET` | `/cart` | Autenticado | — | `200` `{ items[], items_count, subtotal, subtotal_cents, currency }` (preços vigentes; cada item com `unit_price`/`unit_price_cents` e `line_total`/`line_total_cents`) | `401` |
 | `POST` | `/cart/items` | Autenticado | `offer_id`, `quantity` (1–999) | `201` carrinho; mesma oferta soma a quantidade | `409` oferta pausada, loja ou produto inativo, estoque insuficiente |
 | `PATCH` | `/cart/items/{item}` | Autenticado + Dono | `quantity` (1–999) | `200` carrinho | `404`, `409` estoque |
 | `DELETE` | `/cart/items/{item}` | Autenticado + Dono | — | `200` carrinho | `404` |
@@ -283,7 +293,7 @@ O webhook é processado pelo job `ProcessPaymentWebhookEvent` (fila Redis, até 
 | `GET` | `/seller/balance` | Seller | — | `200` `{ balance_cents, pending_payout_cents, held_cents, available_cents, currency }` | `403` |
 | `GET` | `/seller/ledger-entries` | Seller | `per_page`, `cursor` | `200` lançamentos da loja | `403` |
 | `GET` | `/seller/payouts` | Seller | `per_page`, `cursor` | `200` saques da loja | `403` |
-| `POST` | `/seller/payouts` **[idem]** | Seller | `amount_cents` (≥ 1) | `201` saque `requested`; `200` em replay | `409` loja não ativa, valor acima do disponível, chave reusada com outro valor |
+| `POST` | `/seller/payouts` **[idem]** | Seller | `amount_cents` (≥ 1) | `201` saque `requested`; `200` em replay | `403` e-mail não confirmado, `409` loja não ativa, valor acima do disponível, chave reusada com outro valor |
 | `POST` | `/admin/order-sellers/{orderSeller}/refunds` **[idem]** | Admin | `reason` (até 500), `amount_cents?` (padrão: todo o restante) | `201` reembolso; `200` em replay | `409` subpedido sem pagamento confirmado, valor fora de 1..restante, chave reusada com outro valor |
 | `GET` | `/admin/payouts` | Admin | `status?` (`requested`\|`paid`\|`failed`), `per_page`, `cursor` | `200` | `403` |
 | `POST` | `/admin/payouts/{payout}/mark-paid` | Admin | — | `200` `paid`; lançamento negativo no ledger | `409` não está `requested` |

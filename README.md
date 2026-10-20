@@ -4,7 +4,7 @@
 
 API REST de um marketplace multi-seller em **Laravel 12** e **PHP 8.4**: lojas aprovadas por um admin vendem produtos de um catálogo compartilhado, o comprador fecha um pedido com itens de várias lojas num único checkout, paga (gateway simulado), recebe com frete e rastreio por loja, e pode avaliar, abrir disputa ou pedir devolução. A plataforma cobra comissão e repassa o restante ao seller por um ledger contábil.
 
-Projeto de portfólio com foco em **regra de negócio**: transações, concorrência de estoque, idempotência, máquinas de estado explícitas e dinheiro em centavos com trilha de auditoria.
+Projeto de portfólio com foco em **regra de negócio**: transações, concorrência de estoque, idempotência, máquinas de estado explícitas e dinheiro em centavos de ponta a ponta (do preço da oferta ao saque) com trilha de auditoria.
 
 ## Destaques técnicos
 
@@ -14,7 +14,7 @@ Projeto de portfólio com foco em **regra de negócio**: transações, concorrê
 - **Ledger append-only:** comissão, venda, reembolso proporcional e saque como lançamentos imutáveis (bloqueados no model e por trigger no Postgres). Saldo é sempre soma.
 - **Webhook de pagamento idempotente,** processado em fila com retentativas.
 - **Autorização em três camadas:** ability do token, papel (`buyer`, `seller`, `admin`) e Policy por recurso; recurso de outro usuário responde 404.
-- **215 testes** cobrindo caminho feliz, 401/403/404/409/422 e conciliação financeira; lazy loading é proibido fora de produção, então um N+1 falha na suíte.
+- **274 testes** cobrindo caminho feliz, 401/403/404/409/422 e conciliação financeira; lazy loading é proibido fora de produção, então um N+1 falha na suíte.
 - **Pronto para operar:** `/up` verifica Postgres e Redis (usado pelo healthcheck da imagem), tokens vencidos são limpos todo dia e o CI valida também a instalação sem dependências de desenvolvimento.
 
 ## Stack
@@ -22,7 +22,8 @@ Projeto de portfólio com foco em **regra de negócio**: transações, concorrê
 | Peça | Tecnologia |
 |------|------------|
 | Runtime | PHP 8.4, Laravel 12 |
-| Autenticação | Laravel Sanctum (par access 1 h + refresh 30 dias, com rotação) |
+| Autenticação | Laravel Sanctum (par access 1 h + refresh 30 dias, com rotação), login com Google (Socialite) |
+| E-mail | Resend (transporte nativo do Laravel), enviado pela fila |
 | Banco | PostgreSQL 17 |
 | Fila e agendamento | Redis 7, `queue:work` e `schedule:work` |
 | API | REST versionada em `/api/v1`, paginação por cursor |
@@ -33,9 +34,9 @@ Projeto de portfólio com foco em **regra de negócio**: transações, concorrê
 
 | Contexto | Resumo |
 |----------|--------|
-| Conta | Cadastro com senha forte (sempre como `buyer`), login com rate limit, logout, refresh com rotação, `GET /users/me` com papéis e loja |
+| Conta | Cadastro com senha forte (sempre como `buyer`), confirmação de e-mail por link assinado (checkout, pedido de loja e saque bloqueados até confirmar), recuperação de senha com token de uso único, login com Google, login com rate limit, logout, refresh com rotação, `GET /users/me` com papéis e loja |
 | Lojas | Comprador solicita loja; admin aprova (concede `seller`), rejeita ou suspende (remove `seller`); vitrine pública por slug com nota média |
-| Catálogo | Categorias em árvore (3 níveis) com atributos; produtos com moderação (`draft → pending_moderation → active`), até 8 imagens, peso e medidas; busca pública por texto, categoria e loja |
+| Catálogo | Categorias em árvore (3 níveis) com atributos; produtos com moderação (`draft → pending_moderation → active`), até 8 imagens, peso e medidas, valores de atributo tipados; busca pública por texto, categoria, loja e atributos (`?attr[cor]=preto,branco`), com preço "a partir de" calculado sem N+1 |
 | Ofertas | Vários sellers vendem o mesmo produto, cada um com preço, promoção com janela e estoque; Buy Box (menor preço, depois mais estoque, depois mais antiga) |
 | Endereços e carrinho | Endereços com CEP e UF validados e um padrão por usuário; carrinho multi-seller com preço vigente |
 | Frete | Cotação simulada por loja (zona por CEP, peso volumétrico, tabela de faixas), modalidades padrão e expressa |
@@ -51,7 +52,7 @@ Projeto de portfólio com foco em **regra de negócio**: transações, concorrê
 |-----------|----------|
 | [`public/docs/index.html`](public/docs/index.html) (em `http://127.0.0.1:8080/docs/`) | Documentação interativa gerada pelo Scribe: endpoints agrupados por contexto, parâmetros extraídos dos Form Requests, exemplos de resposta e botão "Try it out" |
 | [`public/docs/openapi.yaml`](public/docs/openapi.yaml) e [`collection.json`](public/docs/collection.json) | Especificação OpenAPI 3.0.3 e coleção do Postman, para importar em Insomnia, Postman ou geradores de cliente |
-| [`docs/api-referencia.md`](docs/api-referencia.md) | Os 96 endpoints: acesso, corpo, sucesso e erros; convenções de envelope, paginação, idempotência e rate limit |
+| [`docs/api-referencia.md`](docs/api-referencia.md) | Os 102 endpoints: acesso, corpo, sucesso e erros; convenções de envelope, paginação, idempotência e rate limit |
 | [`docs/fluxos-e-regras.md`](docs/fluxos-e-regras.md) | Máquinas de estado, regras de cada contexto, fluxo do dinheiro e do estoque, autorização, configuração e auditoria |
 | [`docs/roadmap-implementacao-api.md`](docs/roadmap-implementacao-api.md) | Roadmap de negócio por fase, com o teste que comprova cada critério de pronto |
 | [`docs/roadmap-backlog-tecnico.md`](docs/roadmap-backlog-tecnico.md) | Backlog técnico item a item, decisões de cada fase e pendências |
@@ -73,8 +74,8 @@ cp .env.example .env
 docker compose up -d --build
 
 # 3. Chave da aplicação, migrations e dados de demonstração
-docker compose exec app php artisan key:generate
-docker compose exec app php artisan migrate --seed
+docker compose exec -u www-data app php artisan key:generate
+docker compose exec -u www-data app php artisan migrate --seed
 
 # 4. API em http://127.0.0.1:8080/api/v1
 ```
@@ -137,7 +138,7 @@ Também deixa o produto `fone-bluetooth-demo` aguardando moderação e um saque 
 Fora do ambiente de demonstração não existe seeder nem endpoint para criar admin, de propósito. Cadastre um usuário normalmente e promova pelo Tinker:
 
 ```bash
-docker compose exec app php artisan tinker --execute="\$u = App\Models\User::where('email', 'voce@exemplo.com')->firstOrFail(); \$u->roles()->syncWithoutDetaching([App\Models\Role::firstOrCreate(['name' => App\Enums\RoleName::ADMIN])->id]);"
+docker compose exec -u www-data app php artisan tinker --execute="\$u = App\Models\User::where('email', 'voce@exemplo.com')->firstOrFail(); \$u->roles()->syncWithoutDetaching([App\Models\Role::firstOrCreate(['name' => App\Enums\RoleName::ADMIN])->id]);"
 ```
 
 ### Serviços
@@ -161,14 +162,14 @@ docker compose ps
 docker compose logs -f app
 docker compose logs -f worker
 docker compose logs -f scheduler
-docker compose exec app php artisan migrate
-docker compose exec app php artisan tinker
-docker compose exec app php artisan schedule:list
+docker compose exec -u www-data app php artisan migrate
+docker compose exec -u www-data app php artisan tinker
+docker compose exec -u www-data app php artisan schedule:list
 docker compose down
 
 # Comandos do domínio (também rodam sozinhos pelo scheduler)
-docker compose exec app php artisan orders:expire-unpaid          # cancela pedidos não pagos vencidos
-docker compose exec app php artisan reservations:release-expired  # libera reservas avulsas vencidas
+docker compose exec -u www-data app php artisan orders:expire-unpaid          # cancela pedidos não pagos vencidos
+docker compose exec -u www-data app php artisan reservations:release-expired  # libera reservas avulsas vencidas
 ```
 
 ## Configuração de domínio
@@ -185,6 +186,31 @@ As variáveis abaixo estão no `.env.example`; a explicação completa está na 
 | `SHIPPING_DEFAULT_SERVICE` | `simulated_standard` | modalidade de frete padrão |
 | `SHIPPING_DEFAULT_ORIGIN_CEP` | `01310100` | origem do frete para loja sem CEP |
 | `POST_SALE_DISPUTE_WINDOW_DAYS` / `POST_SALE_RETURN_WINDOW_DAYS` | 7 | janela de pós-venda |
+| `MAIL_MAILER` / `RESEND_API_KEY` / `MAIL_FROM_ADDRESS` | `log` / vazio / `onboarding@resend.dev` | envio de e-mail (veja [E-mail e login com Google](#e-mail-e-login-com-google)) |
+| `FRONTEND_URL` | `http://localhost:3000` | destino do link de redefinição de senha |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `GOOGLE_REDIRECT_URI` | vazio / vazio / `${APP_URL}/api/v1/auth/google/callback` | login com Google; sem client, os endpoints respondem 503 |
+
+## E-mail e login com Google
+
+Os e-mails (confirmação de cadastro e redefinição de senha) saem pela fila, então o `worker` precisa estar no ar. Sem configuração nenhuma, `MAIL_MAILER=log` grava as mensagens em `storage/logs/laravel.log`, com o link incluído.
+
+### Resend
+
+1. Crie uma conta em [resend.com](https://resend.com) e gere uma API key em **API Keys**.
+2. No `.env`: `MAIL_MAILER=resend` e `RESEND_API_KEY=<sua chave>`.
+3. Remetente: `MAIL_FROM_ADDRESS="onboarding@resend.dev"` funciona na hora, mas só entrega no e-mail da sua conta Resend. Para enviar a qualquer pessoa, verifique um domínio em **Domains** e use um endereço dele.
+4. Reinicie o worker para ler o `.env` novo: `docker compose restart worker`.
+
+### Google
+
+1. No [Google Cloud Console](https://console.cloud.google.com/), crie (ou escolha) um projeto e configure a **tela de consentimento OAuth** (tipo externo; em modo de teste, adicione seu e-mail como usuário de teste).
+2. Em **APIs e serviços > Credenciais > Criar credenciais > ID do cliente OAuth**, escolha **Aplicativo da Web**.
+3. Em **URIs de redirecionamento autorizados**, cadastre exatamente o valor de `GOOGLE_REDIRECT_URI` (padrão: `http://127.0.0.1:8080/api/v1/auth/google/callback`).
+4. Copie o ID e a chave secreta para `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` no `.env`.
+
+Para testar sem frontend: chame `GET /api/v1/auth/google/redirect`, abra a `url` devolvida no navegador e, depois do consentimento, o Google volta para o callback, que responde com o par de tokens em JSON. Num frontend, aponte `GOOGLE_REDIRECT_URI` para uma página do app e repasse o `code` recebido para `GET /api/v1/auth/google/callback?code=...`.
+
+Quem entra pelo Google ganha conta `buyer` com e-mail já confirmado e uma senha aleatória; para entrar também com senha, basta usar "esqueci minha senha". Uma conta existente com o mesmo e-mail é vinculada, desde que o Google informe o e-mail como verificado.
 
 ## Um passeio pela API
 
@@ -197,6 +223,8 @@ API=http://127.0.0.1:8080/api/v1
 curl -s -X POST $API/auth/register -H 'Content-Type: application/json' -d '{
   "name": "Maria Compradora", "email": "maria@exemplo.com", "cpf": "12345678901",
   "phone_number": "11999999999", "password": "Senha@Forte1", "password_confirmation": "Senha@Forte1"}'
+# Confirme o e-mail antes do checkout: abra o link recebido (com MAIL_MAILER=log ele está em
+# storage/logs/laravel.log). Ou pule o cadastro e use comprador@marketplace.test do DemoSeeder.
 curl -s -X POST $API/auth/login -H 'Content-Type: application/json' \
   -d '{"email": "maria@exemplo.com", "password": "Senha@Forte1"}'
 
@@ -270,10 +298,11 @@ No host, o PHP precisa da extensão `redis` (o health check testa o Redis de ver
 
 | Área | Arquivos em `tests/Feature/` | Testes |
 |------|------------------------------|-------:|
-| Conta | `Auth/` | 12 |
-| Lojas e vitrine | `Store/`, `Catalog/` | 15 |
-| Catálogo | `Category/`, `Product/` | 28 |
-| Ofertas, Buy Box e estoque | `Offer/` | 9 |
+| Conta (cadastro, login, e-mail, senha, Google) | `Auth/` | 41 |
+| Lojas, vitrine e preço "a partir de" | `Store/`, `Catalog/` | 20 |
+| Catálogo e atributos | `Category/`, `Product/` | 36 |
+| Ofertas, Buy Box, estoque e preço em centavos | `Offer/` | 15 |
+| Conversão reais ↔ centavos | `tests/Unit/MoneyTest` | 11 |
 | Endereços e carrinho | `Address/`, `Cart/` | 20 |
 | Checkout e pedidos | `Checkout/`, `Order/` | 36 |
 | Pagamento | `Payment/` (dois testes rodam para Pix, cartão e boleto) | 21 |
@@ -282,7 +311,7 @@ No host, o PHP precisa da extensão `redis` (o health check testa o Redis de ver
 | Avaliações e pós-venda | `Review/`, `PostSale/` | 20 |
 | Seeder de demonstração | `Seeders/` | 4 |
 | Health check (banco e Redis) e exemplo unitário | `HealthCheckTest`, `tests/Unit/ExampleTest` | 4 |
-| **Total** | | **215** |
+| **Total** | | **274** |
 
 Formatação: `./vendor/bin/pint` (ou `--test` para só verificar).
 

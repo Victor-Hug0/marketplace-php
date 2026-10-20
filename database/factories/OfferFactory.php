@@ -8,6 +8,7 @@ use App\Enums\OfferStatus;
 use App\Models\Offer;
 use App\Models\Product;
 use App\Models\Store;
+use App\Support\Money;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,8 +21,8 @@ final class OfferFactory extends Factory
         return [
             'product_id' => Product::factory()->active(),
             'store_id' => Store::factory()->active(),
-            'price' => fake()->randomFloat(2, 10, 5000),
-            'promotional_price' => null,
+            'price_cents' => fake()->numberBetween(1_000, 500_000),
+            'promotional_price_cents' => null,
             'promo_starts_at' => null,
             'promo_ends_at' => null,
             'stock' => fake()->numberBetween(1, 100),
@@ -66,11 +67,14 @@ final class OfferFactory extends Factory
         ]);
     }
 
+    /**
+     * Prices in BRL ("99.90"), like the API receives them.
+     */
     public function priced(string $price, ?string $promotionalPrice = null): static
     {
         return $this->state(fn (): array => [
-            'price' => $price,
-            'promotional_price' => $promotionalPrice,
+            'price_cents' => Money::toCents($price),
+            'promotional_price_cents' => $promotionalPrice !== null ? Money::toCents($promotionalPrice) : null,
             'promo_starts_at' => $promotionalPrice !== null ? now()->subDay() : null,
             'promo_ends_at' => $promotionalPrice !== null ? now()->addDays(7) : null,
         ]);
