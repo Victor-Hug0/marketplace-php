@@ -10,6 +10,11 @@ use function Knuckles\Scribe\Config\removeStrategies;
 // Regenerate with `php artisan scribe:generate` (needs the database: example
 // responses are built from API Resources and factories inside a rolled-back transaction).
 
+// Scribe is a dev dependency: production images install with --no-dev but still load every config file.
+if (! class_exists(Defaults::class)) {
+    return [];
+}
+
 return [
     'title' => 'Marketplace API',
 
