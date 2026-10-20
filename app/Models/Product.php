@@ -24,6 +24,10 @@ class Product extends Model
         'name',
         'slug',
         'description',
+        'weight_grams',
+        'length_cm',
+        'width_cm',
+        'height_cm',
         'status',
         'rejection_reason',
         'reviewed_by',
@@ -35,6 +39,10 @@ class Product extends Model
         return [
             'status' => ProductStatus::class,
             'reviewed_at' => 'datetime',
+            'weight_grams' => 'integer',
+            'length_cm' => 'integer',
+            'width_cm' => 'integer',
+            'height_cm' => 'integer',
         ];
     }
 

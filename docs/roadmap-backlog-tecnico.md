@@ -44,10 +44,10 @@ Documento derivado de [`roadmap-implementacao-api.md`](roadmap-implementacao-api
 | B1 Atores / loja | `done` | Store + roles + middleware |
 | B2 Catálogo | `done` | Categorias, produtos, vitrine, busca |
 | B2-extra (atributos valorados, resize) | `todo` | Paralelo seguro à B3 |
-| B3 Ofertas / estoque / Buy Box | `wip` | Branch `feature/b3-offers-inventory` |
+| B3 Ofertas / estoque / Buy Box | `done` | Em `develop` (PR #3) |
 | B4 Carrinho / checkout / pedidos | `done` | B4.1–B4.5 em `develop` |
-| B5 Pagamento / ledger | `wip` | B5.1–B5.2 em `develop`; B5.3 reembolso/payout em `feature/b5-3-refunds-payouts` |
-| B6 Frete / envio | `todo` | Depende B4 (paralelo parcial a B5) |
+| B5 Pagamento / ledger | `done` | B5.1–B5.3 em `develop` (PRs #9–#11) |
+| B6 Frete / envio | `wip` | B6.1 cotação em `feature/b6-1-shipping-quotes`; B6.2 envio pendente |
 | B7 Pós-venda | `todo` | Depende B5+B6 |
 | L1–L3 | `later` | Após jornada core verde |
 
@@ -509,16 +509,25 @@ GET    /api/v1/seller/balance                              # balance_cents, pend
 
 **Dependência:** B4 (order_sellers). Pode iniciar cotação após B4.3; tracking após B5 paid.
 
+### Decisões técnicas da B6
+
+| Decisão | Escolha |
+|---------|---------|
+| Onde ficam peso e medidas | No **produto**, não na oferta: são características físicas do item e valem para todos os sellers que o vendem |
+| Destino do frete no ledger | O frete vai **inteiro para o seller**, sem comissão: o ledger calcula a comissão só sobre o subtotal de itens e credita ao seller o `total_cents` do subpedido (itens + frete) |
+| Falta de regra de frete | **Não** existe "sem regra = frete grátis" em produção, porque isso esconderia uma configuração faltando. Sem regra que atenda, o checkout retorna 409 |
+| Testes que não são sobre frete | Suítes de checkout, pedidos, pagamentos, ledger, reembolsos e saques chamam `ConfiguresShipping::useFreeShipping()`, que cria regras de preço zero, para manter os totais esperados iguais ao subtotal |
+
 ### Slice B6.1 — Cotação
 
 | ID | Item | Status | Esforço | Detalhe |
 |----|------|--------|---------|---------|
-| B6.1.01 | Campos peso/dimensões em product ou offer | `todo` | M | weight_grams, height/width/length_mm |
-| B6.1.02 | Migration `shipping_rate_rules` | `todo` | M | faixas CEP, peso, preço_cents, days |
-| B6.1.03 | `ShippingQuoteService::quote(store, items, destCep)` | `todo` | L | determinístico |
-| B6.1.04 | Integrar cotação no checkout (por order_seller) | `todo` | L | freeze price/days |
-| B6.1.05 | Endpoint pré-checkout `POST /shipping/quotes` | `todo` | M | |
-| B6.1.06 | Testes fixtures CEP/peso | `todo` | M | |
+| B6.1.01 | Campos peso/dimensões em product + CEP de origem da loja | `done` | M | `products.weight_grams/length_cm/width_cm/height_cm` (nullable, fallback `shipping.default_package`); `stores.origin_cep` (fallback `shipping.default_origin_cep`) |
+| B6.1.02 | Migration `shipping_rate_rules` | `done` | M | service_code, zone (`local`/`regional`/`national`), max_weight_grams, price_cents, eta_days; seeder com 2 serviços × 3 zonas × 3 faixas |
+| B6.1.03 | `ShippingQuoteService::quoteStore/quoteCart` | `done` | L | zona pelo prefixo do CEP; peso faturável = max(real, volumétrico ÷ 6000) × qty; menor faixa que comporta o peso |
+| B6.1.04 | Integrar cotação no checkout (por order_seller) | `done` | L | congela `shipping_cents`, service, ETA e `shipping_quoted_at`; `shipping_service_code` opcional; serviço indisponível → 409 sem pedido |
+| B6.1.05 | Endpoint pré-checkout `POST /shipping/quotes` | `done` | M | `{ cep }` ou `{ address_id }` (só do próprio buyer); cotação do carrinho por seller |
+| B6.1.06 | Testes fixtures CEP/peso | `done` | M | `tests/Feature/Shipping/ShippingQuoteTest.php`; demais suites usam `ConfiguresShipping::useFreeShipping()` |
 
 ### Slice B6.2 — Shipments
 

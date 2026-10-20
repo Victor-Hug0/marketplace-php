@@ -26,6 +26,7 @@ final class CreateStoreRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:5000'],
             'commercial_email' => ['nullable', 'email', 'max:255'],
             'commercial_phone' => ['nullable', 'string', 'regex:/^\d{10,15}$/'],
+            'origin_cep' => ['nullable', 'string', 'regex:/^\d{5}-?\d{3}$/'],
             'document_type' => ['required', Rule::in(['cpf', 'cnpj'])],
             'document' => [
                 'required',

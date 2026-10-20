@@ -28,10 +28,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Concerns\ConfiguresShipping;
 use Tests\TestCase;
 
 final class PaymentWorkflowTest extends TestCase
 {
+    use ConfiguresShipping;
     use RefreshDatabase;
 
     private const WEBHOOK_SECRET = 'test-mock-webhook-secret';
@@ -39,6 +41,8 @@ final class PaymentWorkflowTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->useFreeShipping();
 
         config(['payments.mock.webhook_secret' => self::WEBHOOK_SECRET]);
     }

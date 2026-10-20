@@ -21,6 +21,7 @@ use App\Http\Controllers\Seller\OfferController as SellerOfferController;
 use App\Http\Controllers\Seller\OrderSellerController as SellerOrderSellerController;
 use App\Http\Controllers\Seller\PayoutController as SellerPayoutController;
 use App\Http\Controllers\Seller\ProductController as SellerProductController;
+use App\Http\Controllers\ShippingQuoteController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -59,6 +60,9 @@ Route::prefix('v1')->group(function () {
             Route::delete('items/{item}', [CartController::class, 'destroyItem']);
             Route::delete('/', [CartController::class, 'clear']);
         });
+
+    Route::post('shipping/quotes', [ShippingQuoteController::class, 'store'])
+        ->middleware(['auth:sanctum', 'abilities:access', 'throttle:60,1']);
 
     Route::post('checkout', [CheckoutController::class, 'store'])
         ->middleware(['auth:sanctum', 'abilities:access']);
