@@ -21,6 +21,12 @@ final class OrderSellerResource extends JsonResource
             'subtotal_cents' => $this->subtotal_cents,
             'shipping_cents' => $this->shipping_cents,
             'total_cents' => $this->total_cents,
+            'shipping' => [
+                'service_code' => $this->shipping_service_code,
+                'service_name' => $this->shipping_service_name,
+                'eta_days' => $this->shipping_eta_days,
+                'quoted_at' => $this->shipping_quoted_at?->timezone(config('app.timezone'))->toIso8601String(),
+            ],
             'store' => $this->whenLoaded('store', fn () => [
                 'id' => $this->store->id,
                 'store_name' => $this->store->store_name,

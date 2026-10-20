@@ -41,6 +41,24 @@ final class StoreWorkflowTest extends TestCase
         ]);
     }
 
+    public function test_store_request_normalizes_origin_cep(): void
+    {
+        $buyer = $this->userWithRole(RoleName::BUYER);
+
+        $this->withToken($this->accessToken($buyer))
+            ->postJson('/api/v1/stores', $this->validStorePayload(['origin_cep' => '01310-100']))
+            ->assertCreated()
+            ->assertJsonPath('data.origin_cep', '01310100');
+
+        $this->withToken($this->accessToken($buyer))
+            ->postJson('/api/v1/stores', $this->validStorePayload([
+                'document' => '98765432100',
+                'origin_cep' => '0131',
+            ]))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['origin_cep']);
+    }
+
     public function test_user_cannot_request_a_second_store(): void
     {
         $buyer = $this->userWithRole(RoleName::BUYER);

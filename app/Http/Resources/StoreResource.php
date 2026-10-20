@@ -28,6 +28,7 @@ final class StoreResource extends JsonResource
                 : null,
             'commercial_email' => $this->commercial_email,
             'commercial_phone' => $this->commercial_phone,
+            'origin_cep' => $this->origin_cep,
             'document_type' => $this->document_type,
             'document' => $this->document,
             'status' => $this->status,

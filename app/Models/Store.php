@@ -26,6 +26,7 @@ class Store extends Model
         'banner_path',
         'commercial_email',
         'commercial_phone',
+        'origin_cep',
         'description',
         'document',
         'document_type',

@@ -23,6 +23,7 @@ final class CheckoutRequest extends FormRequest
     {
         return [
             'address_id' => ['required', 'uuid', 'exists:addresses,id'],
+            'shipping_service_code' => ['sometimes', 'string', 'max:60'],
         ];
     }
 }

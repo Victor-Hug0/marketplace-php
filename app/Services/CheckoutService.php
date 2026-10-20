@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\DTOs\ShippingOption;
 use App\Enums\OfferStatus;
 use App\Enums\OrderSellerStatus;
 use App\Enums\OrderStatus;
@@ -30,20 +31,27 @@ final class CheckoutService
 {
     public function __construct(
         private readonly InventoryService $inventoryService,
+        private readonly ShippingQuoteService $shippingQuoteService,
     ) {}
 
     /**
      * @return array{order: Order, created: bool}
      */
-    public function checkout(User $user, string $addressId, string $idempotencyKey): array
-    {
+    public function checkout(
+        User $user,
+        string $addressId,
+        string $idempotencyKey,
+        ?string $shippingServiceCode = null,
+    ): array {
         $existing = $this->findByIdempotencyKey($user, $idempotencyKey);
         if ($existing !== null) {
             return ['order' => $existing, 'created' => false];
         }
 
+        $shippingServiceCode ??= (string) config('shipping.default_service_code');
+
         try {
-            return DB::transaction(function () use ($user, $addressId, $idempotencyKey): array {
+            return DB::transaction(function () use ($user, $addressId, $idempotencyKey, $shippingServiceCode): array {
                 $replay = $this->findByIdempotencyKey($user, $idempotencyKey);
                 if ($replay !== null) {
                     return ['order' => $replay, 'created' => false];
@@ -82,7 +90,24 @@ final class CheckoutService
                 $orderSubtotalCents = $prepared->sum(
                     static fn (array $line): int => $line['line_total_cents'],
                 );
-                $shippingCents = 0;
+
+                /** @var Collection<string, Collection<int, array<string, mixed>>> $grouped */
+                $grouped = $prepared->groupBy(
+                    static fn (array $line): string => (string) $line['store_id'],
+                );
+
+                $shippingBySeller = $grouped->map(
+                    fn (Collection $storeLines): ShippingOption => $this->selectShipping(
+                        $storeLines,
+                        $address->cep,
+                        $shippingServiceCode,
+                    ),
+                );
+                $quotedAt = now();
+
+                $shippingCents = $shippingBySeller->sum(
+                    static fn (ShippingOption $option): int => $option->priceCents,
+                );
                 $orderTotalCents = $orderSubtotalCents + $shippingCents;
 
                 $order = Order::query()->create([
@@ -104,25 +129,24 @@ final class CheckoutService
                     'Pedido criado no checkout.',
                 );
 
-                /** @var Collection<string, Collection<int, array<string, mixed>>> $grouped */
-                $grouped = $prepared->groupBy(
-                    static fn (array $line): string => (string) $line['store_id'],
-                );
-
                 foreach ($grouped as $storeId => $storeLines) {
                     $sellerSubtotalCents = $storeLines->sum(
                         static fn (array $line): int => $line['line_total_cents'],
                     );
-                    $sellerShippingCents = 0;
-                    $sellerTotalCents = $sellerSubtotalCents + $sellerShippingCents;
+                    $shipping = $shippingBySeller->get($storeId);
+                    $sellerTotalCents = $sellerSubtotalCents + $shipping->priceCents;
 
                     $orderSeller = OrderSeller::query()->create([
                         'order_id' => $order->id,
                         'store_id' => $storeId,
                         'status' => OrderSellerStatus::PENDING_PAYMENT,
                         'subtotal_cents' => $sellerSubtotalCents,
-                        'shipping_cents' => $sellerShippingCents,
+                        'shipping_cents' => $shipping->priceCents,
                         'total_cents' => $sellerTotalCents,
+                        'shipping_service_code' => $shipping->serviceCode,
+                        'shipping_service_name' => $shipping->serviceName,
+                        'shipping_eta_days' => $shipping->etaDays,
+                        'shipping_quoted_at' => $quotedAt,
                     ]);
 
                     $this->recordStatusHistory(
@@ -160,6 +184,8 @@ final class CheckoutService
                 $this->audit($user, $order, 'order.checkout.created', [
                     'sellers_count' => $grouped->count(),
                     'items_count' => $prepared->sum('quantity'),
+                    'shipping_service_code' => $shippingServiceCode,
+                    'shipping_cents' => $shippingCents,
                     'total_cents' => $orderTotalCents,
                 ]);
 
@@ -218,6 +244,36 @@ final class CheckoutService
                 'line_total_cents' => $unitPriceCents * $item->quantity,
             ];
         })->values();
+    }
+
+    /**
+     * @param  Collection<int, array<string, mixed>>  $storeLines
+     */
+    private function selectShipping(
+        Collection $storeLines,
+        string $destinationCep,
+        string $serviceCode,
+    ): ShippingOption {
+        $store = $storeLines->first()['offer']->store;
+
+        $quote = $this->shippingQuoteService->quoteStore(
+            $store,
+            $storeLines->map(static fn (array $line): array => [
+                'product' => $line['offer']->product,
+                'quantity' => $line['quantity'],
+            ]),
+            $destinationCep,
+        );
+
+        $option = $quote->option($serviceCode);
+
+        if ($option === null) {
+            throw new ConflictHttpException(
+                "A modalidade de frete '{$serviceCode}' não está disponível para a loja {$store->store_name}.",
+            );
+        }
+
+        return $option;
     }
 
     private function lockedPurchasableOffer(string $offerId): Offer

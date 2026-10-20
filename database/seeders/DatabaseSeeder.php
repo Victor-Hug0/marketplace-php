@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             PlatformFeeRuleSeeder::class,
+            ShippingRateRuleSeeder::class,
             CategorySeeder::class,
             ProductSeeder::class,
             OfferSeeder::class,

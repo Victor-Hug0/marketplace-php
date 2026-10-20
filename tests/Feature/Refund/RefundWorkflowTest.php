@@ -17,11 +17,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\BuildsPaidOrders;
+use Tests\Concerns\ConfiguresShipping;
 use Tests\TestCase;
 
 final class RefundWorkflowTest extends TestCase
 {
     use BuildsPaidOrders;
+    use ConfiguresShipping;
     use RefreshDatabase;
 
     private User $admin;
@@ -29,6 +31,8 @@ final class RefundWorkflowTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->useFreeShipping();
 
         $this->configureMockPayments();
         $this->admin = $this->userWithRole(RoleName::ADMIN);

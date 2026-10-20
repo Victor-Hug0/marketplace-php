@@ -21,16 +21,20 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\BuildsPaidOrders;
+use Tests\Concerns\ConfiguresShipping;
 use Tests\TestCase;
 
 final class PayoutWorkflowTest extends TestCase
 {
     use BuildsPaidOrders;
+    use ConfiguresShipping;
     use RefreshDatabase;
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->useFreeShipping();
 
         $this->configureMockPayments();
     }

@@ -26,6 +26,10 @@ final class StoreService
                 throw new ConflictHttpException('O usuário já possui uma solicitação de loja.');
             }
 
+            if (isset($data['origin_cep'])) {
+                $data['origin_cep'] = preg_replace('/\D+/', '', (string) $data['origin_cep']);
+            }
+
             $store = Store::query()->create([
                 ...$data,
                 'user_id' => $user->id,

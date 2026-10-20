@@ -21,6 +21,7 @@ final class CheckoutController extends Controller
             $request->user(),
             $request->string('address_id')->value(),
             $request->idempotencyKey(),
+            $request->validated('shipping_service_code'),
         );
 
         $order = $result['order'];

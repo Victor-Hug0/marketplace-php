@@ -20,11 +20,20 @@ use App\Models\Store;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use Tests\Concerns\ConfiguresShipping;
 use Tests\TestCase;
 
 final class CheckoutWorkflowTest extends TestCase
 {
+    use ConfiguresShipping;
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->useFreeShipping();
+    }
 
     public function test_guest_cannot_checkout(): void
     {
