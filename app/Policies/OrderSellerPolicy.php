@@ -37,4 +37,19 @@ final class OrderSellerPolicy
 
         return $orderSeller->store?->user_id === $user->id;
     }
+
+    public function fulfill(User $user, OrderSeller $orderSeller): bool
+    {
+        $orderSeller->loadMissing('store');
+
+        return $orderSeller->store?->user_id === $user->id;
+    }
+
+    public function markDelivered(User $user, OrderSeller $orderSeller): bool
+    {
+        $orderSeller->loadMissing('store');
+
+        return $orderSeller->store?->user_id === $user->id
+            || $user->hasRole(RoleName::ADMIN);
+    }
 }
