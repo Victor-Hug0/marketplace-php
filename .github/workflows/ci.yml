@@ -109,6 +109,15 @@ jobs:
 
       # Scribe only warns when an endpoint fails to document; make that fail the build.
       - name: Generate API docs
+        # Outside PHPUnit, Artisan reads .env; point it at the CI test database.
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5433
+          DB_DATABASE: marketplace_test
+          DB_USERNAME: marketplace_test
+          DB_PASSWORD: marketplace_test
+          CACHE_STORE: array
         run: |
           php artisan scribe:generate --no-interaction | tee /tmp/scribe.log
           if grep -qE 'FAIL|errors while processing routes' /tmp/scribe.log; then exit 1; fi
