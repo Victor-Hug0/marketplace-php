@@ -25,4 +25,20 @@ final class StoreProductImageRequest extends FormRequest
             'alt' => ['sometimes', 'nullable', 'string', 'max:180'],
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'image' => [
+                'description' => 'Arquivo JPEG, PNG ou WebP de até 2 MB.',
+            ],
+            'alt' => [
+                'description' => 'Texto alternativo.',
+                'example' => 'Smartphone visto de frente',
+            ],
+        ];
+    }
 }

@@ -54,4 +54,37 @@ class RegisterRequest extends FormRequest
             'password.uncompromised' => 'Esta senha apareceu em um vazamento de dados. Escolha outra.',
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'name' => [
+                'description' => 'Nome completo.',
+                'example' => 'Maria Souza',
+            ],
+            'email' => [
+                'description' => 'E-mail único.',
+                'example' => 'maria@example.com',
+            ],
+            'cpf' => [
+                'description' => 'CPF só com dígitos; único.',
+                'example' => '52998224725',
+            ],
+            'phone_number' => [
+                'description' => 'Celular com DDD, só dígitos.',
+                'example' => '11987654321',
+            ],
+            'password' => [
+                'description' => '8 a 64 caracteres com maiúscula, minúscula, número e símbolo.',
+                'example' => 'Senha@Forte123',
+            ],
+            'password_confirmation' => [
+                'description' => 'Repita a senha.',
+                'example' => 'Senha@Forte123',
+            ],
+        ];
+    }
 }

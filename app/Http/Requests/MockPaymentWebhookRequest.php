@@ -32,4 +32,28 @@ final class MockPaymentWebhookRequest extends FormRequest
     {
         return PaymentWebhookEventType::from($this->string('type')->value());
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'event_id' => [
+                'description' => 'ID único do evento no gateway; repetido = ignorado (idempotente).',
+                'example' => 'evt_000123',
+            ],
+            'type' => [
+                'description' => 'Tipo do evento.',
+                'example' => 'payment.paid',
+            ],
+            'data' => [
+                'description' => 'Dados do evento.',
+            ],
+            'data.external_id' => [
+                'description' => 'external_id do pagamento, devolvido ao criar a intenção.',
+                'example' => 'mock_pay_01k7z3m9q4w2x8y6v5t3r1n0bc',
+            ],
+        ];
+    }
 }

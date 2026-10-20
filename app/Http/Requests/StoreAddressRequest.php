@@ -46,4 +46,57 @@ final class StoreAddressRequest extends FormRequest
             'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO',
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'label' => [
+                'description' => 'Apelido do endereço.',
+                'example' => 'Casa',
+            ],
+            'recipient_name' => [
+                'description' => 'Nome de quem recebe a entrega.',
+                'example' => 'Maria Souza',
+            ],
+            'phone' => [
+                'description' => 'Telefone de contato com DDD, só dígitos.',
+                'example' => '11987654321',
+            ],
+            'cep' => [
+                'description' => 'CEP de destino, com ou sem hífen.',
+                'example' => '01311-000',
+            ],
+            'street' => [
+                'description' => 'Logradouro.',
+                'example' => 'Avenida Paulista',
+            ],
+            'number' => [
+                'description' => 'Número.',
+                'example' => '1000',
+            ],
+            'complement' => [
+                'description' => 'Complemento.',
+                'example' => 'Apto 42',
+            ],
+            'district' => [
+                'description' => 'Bairro.',
+                'example' => 'Bela Vista',
+            ],
+            'city' => [
+                'description' => 'Cidade.',
+                'example' => 'São Paulo',
+            ],
+            'state' => [
+                'description' => 'UF com 2 letras.',
+                'example' => 'SP',
+            ],
+            'is_default' => [
+                'description' => 'Torna este o endereço padrão (o anterior deixa de ser).',
+                'example' => true,
+            ],
+        ];
+    }
 }

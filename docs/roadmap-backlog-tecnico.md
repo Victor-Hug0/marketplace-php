@@ -632,13 +632,13 @@ GET    /api/v1/seller/balance                              # balance_cents, pend
 
 | ID | Item | Status | Esforço | Quando |
 |----|------|--------|---------|--------|
-| X.1.01 | `preventLazyLoading()` em local/testing | `todo` | S | agora |
+| X.1.01 | `preventLazyLoading()` em local/testing | `done` | S | `Model::preventLazyLoading(! isProduction())` no `AppServiceProvider`; a suíte inteira passa sem violações |
 | X.1.02 | Padronizar dinheiro em centavos em todo o código | `todo` | M | só falta a oferta (`decimal(12,2)`); exige migration de `offers` + ajuste de `OfferResource`, `BuyBoxService` (`bccomp`) e `CheckoutService::priceToCents` |
-| X.1.03 | Job/Command limpeza tokens Sanctum expirados | `todo` | S | qualquer |
-| X.1.04 | Health check DB/redis em `/up` estendido | `todo` | S | qualquer |
+| X.1.03 | Job/Command limpeza tokens Sanctum expirados | `done` | S | `sanctum:prune-expired --hours=24` diário no scheduler; `sanctum.expiration` (1 ano) é maior que o refresh (30 dias), então só remove tokens já vencidos |
+| X.1.04 | Health check DB/redis em `/up` estendido | `done` | S | listener de `DiagnosingHealth` faz `select 1` e `PING`; 500 se algum falhar (`HealthCheckTest`) |
 | X.1.05 | Atualizar README com fluxo develop + matriz endpoints | `done` | M | README reescrito + `docs/api-referencia.md` + `docs/fluxos-e-regras.md` |
 | X.1.06 | Matriz de Policies documentada | `done` | S | seção "Autorização" de `docs/fluxos-e-regras.md` |
-| X.1.07 | Teste de regressão full suite no CI | `todo` | M | L3/agora se houver CI |
+| X.1.07 | Teste de regressão full suite no CI | `done` | M | GitHub Actions (PR #19): Pint, suíte, instalação sem dev, geração e validação da documentação |
 | X.1.08 | Prazo de pagamento do pedido (`payment_due_at`) | `done` | M | Checkout define agora + `orders.unpaid_ttl_minutes` (60). Cada tentativa de pagamento só estende: Pix até a validade do QR (30 min), boleto até o fim do dia de vencimento (3 dias), cartão + TTL. Pagamento que chega depois do cancelamento é ignorado (`payment_not_pending`) |
 
 ---
@@ -651,11 +651,9 @@ FEITO:
   + expiração de pedidos não pagos (PR #16)
   + release develop → main (PR #17)
 
-PRÓXIMO (qualidade, baixo risco):
-  X.1.07  CI no GitHub Actions (suíte + Pint em PR para develop/main)
-  X.1.01  preventLazyLoading em local/testing
-  X.1.03  limpeza agendada de tokens Sanctum expirados
-  X.1.04  /up checando banco e Redis
+  + CI no GitHub Actions (X.1.07, PR #19)
+  + documentação OpenAPI e jornada de demonstração (L3, PRs #21 e #22)
+  + hardening: preventLazyLoading, limpeza de tokens, /up com banco e Redis (X.1.01, X.1.03, X.1.04)
 
 PENDÊNCIAS OPCIONAIS DO CORE:
   B1.3    KYC do seller

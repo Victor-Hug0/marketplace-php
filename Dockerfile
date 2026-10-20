@@ -35,6 +35,8 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-av
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/99-marketplace.ini
 
+ENV COMPOSER_HOME=/tmp/composer
+
 WORKDIR /var/www/html
 
 COPY composer.json composer.lock ./

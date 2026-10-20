@@ -33,4 +33,21 @@ final class StoreRefundRequest extends FormRequest
 
         return $amount === null ? null : (int) $amount;
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'amount_cents' => [
+                'description' => 'Valor em centavos; padrão: o saldo ainda reembolsável do subpedido.',
+                'example' => 2700,
+            ],
+            'reason' => [
+                'description' => 'Motivo do reembolso.',
+                'example' => 'Item com defeito.',
+            ],
+        ];
+    }
 }

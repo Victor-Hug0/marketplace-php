@@ -37,4 +37,21 @@ class LoginRequest extends FormRequest
             'password.string' => 'A senha deve ser uma string',
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'email' => [
+                'description' => 'E-mail da conta.',
+                'example' => 'comprador@marketplace.test',
+            ],
+            'password' => [
+                'description' => 'Senha da conta.',
+                'example' => 'Password1!',
+            ],
+        ];
+    }
 }
