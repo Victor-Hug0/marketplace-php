@@ -35,7 +35,10 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-av
 
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/99-marketplace.ini
 
-ENV COMPOSER_HOME=/tmp/composer
+# www-data's home (/var/www) belongs to root; keep Composer and PsySH (tinker) state in /tmp.
+ENV COMPOSER_HOME=/tmp/composer \
+    XDG_CONFIG_HOME=/tmp/xdg/config \
+    XDG_DATA_HOME=/tmp/xdg/data
 
 WORKDIR /var/www/html
 

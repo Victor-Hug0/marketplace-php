@@ -179,6 +179,10 @@ final class DemoSeeder extends Seeder
             ],
         );
 
+        if (! $user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
+
         $user->roles()->syncWithoutDetaching(
             collect($roles)->map(fn (RoleName $role): int => Role::query()->firstOrCreate(['name' => $role])->id)->all(),
         );

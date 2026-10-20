@@ -32,6 +32,10 @@ final class ProductSeeder extends Seeder
             ],
         );
 
+        if (! $seller->hasVerifiedEmail()) {
+            $seller->markEmailAsVerified();
+        }
+
         $seller->roles()->syncWithoutDetaching([$buyerRole->id, $sellerRole->id]);
 
         $store = Store::query()->firstOrCreate(
