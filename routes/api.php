@@ -1,12 +1,33 @@
 <?php
 
+use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\FulfillmentController as AdminFulfillmentController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\PayoutController as AdminPayoutController;
+use App\Http\Controllers\Admin\PostSaleController as AdminPostSaleController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\RefundController as AdminRefundController;
 use App\Http\Controllers\Admin\StoreController as AdminStoreController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\OfferReservationController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderPaymentController;
+use App\Http\Controllers\PaymentWebhookController;
+use App\Http\Controllers\PostSaleController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductReviewController;
+use App\Http\Controllers\Seller\FulfillmentController as SellerFulfillmentController;
+use App\Http\Controllers\Seller\LedgerController as SellerLedgerController;
+use App\Http\Controllers\Seller\OfferController as SellerOfferController;
+use App\Http\Controllers\Seller\OrderSellerController as SellerOrderSellerController;
+use App\Http\Controllers\Seller\PayoutController as SellerPayoutController;
+use App\Http\Controllers\Seller\PostSaleController as SellerPostSaleController;
 use App\Http\Controllers\Seller\ProductController as SellerProductController;
+use App\Http\Controllers\ShippingQuoteController;
 use App\Http\Controllers\StoreController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +44,48 @@ Route::prefix('v1')->group(function () {
         Route::get('me', [UserController::class, 'me'])->middleware(['auth:sanctum', 'abilities:access']);
         Route::get('/', [UserController::class, 'index'])->middleware(['auth:sanctum', 'abilities:access', 'role:admin']);
     });
+
+    Route::prefix('addresses')
+        ->middleware(['auth:sanctum', 'abilities:access'])
+        ->group(function () {
+            Route::get('/', [AddressController::class, 'index']);
+            Route::post('/', [AddressController::class, 'store']);
+            Route::post('{address}/default', [AddressController::class, 'makeDefault']);
+            Route::get('{address}', [AddressController::class, 'show']);
+            Route::put('{address}', [AddressController::class, 'update']);
+            Route::patch('{address}', [AddressController::class, 'update']);
+            Route::delete('{address}', [AddressController::class, 'destroy']);
+        });
+
+    Route::prefix('cart')
+        ->middleware(['auth:sanctum', 'abilities:access'])
+        ->group(function () {
+            Route::get('/', [CartController::class, 'show']);
+            Route::post('items', [CartController::class, 'storeItem']);
+            Route::patch('items/{item}', [CartController::class, 'updateItem']);
+            Route::delete('items/{item}', [CartController::class, 'destroyItem']);
+            Route::delete('/', [CartController::class, 'clear']);
+        });
+
+    Route::post('shipping/quotes', [ShippingQuoteController::class, 'store'])
+        ->middleware(['auth:sanctum', 'abilities:access', 'throttle:60,1']);
+
+    Route::post('checkout', [CheckoutController::class, 'store'])
+        ->middleware(['auth:sanctum', 'abilities:access']);
+
+    Route::prefix('orders')
+        ->middleware(['auth:sanctum', 'abilities:access'])
+        ->group(function () {
+            Route::get('/', [OrderController::class, 'index']);
+            Route::get('{order}', [OrderController::class, 'show']);
+            Route::post('{order}/cancel', [OrderController::class, 'cancel']);
+            Route::get('{order}/payments', [OrderPaymentController::class, 'index']);
+            Route::post('{order}/payments', [OrderPaymentController::class, 'store'])
+                ->middleware('throttle:20,1');
+        });
+
+    Route::post('webhooks/payments/mock', [PaymentWebhookController::class, 'mock'])
+        ->middleware(['throttle:120,1', 'payments.mock-webhook']);
 
     Route::prefix('stores')->group(function () {
         Route::middleware(['auth:sanctum', 'abilities:access'])->group(function () {
@@ -41,7 +104,18 @@ Route::prefix('v1')->group(function () {
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductController::class, 'index']);
         Route::get('{slug}', [ProductController::class, 'show']);
+        Route::get('{slug}/reviews', [ProductReviewController::class, 'index']);
     });
+
+    Route::prefix('order-sellers')
+        ->middleware(['auth:sanctum', 'abilities:access', 'throttle:20,1'])
+        ->group(function () {
+            Route::post('{orderSeller}/disputes', [PostSaleController::class, 'openDispute']);
+            Route::post('{orderSeller}/returns', [PostSaleController::class, 'requestReturn']);
+        });
+
+    Route::post('order-items/{orderItem}/reviews', [ProductReviewController::class, 'store'])
+        ->middleware(['auth:sanctum', 'abilities:access', 'throttle:20,1']);
 
     Route::prefix('seller/products')
         ->middleware(['auth:sanctum', 'abilities:access', 'role:seller'])
@@ -58,6 +132,51 @@ Route::prefix('v1')->group(function () {
             Route::put('{product}', [SellerProductController::class, 'update']);
             Route::patch('{product}', [SellerProductController::class, 'update']);
             Route::delete('{product}', [SellerProductController::class, 'destroy']);
+        });
+
+    Route::prefix('seller/offers')
+        ->middleware(['auth:sanctum', 'abilities:access', 'role:seller'])
+        ->group(function () {
+            Route::get('/', [SellerOfferController::class, 'index']);
+            Route::post('/', [SellerOfferController::class, 'store']);
+            Route::post('{offer}/pause', [SellerOfferController::class, 'pause']);
+            Route::post('{offer}/resume', [SellerOfferController::class, 'resume']);
+            Route::get('{offer}', [SellerOfferController::class, 'show']);
+            Route::put('{offer}', [SellerOfferController::class, 'update']);
+            Route::patch('{offer}', [SellerOfferController::class, 'update']);
+            Route::delete('{offer}', [SellerOfferController::class, 'destroy']);
+        });
+
+    Route::prefix('seller/order-sellers')
+        ->middleware(['auth:sanctum', 'abilities:access', 'role:seller'])
+        ->group(function () {
+            Route::get('/', [SellerOrderSellerController::class, 'index']);
+            Route::get('{orderSeller}', [SellerOrderSellerController::class, 'show']);
+            Route::post('{orderSeller}/cancel', [SellerOrderSellerController::class, 'cancel']);
+            Route::post('{orderSeller}/processing', [SellerFulfillmentController::class, 'startProcessing']);
+            Route::post('{orderSeller}/shipments', [SellerFulfillmentController::class, 'ship']);
+            Route::post('{orderSeller}/deliver', [SellerFulfillmentController::class, 'markDelivered']);
+        });
+
+    Route::prefix('seller')
+        ->middleware(['auth:sanctum', 'abilities:access', 'role:seller'])
+        ->group(function () {
+            Route::get('balance', [SellerLedgerController::class, 'balance']);
+            Route::get('ledger-entries', [SellerLedgerController::class, 'entries']);
+            Route::get('payouts', [SellerPayoutController::class, 'index']);
+            Route::post('payouts', [SellerPayoutController::class, 'store'])->middleware('throttle:10,1');
+            Route::get('disputes', [SellerPostSaleController::class, 'disputes']);
+            Route::post('disputes/{dispute}/respond', [SellerPostSaleController::class, 'respondDispute']);
+            Route::get('returns', [SellerPostSaleController::class, 'returns']);
+            Route::post('returns/{returnRequest}/approve', [SellerPostSaleController::class, 'approveReturn']);
+            Route::post('returns/{returnRequest}/reject', [SellerPostSaleController::class, 'rejectReturn']);
+        });
+
+    Route::prefix('offers')
+        ->middleware(['auth:sanctum', 'abilities:access'])
+        ->group(function () {
+            Route::post('{offer}/reservations', [OfferReservationController::class, 'store']);
+            Route::delete('{offer}/reservations/{reservation}', [OfferReservationController::class, 'destroy']);
         });
 
     Route::prefix('admin/stores')
@@ -92,5 +211,37 @@ Route::prefix('v1')->group(function () {
             Route::post('{product}/approve', [AdminProductController::class, 'approve']);
             Route::post('{product}/reject', [AdminProductController::class, 'reject']);
             Route::post('{product}/pause', [AdminProductController::class, 'pause']);
+        });
+
+    Route::prefix('admin/orders')
+        ->middleware(['auth:sanctum', 'abilities:access', 'role:admin'])
+        ->group(function () {
+            Route::get('/', [AdminOrderController::class, 'index']);
+            Route::get('{order}', [AdminOrderController::class, 'show']);
+        });
+
+    Route::prefix('admin/order-sellers')
+        ->middleware(['auth:sanctum', 'abilities:access', 'role:admin'])
+        ->group(function () {
+            Route::post('{orderSeller}/refunds', [AdminRefundController::class, 'store']);
+            Route::post('{orderSeller}/deliver', [AdminFulfillmentController::class, 'markDelivered']);
+        });
+
+    Route::prefix('admin')
+        ->middleware(['auth:sanctum', 'abilities:access', 'role:admin'])
+        ->group(function () {
+            Route::get('disputes', [AdminPostSaleController::class, 'disputes']);
+            Route::post('disputes/{dispute}/resolve', [AdminPostSaleController::class, 'resolveDispute']);
+            Route::get('returns', [AdminPostSaleController::class, 'returns']);
+            Route::post('returns/{returnRequest}/approve', [AdminPostSaleController::class, 'approveReturn']);
+            Route::post('returns/{returnRequest}/reject', [AdminPostSaleController::class, 'rejectReturn']);
+        });
+
+    Route::prefix('admin/payouts')
+        ->middleware(['auth:sanctum', 'abilities:access', 'role:admin'])
+        ->group(function () {
+            Route::get('/', [AdminPayoutController::class, 'index']);
+            Route::post('{payout}/mark-paid', [AdminPayoutController::class, 'markPaid']);
+            Route::post('{payout}/mark-failed', [AdminPayoutController::class, 'markFailed']);
         });
 });

@@ -33,6 +33,10 @@ final class UpdateProductRequest extends FormRequest
             'name' => ['sometimes', 'required', 'string', 'min:3', 'max:180'],
             'slug' => ['sometimes', 'nullable', 'string', 'max:180'],
             'description' => ['sometimes', 'nullable', 'string', 'max:10000'],
+            'weight_grams' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:100000'],
+            'length_cm' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:300'],
+            'width_cm' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:300'],
+            'height_cm' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:300'],
         ];
     }
 }

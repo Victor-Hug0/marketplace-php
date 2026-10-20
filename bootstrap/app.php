@@ -3,6 +3,7 @@
 use App\Http\Exceptions\ApiErrorResponse;
 use App\Http\Middleware\EnsureUserHasRole;
 use App\Http\Middleware\ForceJsonResponse;
+use App\Http\Middleware\VerifyMockPaymentWebhookSecret;
 use App\Models\AuditLog;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
@@ -32,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'abilities' => CheckAbilities::class,
             'ability' => CheckForAnyAbility::class,
             'role' => EnsureUserHasRole::class,
+            'payments.mock-webhook' => VerifyMockPaymentWebhookSecret::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

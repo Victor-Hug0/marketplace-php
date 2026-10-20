@@ -26,6 +26,7 @@ final class StoreFactory extends Factory
             'description' => fake()->sentence(),
             'commercial_email' => fake()->companyEmail(),
             'commercial_phone' => fake()->numerify('###########'),
+            'origin_cep' => fake()->numerify('########'),
             'document_type' => 'cnpj',
             'document' => fake()->unique()->numerify('##############'),
             'status' => StoreStatus::PENDING,

@@ -7,8 +7,10 @@ namespace App\Http\Controllers;
 use App\Enums\ProductStatus;
 use App\Enums\StoreStatus;
 use App\Http\Requests\SearchProductsRequest;
+use App\Http\Resources\OfferResource;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
+use App\Services\BuyBoxService;
 use App\Services\ProductService;
 use App\Support\Pagination\CursorPaginates;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -19,6 +21,7 @@ final class ProductController extends Controller
 
     public function __construct(
         private readonly ProductService $productService,
+        private readonly BuyBoxService $buyBoxService,
     ) {}
 
     public function index(SearchProductsRequest $request): AnonymousResourceCollection
@@ -57,8 +60,19 @@ final class ProductController extends Controller
                 'store:id,store_name,slug,status',
                 'category:id,name,slug',
             ])
+            ->withCount('reviews')
+            ->withAvg('reviews', 'rating')
             ->firstOrFail();
 
-        return new ProductResource($product);
+        $eligibleOffers = $this->buyBoxService->eligibleOffers($product);
+        $buyBox = $this->buyBoxService->winner($product);
+
+        $product->setRelation('offers', $eligibleOffers);
+
+        return (new ProductResource($product))->additional([
+            'buy_box' => $buyBox !== null
+                ? (new OfferResource($buyBox))->resolve()
+                : null,
+        ]);
     }
 }

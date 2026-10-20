@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Services\ProductReviewService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
@@ -26,6 +27,10 @@ final class PublicStoreResource extends JsonResource
             'banner_url' => $this->banner_path
                 ? Storage::url($this->banner_path)
                 : null,
+            'rating' => $this->whenCounted(
+                'productReviews',
+                fn (int $count): array => ProductReviewService::summary($this->product_reviews_avg_rating, $count),
+            ),
         ];
     }
 }

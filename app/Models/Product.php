@@ -24,6 +24,10 @@ class Product extends Model
         'name',
         'slug',
         'description',
+        'weight_grams',
+        'length_cm',
+        'width_cm',
+        'height_cm',
         'status',
         'rejection_reason',
         'reviewed_by',
@@ -35,6 +39,10 @@ class Product extends Model
         return [
             'status' => ProductStatus::class,
             'reviewed_at' => 'datetime',
+            'weight_grams' => 'integer',
+            'length_cm' => 'integer',
+            'width_cm' => 'integer',
+            'height_cm' => 'integer',
         ];
     }
 
@@ -51,6 +59,21 @@ class Product extends Model
     public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class)->orderBy('position');
+    }
+
+    public function offers(): HasMany
+    {
+        return $this->hasMany(Offer::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ProductReview::class);
+    }
+
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
     }
 
     public function reviewer(): BelongsTo

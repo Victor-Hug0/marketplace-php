@@ -26,6 +26,7 @@ class Store extends Model
         'banner_path',
         'commercial_email',
         'commercial_phone',
+        'origin_cep',
         'description',
         'document',
         'document_type',
@@ -56,6 +57,26 @@ class Store extends Model
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
+    }
+
+    public function offers(): HasMany
+    {
+        return $this->hasMany(Offer::class);
+    }
+
+    public function orderSellers(): HasMany
+    {
+        return $this->hasMany(OrderSeller::class);
+    }
+
+    public function payouts(): HasMany
+    {
+        return $this->hasMany(Payout::class);
+    }
+
+    public function productReviews(): HasMany
+    {
+        return $this->hasMany(ProductReview::class);
     }
 
     public function isActive(): bool

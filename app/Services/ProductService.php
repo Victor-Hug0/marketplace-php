@@ -98,6 +98,10 @@ final class ProductService
                 'name' => $data['name'],
                 'slug' => $this->uniqueSlug($data['name'], $data['slug'] ?? null),
                 'description' => $data['description'] ?? null,
+                'weight_grams' => $data['weight_grams'] ?? null,
+                'length_cm' => $data['length_cm'] ?? null,
+                'width_cm' => $data['width_cm'] ?? null,
+                'height_cm' => $data['height_cm'] ?? null,
                 'status' => ProductStatus::DRAFT,
             ]);
 
@@ -147,6 +151,10 @@ final class ProductService
                 'name',
                 'slug',
                 'description',
+                'weight_grams',
+                'length_cm',
+                'width_cm',
+                'height_cm',
             ])));
 
             $this->audit($actor, $product, 'product.updated', [
