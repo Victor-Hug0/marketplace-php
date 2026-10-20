@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Services\ProductReviewService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -38,6 +39,10 @@ final class ProductResource extends JsonResource
             ]),
             'images' => ProductImageResource::collection($this->whenLoaded('images')),
             'offers' => OfferResource::collection($this->whenLoaded('offers')),
+            'rating' => $this->whenCounted(
+                'reviews',
+                fn (int $count): array => ProductReviewService::summary($this->reviews_avg_rating, $count),
+            ),
             'created_at' => $this->created_at?->timezone(config('app.timezone'))->toIso8601String(),
             'updated_at' => $this->updated_at?->timezone(config('app.timezone'))->toIso8601String(),
         ];

@@ -47,8 +47,8 @@ Documento derivado de [`roadmap-implementacao-api.md`](roadmap-implementacao-api
 | B3 Ofertas / estoque / Buy Box | `done` | Em `develop` (PR #3) |
 | B4 Carrinho / checkout / pedidos | `done` | B4.1–B4.5 em `develop` |
 | B5 Pagamento / ledger | `done` | B5.1–B5.3 em `develop` (PRs #9–#11) |
-| B6 Frete / envio | `wip` | B6.1 cotação em `develop` (PR #12); B6.2 envio em `feature/b6-2-shipments` |
-| B7 Pós-venda | `todo` | Depende B5+B6 |
+| B6 Frete / envio | `done` | B6.1 cotação (PR #12) e B6.2 envio (PR #13) em `develop` |
+| B7 Pós-venda | `wip` | B7.1 avaliações em `feature/b7-1-reviews`; B7.2 disputas/RMA pendente |
 | L1–L3 | `later` | Após jornada core verde |
 
 ---
@@ -548,15 +548,26 @@ GET    /api/v1/seller/balance                              # balance_cents, pend
 
 **Dependência:** delivered (B6) + ledger (B5) para disputa/RMA.
 
+### Decisões técnicas da B7.1
+
+| Decisão | Escolha |
+|---------|---------|
+| Unidade avaliada | Um **item de pedido** (`order_item_id` unique): cada compra entregue rende uma avaliação, e comprar de novo permite avaliar de novo |
+| Nota agregada | Calculada por **query** (`withAvg`/`withCount` sobre índices de `product_id` e `store_id`), sem coluna denormalizada em `stores`/`products`. Denormalizar só se o volume pedir |
+| Autoavaliação | Bloqueada: o dono da loja não avalia produto da própria loja, mesmo que tenha comprado (403) |
+| Dados do autor | A listagem pública expõe só o **primeiro nome** (minimização LGPD); nunca e-mail ou id do usuário |
+| Integridade da nota | Validação 1–5 no Form Request **e** `CHECK` no banco |
+| Edição/remoção | Fora do escopo: a avaliação é imutável nesta entrega |
+
 ### Slice B7.1 — Reviews
 
 | ID | Item | Status | Esforço | Detalhe |
 |----|------|--------|---------|---------|
-| B7.1.01 | Migration `product_reviews` | `todo` | M | unique (user_id, order_item_id), rating 1–5, body |
-| B7.1.02 | Só após delivered + ownership do item | `todo` | M | Policy |
-| B7.1.03 | Agregar média seller (`stores.rating_avg` denormalizado ou query) | `todo` | M | |
-| B7.1.04 | Endpoints create/list | `todo` | M | |
-| B7.1.05 | Testes 403 sem compra | `todo` | S | |
+| B7.1.01 | Migration `product_reviews` | `done` | M | unique `order_item_id`; `user_id`, `product_id`, `store_id`; rating 1–5 com `CHECK`; `title`, `body` |
+| B7.1.02 | Só após delivered + ownership do item | `done` | M | `ProductReviewPolicy` (comprador do item) + `ProductReviewService` (subpedido `delivered`, sem autoavaliação, duplicada → 409) |
+| B7.1.03 | Agregar média do produto e do seller | `done` | M | `rating { average, count }` em `GET /products/{slug}` e `GET /stores/{slug}` via query |
+| B7.1.04 | Endpoints create/list | `done` | M | `POST /order-items/{id}/reviews` (201); `GET /products/{slug}/reviews` público, cursor + `summary` |
+| B7.1.05 | Testes 403 sem compra | `done` | S | `tests/Feature/Review/ProductReviewTest.php` (401/403/409/422, agregados) |
 
 ### Slice B7.2 — Disputas e RMA
 
