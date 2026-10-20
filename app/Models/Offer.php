@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\OfferStatus;
+use App\Enums\StoreStatus;
 use App\Support\Money;
 use Database\Factories\OfferFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -68,6 +70,31 @@ class Offer extends Model
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Offers a buyer can purchase right now: active, from an active store, with stock left.
+     *
+     * @param  Builder<Offer>  $query
+     * @return Builder<Offer>
+     */
+    public function scopePurchasable(Builder $query): Builder
+    {
+        return $query
+            ->where('offers.status', OfferStatus::ACTIVE)
+            ->whereColumn('offers.stock', '>', 'offers.reserved_stock')
+            ->whereHas('store', fn (Builder $store) => $store->where('status', StoreStatus::ACTIVE));
+    }
+
+    /**
+     * SQL twin of currentPriceCents(); bind the reference time twice.
+     */
+    public static function currentPriceCentsSql(): string
+    {
+        return 'CASE WHEN offers.promotional_price_cents IS NOT NULL'
+            .' AND (offers.promo_starts_at IS NULL OR offers.promo_starts_at <= ?)'
+            .' AND (offers.promo_ends_at IS NULL OR offers.promo_ends_at >= ?)'
+            .' THEN offers.promotional_price_cents ELSE offers.price_cents END';
     }
 
     public function availableStock(): int
