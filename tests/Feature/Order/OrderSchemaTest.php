@@ -95,7 +95,7 @@ final class OrderSchemaTest extends TestCase
         $this->assertSame(10000, $itemA->lineTotalCents());
         $this->assertSame($offerA->product->name, $itemA->product_name);
 
-        $offerA->update(['price' => '99.00']);
+        $offerA->update(['price_cents' => 9900]);
         $itemA->refresh();
         $this->assertSame(5000, $itemA->unit_price_cents);
     }

@@ -77,7 +77,7 @@ Enquanto essa jornada não existir com testes, **não** investir em e-mail verif
 
 ## 3. Estado atual do repositório
 
-**Revisão de 20/10/2026.** O caminho crítico **B1 → B7 está completo** em `develop` e `main` (release no PR #17). A jornada mínima da seção 2 roda de ponta a ponta e está coberta por testes de feature (242 testes em 28 arquivos).
+**Revisão de 20/10/2026.** O caminho crítico **B1 → B7 está completo** em `develop` e `main` (release no PR #17). A jornada mínima da seção 2 roda de ponta a ponta e está coberta por testes de feature (259 testes em 30 arquivos).
 
 ### Fundação
 
@@ -103,7 +103,7 @@ Enquanto essa jornada não existir com testes, **não** investir em e-mail verif
 
 ### O que ficou de fora do core (opcional)
 
-KYC do seller (B1.3), valores de atributo e filtros no catálogo (B2.4), rotas admin de oferta (B3.2.08), "a partir de R$ X" na listagem (B3.3.04), idempotência de reserva avulsa (B3.4.07), preço de oferta em centavos (X.1.02). Detalhes no [backlog](roadmap-backlog-tecnico.md).
+KYC do seller (B1.3), valores de atributo e filtros no catálogo (B2.4), rotas admin de oferta (B3.2.08), "a partir de R$ X" na listagem (B3.3.04), idempotência de reserva avulsa (B3.4.07). Detalhes no [backlog](roadmap-backlog-tecnico.md).
 
 ### Próximos passos
 
@@ -315,7 +315,7 @@ Preço no produto canônico impede multi-seller. Estoque sem reserva gera overse
 - [x] Reserva impede oversell (teste automatizado) — `OfferWorkflowTest::test_concurrent_reservations_of_last_unit_allow_only_one_success`
 - [x] Oferta pausada não é comprável — `OfferWorkflowTest::test_paused_offer_and_suspended_store_are_excluded_from_buy_box_and_reservations`, `CartWorkflowTest::test_cannot_add_paused_offer_or_inactive_store_product`
 
-**Implementação:** sem variantes no MVP; preço da oferta em `decimal(12,2)` (centavos a partir do checkout).
+**Implementação:** sem variantes no MVP; preço da oferta em centavos (`price_cents`), como o resto do dinheiro (X.1.02).
 
 #### Cuidados
 
@@ -633,7 +633,7 @@ Só começar com a jornada B1→B6 (e B7 mínimo) **verde**.
 - [x] Comissão e saldo seller batem com o ledger — `PayoutWorkflowTest::test_financial_totals_reconcile_across_sales_refunds_and_payouts`
 - [x] Frete congelado e tracking por subpedido — `ShippingQuoteTest::test_checkout_freezes_shipping_per_sub_order`, `ShipmentWorkflowTest::test_buyer_and_seller_see_tracking`
 - [x] Seller pendente não vende; admin opera com Policy — `StoreWorkflowTest`, `ProductWorkflowTest::test_buyer_cannot_access_admin_product_routes`
-- [x] Feature tests cobrem o caminho feliz + principais 403/409 — 242 testes (`tests/Feature` e `tests/Unit`)
+- [x] Feature tests cobrem o caminho feliz + principais 403/409 — 259 testes (`tests/Feature` e `tests/Unit`)
 
 **Status (20/10/2026): core pronto.**
 

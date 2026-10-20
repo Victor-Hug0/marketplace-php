@@ -89,8 +89,9 @@ Erro:
 
 ### Dinheiro
 
-- **Ofertas** recebem e devolvem preço em reais com duas casas, como string decimal: `price`, `promotional_price`, `current_price` (ex.: `"99.90"`). O carrinho também mostra `unit_price`, `line_total` e `subtotal` nesse formato.
-- **Do checkout em diante** tudo é inteiro em centavos, com sufixo `_cents`: pedidos, itens, frete, pagamentos, ledger, reembolsos e saques (ex.: `9990`).
+- **Armazenamento:** todo valor é inteiro em centavos, inclusive o preço da oferta.
+- **Ofertas** recebem preço em reais com até duas casas (`price`, `promotional_price`: `"99.90"` ou `99.9`) e devolvem os dois formatos: `price`/`promotional_price`/`current_price` em reais (string, ex.: `"99.90"`) e `price_cents`/`promotional_price_cents`/`current_price_cents` em centavos (ex.: `9990`). O carrinho faz o mesmo com `unit_price`, `line_total` e `subtotal` (+ `_cents`).
+- **Do checkout em diante** os valores saem só em centavos, com sufixo `_cents`: pedidos, itens, frete, pagamentos, ledger, reembolsos e saques.
 
 ### Rate limits
 
@@ -235,7 +236,7 @@ Para o público, a oferta expõe `current_price` e `available_stock`; `stock` e 
 
 | Método | Rota | Acesso | Corpo | Sucesso | Erros |
 |--------|------|--------|-------|---------|-------|
-| `GET` | `/cart` | Autenticado | — | `200` `{ items[], items_count, subtotal, currency }` (preços vigentes, em reais) | `401` |
+| `GET` | `/cart` | Autenticado | — | `200` `{ items[], items_count, subtotal, subtotal_cents, currency }` (preços vigentes; cada item com `unit_price`/`unit_price_cents` e `line_total`/`line_total_cents`) | `401` |
 | `POST` | `/cart/items` | Autenticado | `offer_id`, `quantity` (1–999) | `201` carrinho; mesma oferta soma a quantidade | `409` oferta pausada, loja ou produto inativo, estoque insuficiente |
 | `PATCH` | `/cart/items/{item}` | Autenticado + Dono | `quantity` (1–999) | `200` carrinho | `404`, `409` estoque |
 | `DELETE` | `/cart/items/{item}` | Autenticado + Dono | — | `200` carrinho | `404` |

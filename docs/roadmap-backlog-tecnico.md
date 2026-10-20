@@ -29,7 +29,7 @@ Documento derivado de [`roadmap-implementacao-api.md`](roadmap-implementacao-api
 | Validação | Form Request |
 | Resposta | API Resource + `{ data, meta?, links? }` / `ApiErrorResponse` |
 | Paginação | Cursor (`CursorPaginates`) |
-| Dinheiro | Ofertas guardam preço em `decimal(12,2)` (`price`, `promotional_price`); **a partir do checkout tudo é centavos `bigint`** (`*_cents` em pedidos, itens, pagamentos, ledger, reembolsos, saques, frete). Ver X.1.02 |
+| Dinheiro | **Tudo em centavos `bigint`**: oferta (`price_cents`, `promotional_price_cents`), pedidos, itens, pagamentos, ledger, reembolsos, saques e frete. A API de oferta e carrinho aceita/devolve também reais; conversão em `App\Support\Money` (X.1.02) |
 | Concorrência | `DB::transaction` + `lockForUpdate()` em estoque/checkout/pagamento |
 | Audit | `AuditLog` sem tokens, senhas, PAN, paths absolutos |
 | Testes | Feature + factories; cenários 200/201/204/401/403/404/409/422 |
@@ -184,7 +184,7 @@ seller edita conteúdo só em draft|rejected
 
 | Decisão | Planejado | Implementado |
 |---------|-----------|--------------|
-| Dinheiro na oferta | `price_cents` `bigint` | `offers.price` e `promotional_price` em **`decimal(12,2)`**. A conversão para centavos acontece no checkout (`unit_price_cents` congelado no `order_item`); de pedido em diante tudo é centavos `bigint` (ver X.1.02) |
+| Dinheiro na oferta | `price_cents` `bigint` | Nasceu em `decimal(12,2)`; convertido para `price_cents`/`promotional_price_cents` `bigint` em X.1.02, com `CHECK` no banco |
 | Estoque | `stock` + `reserved_stock` denormalizado | Igual: `stock` e `reserved_stock` (`unsigned int`) atualizados sob `lockForUpdate()` na mesma transação; `availableStock() = max(0, stock − reserved_stock)` |
 | Variantes | adiar | Adiado: `offers.product_id` direto, sem `product_variants` |
 | Unicidade | `(store_id, product_id)` | unique `(product_id, store_id)`; segunda oferta da mesma loja → 409 |
@@ -200,7 +200,7 @@ seller edita conteúdo só em draft|rejected
 | B3.1.03 | Enums `OfferStatus`, `ReservationStatus` | `done` | S | `active`/`paused`; `active`/`released`/`committed` |
 | B3.1.04 | Models `Offer`, `InventoryReservation` + relations | `done` | M | `Store::offers`, `Product::offers`, `Offer::reservations`, `Offer::cartItems` |
 | B3.1.05 | Factories + states | `done` | S | `OfferFactory`: `active`, `paused`, `withStock`, `priced`, `belongingToStore`, `onProduct` |
-| B3.1.06 | Helpers de preço e estoque | `done` | S | `Offer::currentPrice()` (string decimal), `hasActivePromotion()`, `availableStock()`, `isActive()` |
+| B3.1.06 | Helpers de preço e estoque | `done` | S | `Offer::currentPriceCents()` (e `currentPrice()` formatado em reais), `hasActivePromotion()`, `availableStock()`, `isActive()` |
 
 **Schema implementado `offers`:**
 
@@ -208,8 +208,8 @@ seller edita conteúdo só em draft|rejected
 id uuid PK
 product_id uuid FK products restrict
 store_id uuid FK stores restrict
-price decimal(12,2)
-promotional_price decimal(12,2) nullable
+price_cents bigint            (era decimal(12,2) até X.1.02)
+promotional_price_cents bigint nullable
 promo_starts_at timestamp nullable
 promo_ends_at timestamp nullable
 stock unsigned int
@@ -633,7 +633,7 @@ GET    /api/v1/seller/balance                              # balance_cents, pend
 | ID | Item | Status | Esforço | Quando |
 |----|------|--------|---------|--------|
 | X.1.01 | `preventLazyLoading()` em local/testing | `done` | S | `Model::preventLazyLoading(! isProduction())` no `AppServiceProvider`; a suíte inteira passa sem violações |
-| X.1.02 | Padronizar dinheiro em centavos em todo o código | `todo` | M | só falta a oferta (`decimal(12,2)`); exige migration de `offers` + ajuste de `OfferResource`, `BuyBoxService` (`bccomp`) e `CheckoutService::priceToCents` |
+| X.1.02 | Padronizar dinheiro em centavos em todo o código | `done` | M | migration converte `offers` (`ROUND(price * 100)`) e adiciona `CHECK`; `Money` (bcmath) na borda da API; Buy Box e checkout comparam/congelam inteiros; API mantém reais e ganha `*_cents` (`OfferPriceCentsTest`, `MoneyTest`) |
 | X.1.03 | Job/Command limpeza tokens Sanctum expirados | `done` | S | `sanctum:prune-expired --hours=24` diário no scheduler; `sanctum.expiration` (1 ano) é maior que o refresh (30 dias), então só remove tokens já vencidos |
 | X.1.04 | Health check DB/redis em `/up` estendido | `done` | S | listener de `DiagnosingHealth` faz `select 1` e `PING`; 500 se algum falhar (`HealthCheckTest`) |
 | X.1.05 | Atualizar README com fluxo develop + matriz endpoints | `done` | M | README reescrito + `docs/api-referencia.md` + `docs/fluxos-e-regras.md` |
@@ -655,6 +655,7 @@ FEITO:
   + documentação OpenAPI e jornada de demonstração (L3, PRs #21 e #22)
   + hardening: preventLazyLoading, limpeza de tokens, /up com banco e Redis (X.1.01, X.1.03, X.1.04)
   + L1: verificação de e-mail, reset de senha e login com Google, e-mails via Resend em fila
+  + X.1.02: preço da oferta em centavos (dinheiro inteiro de ponta a ponta)
 
 PENDÊNCIAS OPCIONAIS DO CORE:
   B1.3    KYC do seller
@@ -662,7 +663,6 @@ PENDÊNCIAS OPCIONAIS DO CORE:
   B3.2.08 rotas admin de oferta
   B3.3.04 "a partir de R$ X" na listagem pública
   B3.4.07 idempotência de reserva avulsa
-  X.1.02  oferta em centavos
 
 FASES LATER (liberadas):
   L3 restante (relatórios admin, API seller)
