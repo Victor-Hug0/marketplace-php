@@ -31,5 +31,9 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
             OfferSeeder::class,
         ]);
+
+        if (app()->environment('local')) {
+            $this->call(DemoSeeder::class);
+        }
     }
 }
