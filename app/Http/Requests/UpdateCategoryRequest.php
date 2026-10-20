@@ -32,4 +32,12 @@ final class UpdateCategoryRequest extends FormRequest
             'is_active' => ['sometimes', 'boolean'],
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return (new StoreCategoryRequest)->bodyParameters();
+    }
 }

@@ -42,4 +42,41 @@ final class CreateStoreRequest extends FormRequest
             ],
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'store_name' => [
+                'description' => 'Nome público da loja.',
+                'example' => 'Loja Exemplo',
+            ],
+            'description' => [
+                'description' => 'Apresentação da loja.',
+                'example' => 'Eletrônicos com garantia e envio rápido.',
+            ],
+            'commercial_email' => [
+                'description' => 'E-mail comercial.',
+                'example' => 'contato@lojaexemplo.test',
+            ],
+            'commercial_phone' => [
+                'description' => 'Telefone comercial, 10 a 15 dígitos.',
+                'example' => '1133334444',
+            ],
+            'origin_cep' => [
+                'description' => 'CEP de onde os pedidos saem, usado no frete.',
+                'example' => '01310-100',
+            ],
+            'document_type' => [
+                'description' => 'Tipo de documento do titular.',
+                'example' => 'cnpj',
+            ],
+            'document' => [
+                'description' => 'CPF (11) ou CNPJ (14) só com dígitos; único entre as lojas.',
+                'example' => '11222333000181',
+            ],
+        ];
+    }
 }

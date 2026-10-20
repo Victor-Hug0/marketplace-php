@@ -22,4 +22,17 @@ final class FailPayoutRequest extends FormRequest
             'reason' => ['required', 'string', 'max:500'],
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'reason' => [
+                'description' => 'Motivo da falha; o valor volta ao saldo disponível da loja.',
+                'example' => 'Conta bancária encerrada.',
+            ],
+        ];
+    }
 }

@@ -39,4 +39,12 @@ final class UpdateProductRequest extends FormRequest
             'height_cm' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:300'],
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return (new StoreProductRequest)->bodyParameters();
+    }
 }

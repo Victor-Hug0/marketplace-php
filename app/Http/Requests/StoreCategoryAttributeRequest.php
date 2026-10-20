@@ -53,4 +53,45 @@ final class StoreCategoryAttributeRequest extends FormRequest
             'position' => ['sometimes', 'integer', 'min:0'],
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'code' => [
+                'description' => 'Código único dentro da categoria (letras, números, - e _).',
+                'example' => 'voltagem',
+            ],
+            'label' => [
+                'description' => 'Rótulo exibido.',
+                'example' => 'Voltagem',
+            ],
+            'data_type' => [
+                'description' => 'Tipo do valor do atributo.',
+                'example' => 'enum',
+            ],
+            'options' => [
+                'description' => 'Valores permitidos; obrigatório quando data_type é enum.',
+                'example' => ['110V', '220V', 'Bivolt'],
+            ],
+            'options.*' => [
+                'description' => 'Um valor permitido.',
+                'example' => 'Bivolt',
+            ],
+            'is_required' => [
+                'description' => 'Exige o atributo nos produtos da categoria.',
+                'example' => false,
+            ],
+            'is_filterable' => [
+                'description' => 'Disponível como filtro na busca.',
+                'example' => true,
+            ],
+            'position' => [
+                'description' => 'Ordem de exibição.',
+                'example' => 1,
+            ],
+        ];
+    }
 }

@@ -22,4 +22,17 @@ final class RejectReturnRequestRequest extends FormRequest
             'notes' => ['required', 'string', 'min:5', 'max:2000'],
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'notes' => [
+                'description' => 'Justificativa da recusa.',
+                'example' => 'Prazo de devolução expirado.',
+            ],
+        ];
+    }
 }

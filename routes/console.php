@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('orders:expire-unpaid')->everyMinute()->withoutOverlapping();
 Schedule::command('reservations:release-expired')->everyMinute()->withoutOverlapping();
+Schedule::command('sanctum:prune-expired --hours=24')->daily();

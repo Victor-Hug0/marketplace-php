@@ -323,4 +323,4 @@ O webhook é processado pelo job `ProcessPaymentWebhookEvent` (fila Redis, até 
 
 | Método | Rota | Uso |
 |--------|------|-----|
-| `GET` | `/up` | health check do Laravel |
+| `GET` | `/up` | health check: 200 se banco e Redis respondem, 500 caso contrário |

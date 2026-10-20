@@ -22,4 +22,17 @@ final class UpdateCartItemRequest extends FormRequest
             'quantity' => ['required', 'integer', 'min:1', 'max:999'],
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'quantity' => [
+                'description' => 'Nova quantidade.',
+                'example' => 3,
+            ],
+        ];
+    }
 }

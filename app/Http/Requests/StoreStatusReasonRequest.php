@@ -22,4 +22,17 @@ final class StoreStatusReasonRequest extends FormRequest
             'reason' => ['required', 'string', 'min:10', 'max:2000'],
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'reason' => [
+                'description' => 'Motivo registrado na auditoria (mínimo 10 caracteres).',
+                'example' => 'Violação recorrente das políticas.',
+            ],
+        ];
+    }
 }

@@ -58,4 +58,12 @@ final class UpdateCategoryAttributeRequest extends FormRequest
             'position' => ['sometimes', 'integer', 'min:0'],
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return (new StoreCategoryAttributeRequest)->bodyParameters();
+    }
 }

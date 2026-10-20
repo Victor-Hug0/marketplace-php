@@ -22,4 +22,17 @@ final class CancelOrderRequest extends FormRequest
             'reason' => ['nullable', 'string', 'max:500'],
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'reason' => [
+                'description' => 'Motivo do cancelamento.',
+                'example' => 'Comprei por engano.',
+            ],
+        ];
+    }
 }

@@ -29,4 +29,37 @@ final class StoreCategoryRequest extends FormRequest
             'is_active' => ['sometimes', 'boolean'],
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'parent_id' => [
+                'description' => 'Categoria pai; vazio cria uma categoria raiz.',
+                'example' => '01a159cb-4e6b-7c33-9f5a-6d7b8c9d0e1f',
+            ],
+            'name' => [
+                'description' => 'Nome exibido.',
+                'example' => 'Smartphones',
+            ],
+            'slug' => [
+                'description' => 'Slug único; gerado a partir do nome quando omitido.',
+                'example' => 'smartphones',
+            ],
+            'description' => [
+                'description' => 'Descrição da categoria.',
+                'example' => 'Celulares e acessórios.',
+            ],
+            'position' => [
+                'description' => 'Ordem de exibição entre as irmãs (menor primeiro).',
+                'example' => 1,
+            ],
+            'is_active' => [
+                'description' => 'Categorias inativas somem do catálogo público.',
+                'example' => true,
+            ],
+        ];
+    }
 }

@@ -1,5 +1,7 @@
 # Marketplace PHP
 
+[![CI](https://github.com/Victor-Hug0/marketplace-php/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Victor-Hug0/marketplace-php/actions/workflows/ci.yml)
+
 API REST de um marketplace multi-seller em **Laravel 12** e **PHP 8.4**: lojas aprovadas por um admin vendem produtos de um catálogo compartilhado, o comprador fecha um pedido com itens de várias lojas num único checkout, paga (gateway simulado), recebe com frete e rastreio por loja, e pode avaliar, abrir disputa ou pedir devolução. A plataforma cobra comissão e repassa o restante ao seller por um ledger contábil.
 
 Projeto de portfólio com foco em **regra de negócio**: transações, concorrência de estoque, idempotência, máquinas de estado explícitas e dinheiro em centavos com trilha de auditoria.
@@ -12,7 +14,8 @@ Projeto de portfólio com foco em **regra de negócio**: transações, concorrê
 - **Ledger append-only:** comissão, venda, reembolso proporcional e saque como lançamentos imutáveis (bloqueados no model e por trigger no Postgres). Saldo é sempre soma.
 - **Webhook de pagamento idempotente,** processado em fila com retentativas.
 - **Autorização em três camadas:** ability do token, papel (`buyer`, `seller`, `admin`) e Policy por recurso; recurso de outro usuário responde 404.
-- **213 testes de feature** cobrindo caminho feliz, 401/403/404/409/422 e conciliação financeira.
+- **215 testes** cobrindo caminho feliz, 401/403/404/409/422 e conciliação financeira; lazy loading é proibido fora de produção, então um N+1 falha na suíte.
+- **Pronto para operar:** `/up` verifica Postgres e Redis (usado pelo healthcheck da imagem), tokens vencidos são limpos todo dia e o CI valida também a instalação sem dependências de desenvolvimento.
 
 ## Stack
 
@@ -78,6 +81,13 @@ docker compose exec app php artisan migrate --seed
 
 O entrypoint do container instala as dependências, cria as pastas de `storage/` e executa `storage:link` (necessário para as URLs das imagens de produto).
 
+#### Permissões entre host e container (Linux)
+
+O projeto é montado dentro dos containers, então quem grava em `storage/`, `vendor/` ou `public/docs` precisa ser o mesmo usuário do host. Não há nada a configurar: ao subir, o entrypoint lê o dono da pasta do projeto e dá esse UID/GID ao `www-data` do container. Composer, Artisan, worker, scheduler e testes rodam como esse usuário (o Apache sobe como root e troca sozinho). Resultado: nenhum arquivo do repositório fica com dono root ou `www-data`, e dá para alternar entre `artisan serve` no host e os containers sem `chown`.
+
+- `docker compose exec` não passa pelo entrypoint e entra como root; para comandos que gravam arquivos, use `docker compose exec -u www-data app php artisan ...`.
+- Na imagem de produção o projeto já pertence ao `www-data` (UID 33), então nada muda; em Docker Desktop (macOS/Windows), onde a pasta montada aparece como root, o entrypoint mantém o comportamento padrão.
+
 ### Dados de demonstração
 
 `php artisan db:seed` (ou `migrate --seed`) cria:
@@ -138,9 +148,11 @@ docker compose exec app php artisan tinker --execute="\$u = App\Models\User::whe
 | `postgres` | `marketplace-postgres` | `5432` | banco |
 | `redis` | `marketplace-redis` | `6379` | fila e cache |
 | `worker` | `marketplace-worker` | — | `queue:work redis` (webhooks de pagamento) |
-| `scheduler` | `marketplace-scheduler` | — | `schedule:work` (expiração de pedidos e reservas, a cada minuto) |
+| `scheduler` | `marketplace-scheduler` | — | `schedule:work` (expiração de pedidos e reservas a cada minuto; `sanctum:prune-expired` diário) |
 
 Dentro dos containers, `DB_HOST` e `REDIS_HOST` são sobrescritos para `postgres` e `redis`. No `.env` do host mantenha `127.0.0.1` para usar ferramentas locais.
+
+O health check `GET /up` responde 200 só quando o banco e o Redis respondem; caso contrário, 500. O `HEALTHCHECK` da imagem usa essa rota, então `docker compose ps` mostra o `app` como `unhealthy` quando uma dependência cai.
 
 ### Comandos úteis
 
@@ -214,7 +226,9 @@ Daí em diante, o seller faz `POST /seller/order-sellers/{id}/shipments` e `/del
 
 ## Documentação interativa (Scribe)
 
-A página em `public/docs` é gerada a partir do código e fica versionada no repositório, então `/docs/` funciona sem passo extra. As anotações ficam nos controllers como atributos PHP (`#[Doc\Group]`, `#[Doc\Endpoint]`, `#[Doc\ResponseFromApiResource]` e afins); os parâmetros vêm das `rules()` dos Form Requests.
+A página em `public/docs` é gerada a partir do código e fica versionada no repositório, então `/docs/` funciona sem passo extra. As anotações ficam nos controllers como atributos PHP (`#[Doc\Group]`, `#[Doc\Endpoint]`, `#[Doc\ResponseFromApiResource]` e afins); os parâmetros vêm das `rules()` dos Form Requests, e as descrições e exemplos, do `bodyParameters()` (ou `queryParameters()`, na busca) de cada um.
+
+O "Try it out" envia as requisições para o mesmo endereço que serve a página (override de uma linha em `resources/views/vendor/scribe/themes/default/index.blade.php`), então funciona em qualquer host ou porta. Ao atualizar o Scribe, compare esse arquivo com o original do pacote.
 
 Depois de criar ou alterar endpoints, regenere com o banco de teste no ar (os exemplos de resposta são montados com factories dentro de uma transação desfeita no final):
 
@@ -250,7 +264,7 @@ docker compose -f compose.test.yml up -d postgres redis
 php artisan test
 ```
 
-No host, dois testes falham se `storage/` pertencer a `www-data` (o entrypoint do container faz esse `chown`): o health check (`ExampleTest`) e o upload de imagem (`ProductWorkflowTest`), que precisam escrever em `storage/`. Rodar pelo container evita o problema; no host, coloque seu usuário no grupo `www-data` ou ajuste o dono de `storage/` e `bootstrap/cache`.
+No host, o PHP precisa da extensão `redis` (o health check testa o Redis de verdade) e `storage/` precisa ser seu, o que os containers já garantem (veja [Permissões entre host e container](#permissões-entre-host-e-container-linux)).
 
 ### O que está coberto
 
@@ -267,8 +281,8 @@ No host, dois testes falham se `storage/` pertencer a `www-data` (o entrypoint d
 | Frete e envio | `Shipping/` | 17 |
 | Avaliações e pós-venda | `Review/`, `PostSale/` | 20 |
 | Seeder de demonstração | `Seeders/` | 4 |
-| Health check e exemplo unitário | `ExampleTest` (feature e unit) | 2 |
-| **Total** | | **213** |
+| Health check (banco e Redis) e exemplo unitário | `HealthCheckTest`, `tests/Unit/ExampleTest` | 4 |
+| **Total** | | **215** |
 
 Formatação: `./vendor/bin/pint` (ou `--test` para só verificar).
 
