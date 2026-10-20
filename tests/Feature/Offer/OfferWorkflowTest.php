@@ -58,7 +58,7 @@ final class OfferWorkflowTest extends TestCase
         $this->assertDatabaseHas('offers', [
             'product_id' => $product->id,
             'store_id' => $storeB->id,
-            'price' => '150.00',
+            'price_cents' => 15000,
         ]);
     }
 

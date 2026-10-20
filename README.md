@@ -4,7 +4,7 @@
 
 API REST de um marketplace multi-seller em **Laravel 12** e **PHP 8.4**: lojas aprovadas por um admin vendem produtos de um catálogo compartilhado, o comprador fecha um pedido com itens de várias lojas num único checkout, paga (gateway simulado), recebe com frete e rastreio por loja, e pode avaliar, abrir disputa ou pedir devolução. A plataforma cobra comissão e repassa o restante ao seller por um ledger contábil.
 
-Projeto de portfólio com foco em **regra de negócio**: transações, concorrência de estoque, idempotência, máquinas de estado explícitas e dinheiro em centavos com trilha de auditoria.
+Projeto de portfólio com foco em **regra de negócio**: transações, concorrência de estoque, idempotência, máquinas de estado explícitas e dinheiro em centavos de ponta a ponta (do preço da oferta ao saque) com trilha de auditoria.
 
 ## Destaques técnicos
 
@@ -14,7 +14,7 @@ Projeto de portfólio com foco em **regra de negócio**: transações, concorrê
 - **Ledger append-only:** comissão, venda, reembolso proporcional e saque como lançamentos imutáveis (bloqueados no model e por trigger no Postgres). Saldo é sempre soma.
 - **Webhook de pagamento idempotente,** processado em fila com retentativas.
 - **Autorização em três camadas:** ability do token, papel (`buyer`, `seller`, `admin`) e Policy por recurso; recurso de outro usuário responde 404.
-- **242 testes** cobrindo caminho feliz, 401/403/404/409/422 e conciliação financeira; lazy loading é proibido fora de produção, então um N+1 falha na suíte.
+- **259 testes** cobrindo caminho feliz, 401/403/404/409/422 e conciliação financeira; lazy loading é proibido fora de produção, então um N+1 falha na suíte.
 - **Pronto para operar:** `/up` verifica Postgres e Redis (usado pelo healthcheck da imagem), tokens vencidos são limpos todo dia e o CI valida também a instalação sem dependências de desenvolvimento.
 
 ## Stack
@@ -301,7 +301,8 @@ No host, o PHP precisa da extensão `redis` (o health check testa o Redis de ver
 | Conta (cadastro, login, e-mail, senha, Google) | `Auth/` | 39 |
 | Lojas e vitrine | `Store/`, `Catalog/` | 15 |
 | Catálogo | `Category/`, `Product/` | 28 |
-| Ofertas, Buy Box e estoque | `Offer/` | 9 |
+| Ofertas, Buy Box, estoque e preço em centavos | `Offer/` | 15 |
+| Conversão reais ↔ centavos | `tests/Unit/MoneyTest` | 11 |
 | Endereços e carrinho | `Address/`, `Cart/` | 20 |
 | Checkout e pedidos | `Checkout/`, `Order/` | 36 |
 | Pagamento | `Payment/` (dois testes rodam para Pix, cartão e boleto) | 21 |
@@ -310,7 +311,7 @@ No host, o PHP precisa da extensão `redis` (o health check testa o Redis de ver
 | Avaliações e pós-venda | `Review/`, `PostSale/` | 20 |
 | Seeder de demonstração | `Seeders/` | 4 |
 | Health check (banco e Redis) e exemplo unitário | `HealthCheckTest`, `tests/Unit/ExampleTest` | 4 |
-| **Total** | | **242** |
+| **Total** | | **259** |
 
 Formatação: `./vendor/bin/pint` (ou `--test` para só verificar).
 

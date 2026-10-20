@@ -123,7 +123,7 @@ stateDiagram-v2
 ### Oferta
 
 - Uma oferta por loja e produto. O seller pode ofertar produto de outra loja: é assim que o mesmo item tem vários vendedores.
-- `price` e `promotional_price` em reais (`decimal(12,2)`). O preço vigente (`currentPrice()`) é o promocional quando há promoção dentro da janela `promo_starts_at`–`promo_ends_at`; senão, `price`.
+- `price_cents` e `promotional_price_cents` em centavos (`bigint`); a API recebe reais e converte com `App\Support\Money` (bcmath, sem `float`). O banco garante preço > 0 e promoção > 0 e menor que o preço (`CHECK`). O preço vigente (`currentPriceCents()`) é o promocional quando há promoção dentro da janela `promo_starts_at`–`promo_ends_at`; senão, o regular.
 - Estados `active` ↔ `paused`. Exclusão (soft delete) só sem reservas ativas.
 - `stock` pode ser alterado, mas nunca para menos que `reserved_stock` (409).
 
@@ -208,7 +208,7 @@ Uma única transação, nesta ordem:
 2. Trava o carrinho e os itens; carrinho vazio → 409.
 3. Valida o endereço do próprio comprador (404 se for de outro).
 4. Para cada item, trava a oferta e revalida oferta, loja e produto `active` e estoque disponível (409).
-5. Converte o preço vigente para centavos (`unit_price_cents`).
+5. Congela o preço vigente da oferta, já em centavos, em `unit_price_cents`.
 6. Agrupa os itens por loja e cota o frete de cada grupo (seção 7).
 7. Cria o pedido `pending_payment` com subtotal, frete, total, cópia do endereço e `payment_due_at` = agora + 60 min.
 8. Cria um subpedido por loja e os itens com snapshot de nome, slug e preço unitário.

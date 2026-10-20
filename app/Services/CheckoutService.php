@@ -232,7 +232,7 @@ final class CheckoutService
                 );
             }
 
-            $unitPriceCents = $this->priceToCents($offer->currentPrice());
+            $unitPriceCents = $offer->currentPriceCents();
 
             return [
                 'offer' => $offer,
@@ -301,11 +301,6 @@ final class CheckoutService
         }
 
         return $offer;
-    }
-
-    private function priceToCents(string $price): int
-    {
-        return (int) round(((float) $price) * 100);
     }
 
     private function recordStatusHistory(

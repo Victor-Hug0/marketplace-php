@@ -147,7 +147,7 @@ final class CheckoutWorkflowTest extends TestCase
             ->assertJsonPath('data.sellers.0.items.0.unit_price_cents', 10000)
             ->json('data.id');
 
-        $offer->update(['price' => '999.00']);
+        $offer->update(['price_cents' => 99900]);
 
         $this->assertDatabaseHas('order_items', [
             'unit_price_cents' => 10000,

@@ -232,7 +232,7 @@ final class CartWorkflowTest extends TestCase
         $buyer = $this->userWithRole(RoleName::BUYER);
         $offer = $this->purchasableOffer(price: '100.00', stock: 5);
         $offer->update([
-            'promotional_price' => '80.00',
+            'promotional_price_cents' => 8000,
             'promo_starts_at' => now()->subDay(),
             'promo_ends_at' => now()->addDay(),
         ]);

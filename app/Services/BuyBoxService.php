@@ -37,7 +37,7 @@ final class BuyBoxService
 
         return $eligible
             ->sort(function (Offer $a, Offer $b): int {
-                $priceCmp = bccomp($a->currentPrice(), $b->currentPrice(), 2);
+                $priceCmp = $a->currentPriceCents() <=> $b->currentPriceCents();
                 if ($priceCmp !== 0) {
                     return $priceCmp;
                 }
