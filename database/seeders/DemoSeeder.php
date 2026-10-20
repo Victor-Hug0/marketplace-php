@@ -78,14 +78,16 @@ final class DemoSeeder extends Seeder
             OfferSeeder::class,
         ]);
 
-        // Payment webhooks must be applied now, not left for the queue worker.
+        // Payment webhooks must be applied now, not left for the queue worker. The journey's e-mails go to
+        // the log, so seeding never depends on Resend; their inbox (database) copies are still created.
         $queue = config('queue.default');
-        config(['queue.default' => 'sync']);
+        $mailer = config('mail.default');
+        config(['queue.default' => 'sync', 'mail.default' => 'log']);
 
         try {
             $this->seed();
         } finally {
-            config(['queue.default' => $queue]);
+            config(['queue.default' => $queue, 'mail.default' => $mailer]);
         }
     }
 

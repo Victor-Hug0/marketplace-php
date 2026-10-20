@@ -1,6 +1,6 @@
 # Referência da API — Marketplace
 
-Referência de todos os endpoints de `/api/v1` (102 rotas). Gerada a partir de `routes/api.php`, dos Form Requests e dos controllers em 20/10/2026.
+Referência de todos os endpoints de `/api/v1` (106 rotas). Gerada a partir de `routes/api.php`, dos Form Requests e dos controllers em 20/10/2026.
 
 Regras de negócio, máquinas de estado e autorização em detalhe: [`fluxos-e-regras.md`](fluxos-e-regras.md).
 
@@ -329,7 +329,20 @@ O webhook é processado pelo job `ProcessPaymentWebhookEvent` (fila Redis, até 
 
 ---
 
-## 15. Fora de `/api/v1`
+## 15. Notificações
+
+Toda notificação de domínio é enviada por e-mail (fila, Resend) e fica na caixa do usuário (`notifications`). `type` identifica o evento; `action_path` é a rota sugerida no app cliente (`FRONTEND_URL`). A lista completa de eventos e destinatários está na seção 15 de [`fluxos-e-regras.md`](fluxos-e-regras.md).
+
+| Método | Rota | Acesso | Corpo / query | Sucesso | Erros |
+|--------|------|--------|---------------|---------|-------|
+| `GET` | `/notifications` | Autenticado | `unread?` (1 = só não lidas), `per_page`, `cursor` | `200` lista paginada, mais recentes primeiro: `{ id, type, title, message, action_path, data, read_at, created_at }` | `401` |
+| `GET` | `/notifications/unread-count` | Autenticado | — | `200` `{ data: { unread } }` | `401` |
+| `POST` | `/notifications/{notification}/read` | Autenticado (dono) | — | `200` notificação com `read_at`; idempotente | `401`, `404` de outro usuário ou inexistente |
+| `POST` | `/notifications/read-all` | Autenticado | — | `200` `{ data: { updated } }` | `401` |
+
+---
+
+## 16. Fora de `/api/v1`
 
 | Método | Rota | Uso |
 |--------|------|-----|

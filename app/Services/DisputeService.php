@@ -6,6 +6,8 @@ namespace App\Services;
 
 use App\Enums\DisputeReason;
 use App\Enums\DisputeStatus;
+use App\Events\DisputeOpened;
+use App\Events\DisputeResolved;
 use App\Models\AuditLog;
 use App\Models\Dispute;
 use App\Models\Order;
@@ -46,6 +48,7 @@ final class DisputeService
                     'description' => $description,
                 ]);
 
+                event(new DisputeOpened($dispute));
                 $this->audit($buyer, $dispute, 'dispute.opened', ['reason' => $reason->value]);
 
                 return $dispute;
@@ -104,6 +107,7 @@ final class DisputeService
                 'refund_id' => $refund?->id,
             ]);
 
+            event(new DisputeResolved($dispute));
             $this->audit($admin, $dispute, 'dispute.resolved', [
                 'status' => $dispute->status->value,
                 'refund_id' => $refund?->id,

@@ -8,6 +8,8 @@ use App\Enums\OrderSellerStatus;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\ReservationStatus;
+use App\Events\OrderCancelled;
+use App\Events\OrderSellerCancelledBySeller;
 use App\Models\AuditLog;
 use App\Models\InventoryReservation;
 use App\Models\Order;
@@ -16,6 +18,7 @@ use App\Models\OrderStatusHistory;
 use App\Models\Payment;
 use App\Models\Refund;
 use App\Models\User;
+use App\Notifications\OrderCancelledNotification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\DB;
@@ -106,6 +109,7 @@ final class OrderService
             }
 
             $this->cancelUnpaidOrder($order, $buyer, $reason ?? 'Cancelado pelo comprador.');
+            event(new OrderCancelled($order, OrderCancelledNotification::CAUSE_BUYER));
             $this->audit($buyer, $order, 'order.cancelled_by_buyer', [
                 'reason' => $reason,
             ]);
@@ -142,6 +146,7 @@ final class OrderService
             }
 
             $this->cancelUnpaidOrder($order, null, 'Prazo de pagamento expirado.');
+            event(new OrderCancelled($order, OrderCancelledNotification::CAUSE_EXPIRED));
             $this->audit(null, $order, 'order.expired_unpaid', [
                 'payment_due_at' => $order->payment_due_at->toIso8601String(),
             ]);
@@ -207,6 +212,7 @@ final class OrderService
                 $reason ?? 'Todos os subpedidos foram encerrados.',
             );
 
+            event(new OrderSellerCancelledBySeller($orderSeller));
             $this->audit($seller, $order, 'order_seller.cancelled_by_seller', [
                 'order_seller_id' => $orderSeller->id,
                 'reason' => $reason,

@@ -14,7 +14,8 @@ Projeto de portfólio com foco em **regra de negócio**: transações, concorrê
 - **Ledger append-only:** comissão, venda, reembolso proporcional e saque como lançamentos imutáveis (bloqueados no model e por trigger no Postgres). Saldo é sempre soma.
 - **Webhook de pagamento idempotente,** processado em fila com retentativas.
 - **Autorização em três camadas:** ability do token, papel (`buyer`, `seller`, `admin`) e Policy por recurso; recurso de outro usuário responde 404.
-- **274 testes** cobrindo caminho feliz, 401/403/404/409/422 e conciliação financeira; lazy loading é proibido fora de produção, então um N+1 falha na suíte.
+- **293 testes** cobrindo caminho feliz, 401/403/404/409/422 e conciliação financeira; lazy loading é proibido fora de produção, então um N+1 falha na suíte.
+- **Notificações orientadas a eventos:** 16 eventos de domínio disparados só depois do commit; listeners avisam comprador, vendedor e admin por e-mail (Resend, em fila) e numa caixa no app, sem duplicar em replays idempotentes.
 - **Pronto para operar:** `/up` verifica Postgres e Redis (usado pelo healthcheck da imagem), tokens vencidos são limpos todo dia e o CI valida também a instalação sem dependências de desenvolvimento.
 
 ## Stack
@@ -45,6 +46,7 @@ Projeto de portfólio com foco em **regra de negócio**: transações, concorrê
 | Financeiro | Comissão configurável sobre os itens; ledger; reembolso total ou parcial; saldo, saque e trava de saldo durante pós-venda |
 | Envio | Separação, envio com código de rastreio e confirmação de entrega; o pedido acompanha o seller mais atrasado |
 | Pós-venda | Avaliação de item entregue; disputa mediada pelo admin; devolução decidida pelo seller ou admin; janela de 7 dias |
+| Notificações | Comprador, vendedor e admin avisados a cada transição (pedido, pagamento, envio, pós-venda, saque, moderação) por e-mail em fila e numa caixa de notificações com contagem de não lidas e marcar como lida |
 
 ## Documentação
 
@@ -52,7 +54,7 @@ Projeto de portfólio com foco em **regra de negócio**: transações, concorrê
 |-----------|----------|
 | [`public/docs/index.html`](public/docs/index.html) (em `http://127.0.0.1:8080/docs/`) | Documentação interativa gerada pelo Scribe: endpoints agrupados por contexto, parâmetros extraídos dos Form Requests, exemplos de resposta e botão "Try it out" |
 | [`public/docs/openapi.yaml`](public/docs/openapi.yaml) e [`collection.json`](public/docs/collection.json) | Especificação OpenAPI 3.0.3 e coleção do Postman, para importar em Insomnia, Postman ou geradores de cliente |
-| [`docs/api-referencia.md`](docs/api-referencia.md) | Os 102 endpoints: acesso, corpo, sucesso e erros; convenções de envelope, paginação, idempotência e rate limit |
+| [`docs/api-referencia.md`](docs/api-referencia.md) | Os 106 endpoints: acesso, corpo, sucesso e erros; convenções de envelope, paginação, idempotência e rate limit |
 | [`docs/fluxos-e-regras.md`](docs/fluxos-e-regras.md) | Máquinas de estado, regras de cada contexto, fluxo do dinheiro e do estoque, autorização, configuração e auditoria |
 | [`docs/roadmap-implementacao-api.md`](docs/roadmap-implementacao-api.md) | Roadmap de negócio por fase, com o teste que comprova cada critério de pronto |
 | [`docs/roadmap-backlog-tecnico.md`](docs/roadmap-backlog-tecnico.md) | Backlog técnico item a item, decisões de cada fase e pendências |
@@ -174,7 +176,7 @@ docker compose exec -u www-data app php artisan reservations:release-expired  # 
 
 ## Configuração de domínio
 
-As variáveis abaixo estão no `.env.example`; a explicação completa está na seção 16 de [`docs/fluxos-e-regras.md`](docs/fluxos-e-regras.md).
+As variáveis abaixo estão no `.env.example`; a explicação completa está na seção 17 de [`docs/fluxos-e-regras.md`](docs/fluxos-e-regras.md).
 
 | Variável | Padrão | Para quê |
 |----------|--------|----------|
@@ -309,9 +311,10 @@ No host, o PHP precisa da extensão `redis` (o health check testa o Redis de ver
 | Ledger, reembolso e saque | `Ledger/`, `Refund/`, `Payout/` | 29 |
 | Frete e envio | `Shipping/` | 17 |
 | Avaliações e pós-venda | `Review/`, `PostSale/` | 20 |
+| Notificações (eventos, destinatários, caixa, e-mail em pt-BR) | `Notifications/` | 19 |
 | Seeder de demonstração | `Seeders/` | 4 |
 | Health check (banco e Redis) e exemplo unitário | `HealthCheckTest`, `tests/Unit/ExampleTest` | 4 |
-| **Total** | | **274** |
+| **Total** | | **293** |
 
 Formatação: `./vendor/bin/pint` (ou `--test` para só verificar).
 

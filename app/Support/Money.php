@@ -24,6 +24,17 @@ final class Money
         return (int) bcmul($normalized, '100', 0);
     }
 
+    /**
+     * Human-readable BRL for e-mails and messages: 179990 => "R$ 1.799,90".
+     */
+    public static function formatBrl(int $cents): string
+    {
+        $sign = $cents < 0 ? '-' : '';
+        $cents = abs($cents);
+
+        return sprintf('%sR$ %s,%02d', $sign, number_format(intdiv($cents, 100), 0, '', '.'), $cents % 100);
+    }
+
     public static function format(int $cents): string
     {
         $sign = $cents < 0 ? '-' : '';

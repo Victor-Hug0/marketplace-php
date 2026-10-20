@@ -613,7 +613,7 @@ GET    /api/v1/seller/balance                              # balance_cents, pend
 | L2.1.03 | Wishlist | `later` | M |
 | L2.1.04 | Q&A produto | `later` | M |
 | L2.1.05 | Chat buyer-seller | `later` | XL |
-| L2.1.06 | Notificações e-mail/in-app (fila) | `later` | L |
+| L2.1.06 | Notificações e-mail/in-app (fila) | `done` | L |
 
 ---
 
@@ -657,6 +657,7 @@ FEITO:
   + L1 completa: verificação de e-mail (exigida no checkout, pedido de loja e saque), reset de senha e login com Google, e-mails via Resend em fila
   + X.1.02: preço da oferta em centavos (dinheiro inteiro de ponta a ponta)
   + B2.4.01–04 e B3.3.04: atributos valorados, filtros ?attr[...] e preço "a partir de" na busca
+  + L2.1.06: notificações por e-mail e caixa no app para comprador, vendedor e admin
 
 PENDÊNCIAS OPCIONAIS DO CORE:
   B1.3    KYC do seller
@@ -666,7 +667,7 @@ PENDÊNCIAS OPCIONAIS DO CORE:
 
 FASES LATER (liberadas):
   L3 restante (relatórios admin, API seller)
-  L2 (cupons, wishlist, notificações)
+  L2 restante (cupons, wishlist, Q&A, chat)
 ```
 
 ### Definition of Done por item

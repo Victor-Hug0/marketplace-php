@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Enums\PayoutStatus;
 use App\Enums\StoreStatus;
+use App\Events\PayoutProcessed;
 use App\Models\AuditLog;
 use App\Models\Payout;
 use App\Models\Store;
@@ -103,6 +104,7 @@ final class PayoutService
 
             $this->ledgerService->postPayout($payout);
 
+            event(new PayoutProcessed($payout));
             $this->audit($admin, $payout, 'payout.marked_paid', [
                 'store_id' => $payout->store_id,
                 'amount_cents' => $payout->amount_cents,
@@ -124,6 +126,7 @@ final class PayoutService
                 'processed_by' => $admin->id,
             ]);
 
+            event(new PayoutProcessed($payout));
             $this->audit($admin, $payout, 'payout.marked_failed', [
                 'store_id' => $payout->store_id,
                 'amount_cents' => $payout->amount_cents,

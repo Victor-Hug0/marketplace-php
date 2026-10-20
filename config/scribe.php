@@ -139,6 +139,7 @@ return [
             'Financeiro',
             'Avaliações',
             'Pós-venda',
+            'Notificações',
         ],
     ],
 

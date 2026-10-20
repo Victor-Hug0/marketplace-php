@@ -10,7 +10,7 @@
     ],
     "info": {
         "name": "Marketplace API",
-        "_postman_id": "5c3b68b3-56d2-4935-a46c-8f269cf98355",
+        "_postman_id": "604af963-7495-4e48-8ae9-c11b9e2036ac",
         "description": "API REST de um marketplace multi-seller: lojas, cat\u00e1logo, ofertas com Buy Box, checkout idempotente, pagamento simulado, ledger, frete, envio e p\u00f3s-venda.",
         "schema": "https:\/\/schema.getpostman.com\/json\/collection\/v2.1.0\/collection.json"
     },
@@ -517,7 +517,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":[{\"id\":\"01a15a6f-4e76-731e-b0fe-eec6c9b1db5f\",\"name\":\"Morgan Hirthe\",\"email\":\"dare.emelie@example.com\",\"email_verified_at\":\"2026-10-20T14:50:06-03:00\",\"cpf\":\"41031927934\",\"phone_number\":\"16072574427\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"},{\"id\":\"01a15a6f-4e7c-7012-ada8-cc5392beade9\",\"name\":\"Mr. Oswald Koch\",\"email\":\"bailee15@example.org\",\"email_verified_at\":\"2026-10-20T14:50:06-03:00\",\"cpf\":\"81919716147\",\"phone_number\":\"58408704390\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"links\":{\"first\":null,\"last\":null,\"prev\":null,\"next\":null},\"meta\":{\"path\":\"\\\/\",\"per_page\":20,\"next_cursor\":null,\"prev_cursor\":null}}",
+                                    "body": "{\"data\":[{\"id\":\"01a15a86-d187-7042-91ff-2770fc9cf737\",\"name\":\"Morgan Hirthe\",\"email\":\"dare.emelie@example.com\",\"email_verified_at\":\"2026-10-20T15:15:47-03:00\",\"cpf\":\"41031927934\",\"phone_number\":\"16072574427\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"},{\"id\":\"01a15a86-d18f-7076-835a-75f34b1571e6\",\"name\":\"Mr. Oswald Koch\",\"email\":\"bailee15@example.org\",\"email_verified_at\":\"2026-10-20T15:15:47-03:00\",\"cpf\":\"81919716147\",\"phone_number\":\"58408704390\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"links\":{\"first\":null,\"last\":null,\"prev\":null,\"next\":null},\"meta\":{\"path\":\"\\\/\",\"per_page\":20,\"next_cursor\":null,\"prev_cursor\":null}}",
                                     "name": ""
                                 }
                             ]
@@ -564,7 +564,7 @@
                                 {
                                     "header": [],
                                     "code": 201,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4eee-70a9-92c3-f80e1fbd944c\",\"store_name\":\"Bailey Inc\",\"slug\":\"bailey-inc-9365\",\"description\":\"Velit et fugiat sunt nihil accusantium.\",\"logo_url\":null,\"banner_url\":null,\"commercial_email\":\"lafayette.considine@schuster.biz\",\"commercial_phone\":\"68210674842\",\"origin_cep\":\"98808182\",\"document_type\":\"cnpj\",\"document\":\"53681349837432\",\"status\":\"pending\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d20b-736e-8218-4f81547cbd42\",\"store_name\":\"Bailey Inc\",\"slug\":\"bailey-inc-9365\",\"description\":\"Velit et fugiat sunt nihil accusantium.\",\"logo_url\":null,\"banner_url\":null,\"commercial_email\":\"lafayette.considine@schuster.biz\",\"commercial_phone\":\"68210674842\",\"origin_cep\":\"98808182\",\"document_type\":\"cnpj\",\"document\":\"53681349837432\",\"status\":\"pending\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -596,7 +596,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4ef1-70ff-9163-6eaeec128ac1\",\"store_name\":\"Price Ltd\",\"slug\":\"price-ltd-1881\",\"description\":\"Incidunt iure odit et et modi ipsum.\",\"logo_url\":null,\"banner_url\":null,\"commercial_email\":\"isidro.mclaughlin@smitham.com\",\"commercial_phone\":\"17091751532\",\"origin_cep\":\"19197161\",\"document_type\":\"cnpj\",\"document\":\"32375994731024\",\"status\":\"pending\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d20d-7273-a11e-9b82959396a9\",\"store_name\":\"Price Ltd\",\"slug\":\"price-ltd-1881\",\"description\":\"Incidunt iure odit et et modi ipsum.\",\"logo_url\":null,\"banner_url\":null,\"commercial_email\":\"isidro.mclaughlin@smitham.com\",\"commercial_phone\":\"17091751532\",\"origin_cep\":\"19197161\",\"document_type\":\"cnpj\",\"document\":\"32375994731024\",\"status\":\"pending\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -694,7 +694,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4ef4-727c-a80b-1160b73392ad\",\"store_name\":\"Crooks LLC\",\"slug\":\"crooks-llc-0564\",\"description\":\"Fugiat sunt nihil accusantium harum mollitia.\",\"logo_url\":null,\"banner_url\":null}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d212-7393-9d0e-1de0d95c8153\",\"store_name\":\"Crooks LLC\",\"slug\":\"crooks-llc-0564\",\"description\":\"Fugiat sunt nihil accusantium harum mollitia.\",\"logo_url\":null,\"banner_url\":null}}",
                                     "name": ""
                                 }
                             ]
@@ -732,7 +732,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":[{\"id\":\"01a15a6f-4fc7-7127-9997-aeda71736fb3\",\"store_name\":\"Dare Group\",\"slug\":\"dare-group-8862\",\"description\":\"Et et modi ipsum nostrum.\",\"logo_url\":null,\"banner_url\":null,\"commercial_email\":\"carey67@tromp.com\",\"commercial_phone\":\"64310643261\",\"origin_cep\":\"23759947\",\"document_type\":\"cnpj\",\"document\":\"58408704315490\",\"status\":\"pending\",\"rejection_reason\":null,\"reviewed_at\":null,\"owner\":{\"id\":\"01a15a6f-4fc7-7127-9997-aeda7133cd7b\",\"name\":\"Janick Schultz DDS\",\"email\":\"wbatz@example.net\",\"email_verified_at\":\"2026-10-20T14:50:06-03:00\",\"cpf\":\"40837167997\",\"phone_number\":\"49408015989\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"},\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"},{\"id\":\"01a15a6f-4fc9-7111-b349-192ccaadbdd7\",\"store_name\":\"Pagac-Emmerich\",\"slug\":\"pagac-emmerich-5182\",\"description\":\"Assumenda et tenetur ab reiciendis quia.\",\"logo_url\":null,\"banner_url\":null,\"commercial_email\":\"garett.runolfsson@ullrich.com\",\"commercial_phone\":\"91753796799\",\"origin_cep\":\"95275298\",\"document_type\":\"cnpj\",\"document\":\"84970168743531\",\"status\":\"pending\",\"rejection_reason\":null,\"reviewed_at\":null,\"owner\":{\"id\":\"01a15a6f-4fc8-72ee-801f-827791af1f55\",\"name\":\"Pierce Stanton\",\"email\":\"marquardt.zion@example.com\",\"email_verified_at\":\"2026-10-20T14:50:06-03:00\",\"cpf\":\"84131275345\",\"phone_number\":\"80646189556\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"},\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"links\":{\"first\":null,\"last\":null,\"prev\":null,\"next\":null},\"meta\":{\"path\":\"\\\/\",\"per_page\":20,\"next_cursor\":null,\"prev_cursor\":null}}",
+                                    "body": "{\"data\":[{\"id\":\"01a15a86-d331-71e4-894d-da6cdee7523d\",\"store_name\":\"Dare Group\",\"slug\":\"dare-group-8862\",\"description\":\"Et et modi ipsum nostrum.\",\"logo_url\":null,\"banner_url\":null,\"commercial_email\":\"carey67@tromp.com\",\"commercial_phone\":\"64310643261\",\"origin_cep\":\"23759947\",\"document_type\":\"cnpj\",\"document\":\"58408704315490\",\"status\":\"pending\",\"rejection_reason\":null,\"reviewed_at\":null,\"owner\":{\"id\":\"01a15a86-d330-70a3-b2a7-893b8d4fe46d\",\"name\":\"Janick Schultz DDS\",\"email\":\"oking@example.net\",\"email_verified_at\":\"2026-10-20T15:15:47-03:00\",\"cpf\":\"41591518258\",\"phone_number\":\"16022608537\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"},\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"},{\"id\":\"01a15a86-d332-7081-b2ed-b728e3c73352\",\"store_name\":\"Runolfsson PLC\",\"slug\":\"runolfsson-plc-5062\",\"description\":\"Maiores assumenda odit doloribus repellat.\",\"logo_url\":null,\"banner_url\":null,\"commercial_email\":\"kendra87@klocko.com\",\"commercial_phone\":\"68399682322\",\"origin_cep\":\"53397241\",\"document_type\":\"cnpj\",\"document\":\"11087110218487\",\"status\":\"pending\",\"rejection_reason\":null,\"reviewed_at\":null,\"owner\":{\"id\":\"01a15a86-d332-7081-b2ed-b728e36eda3c\",\"name\":\"Herminio Brekke\",\"email\":\"alia45@example.net\",\"email_verified_at\":\"2026-10-20T15:15:47-03:00\",\"cpf\":\"17193235651\",\"phone_number\":\"52244989509\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"},\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"links\":{\"first\":null,\"last\":null,\"prev\":null,\"next\":null},\"meta\":{\"path\":\"\\\/\",\"per_page\":20,\"next_cursor\":null,\"prev_cursor\":null}}",
                                     "name": ""
                                 }
                             ]
@@ -772,7 +772,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4fcb-73fb-96c5-a036282cebf9\",\"store_name\":\"Baumbach Ltd\",\"slug\":\"baumbach-ltd-7161\",\"description\":\"Tempora ex voluptatem laboriosam praesentium quis.\",\"logo_url\":null,\"banner_url\":null,\"commercial_email\":\"jhaag@wisoky.com\",\"commercial_phone\":\"36080078259\",\"origin_cep\":\"39965127\",\"document_type\":\"cnpj\",\"document\":\"44519790587351\",\"status\":\"active\",\"rejection_reason\":null,\"reviewed_at\":\"2026-10-20T14:50:06-03:00\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d335-7154-a593-3b5dee4ffbdb\",\"store_name\":\"Baumbach Ltd\",\"slug\":\"baumbach-ltd-7161\",\"description\":\"Tempora ex voluptatem laboriosam praesentium quis.\",\"logo_url\":null,\"banner_url\":null,\"commercial_email\":\"jhaag@wisoky.com\",\"commercial_phone\":\"36080078259\",\"origin_cep\":\"39965127\",\"document_type\":\"cnpj\",\"document\":\"44519790587351\",\"status\":\"active\",\"rejection_reason\":null,\"reviewed_at\":\"2026-10-20T15:15:47-03:00\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -815,7 +815,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4fce-73ba-8743-be290a8d0267\",\"store_name\":\"Okuneva, Rempel and Gulgowski\",\"slug\":\"okuneva-rempel-and-gulgowski-6748\",\"description\":\"Quo omnis nostrum aut adipisci.\",\"logo_url\":null,\"banner_url\":null,\"commercial_email\":\"theo.hauck@leuschke.com\",\"commercial_phone\":\"41031927934\",\"origin_cep\":\"60725744\",\"document_type\":\"cnpj\",\"document\":\"90122162735052\",\"status\":\"pending\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d338-7319-8ef9-f8ccd17a5d13\",\"store_name\":\"Okuneva, Rempel and Gulgowski\",\"slug\":\"okuneva-rempel-and-gulgowski-6748\",\"description\":\"Quo omnis nostrum aut adipisci.\",\"logo_url\":null,\"banner_url\":null,\"commercial_email\":\"theo.hauck@leuschke.com\",\"commercial_phone\":\"41031927934\",\"origin_cep\":\"60725744\",\"document_type\":\"cnpj\",\"document\":\"90122162735052\",\"status\":\"pending\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -858,7 +858,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4fd1-717f-89b8-50b8416ee918\",\"store_name\":\"Ernser Group\",\"slug\":\"ernser-group-8182\",\"description\":\"Nostrum aut adipisci quidem nostrum.\",\"logo_url\":null,\"banner_url\":null,\"commercial_email\":\"emelie.baumbach@keebler.com\",\"commercial_phone\":\"16072574427\",\"origin_cep\":\"59135052\",\"document_type\":\"cnpj\",\"document\":\"05825606773351\",\"status\":\"pending\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d33b-73db-91f0-cf598818dea2\",\"store_name\":\"Ernser Group\",\"slug\":\"ernser-group-8182\",\"description\":\"Nostrum aut adipisci quidem nostrum.\",\"logo_url\":null,\"banner_url\":null,\"commercial_email\":\"emelie.baumbach@keebler.com\",\"commercial_phone\":\"16072574427\",\"origin_cep\":\"59135052\",\"document_type\":\"cnpj\",\"document\":\"05825606773351\",\"status\":\"pending\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -905,7 +905,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":[{\"id\":\"01a15a6f-4ef7-7374-a6f7-0c22ef3d8395\",\"parent_id\":null,\"name\":\"Adipisci molestias\",\"slug\":\"adipisci-molestias-7339\",\"description\":null,\"position\":0,\"is_active\":true,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"},{\"id\":\"01a15a6f-4ef8-7372-a8c6-0be8662c5bb1\",\"parent_id\":null,\"name\":\"Distinctio eum\",\"slug\":\"distinctio-eum-1859\",\"description\":\"Libero aliquam veniam corporis dolorem mollitia deleniti.\",\"position\":0,\"is_active\":true,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}]}",
+                                    "body": "{\"data\":[{\"id\":\"01a15a86-d215-724c-b0ed-283a38149290\",\"parent_id\":null,\"name\":\"Adipisci molestias\",\"slug\":\"adipisci-molestias-7339\",\"description\":null,\"position\":0,\"is_active\":true,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"},{\"id\":\"01a15a86-d216-708e-944e-47a251b1e729\",\"parent_id\":null,\"name\":\"Distinctio eum\",\"slug\":\"distinctio-eum-1859\",\"description\":\"Libero aliquam veniam corporis dolorem mollitia deleniti.\",\"position\":0,\"is_active\":true,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}]}",
                                     "name": ""
                                 }
                             ]
@@ -948,7 +948,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4efa-7092-adaa-56601452e7bc\",\"parent_id\":null,\"name\":\"Eius et\",\"slug\":\"eius-et-6316\",\"description\":null,\"position\":0,\"is_active\":true,\"attributes\":[{\"id\":\"01a15a6f-4efa-7092-adaa-56601516d309\",\"code\":\"et_fugiat\",\"label\":\"Et fugiat\",\"data_type\":\"string\",\"options\":null,\"is_required\":false,\"is_filterable\":true,\"position\":0,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d218-7007-bf49-a4861b5ff745\",\"parent_id\":null,\"name\":\"Eius et\",\"slug\":\"eius-et-6316\",\"description\":null,\"position\":0,\"is_active\":true,\"attributes\":[{\"id\":\"01a15a86-d219-70fe-9b49-794700e6ea79\",\"code\":\"et_fugiat\",\"label\":\"Et fugiat\",\"data_type\":\"string\",\"options\":null,\"is_required\":false,\"is_filterable\":true,\"position\":0,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -986,7 +986,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":[{\"id\":\"01a15a6f-4fd4-717d-a5fe-a71a2ed061c9\",\"parent_id\":null,\"name\":\"Aut adipisci\",\"slug\":\"aut-adipisci-0949\",\"description\":\"Commodi incidunt iure odit.\",\"position\":0,\"is_active\":true,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"},{\"id\":\"01a15a6f-4fd5-737f-98af-fd5a4e7c75be\",\"parent_id\":null,\"name\":\"Et et\",\"slug\":\"et-et-1024\",\"description\":\"Laboriosam praesentium quis adipisci molestias fugit deleniti distinctio.\",\"position\":0,\"is_active\":true,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}]}",
+                                    "body": "{\"data\":[{\"id\":\"01a15a86-d340-73f8-91e4-c7216a2ab95e\",\"parent_id\":null,\"name\":\"Eum quis\",\"slug\":\"eum-quis-3485\",\"description\":\"Reiciendis doloribus minus fugiat voluptatum perspiciatis ea rerum.\",\"position\":0,\"is_active\":true,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"},{\"id\":\"01a15a86-d341-7302-91df-817d32f1d6e6\",\"parent_id\":null,\"name\":\"Tenetur deleniti\",\"slug\":\"tenetur-deleniti-5347\",\"description\":null,\"position\":0,\"is_active\":true,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}]}",
                                     "name": ""
                                 }
                             ]
@@ -1021,7 +1021,7 @@
                                 {
                                     "header": [],
                                     "code": 201,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4fd8-71d5-a893-0d590a7bfdbd\",\"parent_id\":null,\"name\":\"Architecto eius\",\"slug\":\"architecto-eius-6806\",\"description\":null,\"position\":0,\"is_active\":true,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d344-73f4-b2ab-57f1cb18961c\",\"parent_id\":null,\"name\":\"Architecto eius\",\"slug\":\"architecto-eius-6806\",\"description\":null,\"position\":0,\"is_active\":true,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -1064,7 +1064,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4fda-715e-8882-663c81c06776\",\"parent_id\":null,\"name\":\"Et animi\",\"slug\":\"et-animi-7680\",\"description\":\"Nostrum qui commodi incidunt iure.\",\"position\":0,\"is_active\":true,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d346-7003-849e-799cdc2b3fa9\",\"parent_id\":null,\"name\":\"Et animi\",\"slug\":\"et-animi-7680\",\"description\":\"Nostrum qui commodi incidunt iure.\",\"position\":0,\"is_active\":true,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -1147,7 +1147,7 @@
                                 {
                                     "header": [],
                                     "code": 201,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4fdf-716f-979a-546112e68d5b\",\"code\":\"quos_velit\",\"label\":\"Quos velit\",\"data_type\":\"string\",\"options\":null,\"is_required\":false,\"is_filterable\":true,\"position\":0,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d34b-702d-b137-e3b73cb5ca7c\",\"code\":\"quos_velit\",\"label\":\"Quos velit\",\"data_type\":\"string\",\"options\":null,\"is_required\":false,\"is_filterable\":true,\"position\":0,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -1196,7 +1196,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4fe6-700f-a366-0d209c594ddb\",\"code\":\"accusantium_harum\",\"label\":\"Accusantium harum\",\"data_type\":\"string\",\"options\":null,\"is_required\":false,\"is_filterable\":true,\"position\":0,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d350-70b1-9d37-bd53f6311091\",\"code\":\"accusantium_harum\",\"label\":\"Accusantium harum\",\"data_type\":\"string\",\"options\":null,\"is_required\":false,\"is_filterable\":true,\"position\":0,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -1338,7 +1338,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":[{\"id\":\"01a15a6f-4f00-72b0-86c6-4fe0068caac9\",\"name\":\"Et animi quos\",\"slug\":\"et-animi-quos-9432\",\"description\":\"Accusantium harum mollitia modi deserunt aut ab. Perspiciatis quo omnis nostrum aut adipisci quidem nostrum qui. Incidunt iure odit et et modi ipsum.\",\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"active\",\"rejection_reason\":null,\"reviewed_at\":\"2026-10-20T14:50:06-03:00\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"},{\"id\":\"01a15a6f-4f02-73d7-9bdf-83edabb84691\",\"name\":\"Odio veritatis excepturi\",\"slug\":\"odio-veritatis-excepturi-2329\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"active\",\"rejection_reason\":null,\"reviewed_at\":\"2026-10-20T14:50:06-03:00\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"links\":{\"first\":null,\"last\":null,\"prev\":null,\"next\":null},\"meta\":{\"path\":\"\\\/\",\"per_page\":20,\"next_cursor\":null,\"prev_cursor\":null}}",
+                                    "body": "{\"data\":[{\"id\":\"01a15a86-d21f-72ae-acee-e3361028c587\",\"name\":\"Et animi quos\",\"slug\":\"et-animi-quos-9432\",\"description\":\"Accusantium harum mollitia modi deserunt aut ab. Perspiciatis quo omnis nostrum aut adipisci quidem nostrum qui. Incidunt iure odit et et modi ipsum.\",\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"active\",\"rejection_reason\":null,\"reviewed_at\":\"2026-10-20T15:15:47-03:00\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"},{\"id\":\"01a15a86-d221-73f2-ad66-99bc7bb229f1\",\"name\":\"Odio veritatis excepturi\",\"slug\":\"odio-veritatis-excepturi-2329\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"active\",\"rejection_reason\":null,\"reviewed_at\":\"2026-10-20T15:15:47-03:00\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"links\":{\"first\":null,\"last\":null,\"prev\":null,\"next\":null},\"meta\":{\"path\":\"\\\/\",\"per_page\":20,\"next_cursor\":null,\"prev_cursor\":null}}",
                                     "name": ""
                                 }
                             ]
@@ -1381,7 +1381,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4f06-70bc-b1e6-64efaa39fc4b\",\"name\":\"Eius et animi\",\"slug\":\"eius-et-animi-5625\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"active\",\"rejection_reason\":null,\"reviewed_at\":\"2026-10-20T14:50:06-03:00\",\"category\":{\"id\":\"01a15a6f-4f06-70bc-b1e6-64efa9f7a17b\",\"name\":\"Libero aliquam\",\"slug\":\"libero-aliquam-0574\"},\"store\":{\"id\":\"01a15a6f-4f05-734a-8c0c-50b53bed4069\",\"store_name\":\"Gaylord and Sons\",\"slug\":\"gaylord-and-sons-4954\"},\"images\":[{\"id\":\"01a15a6f-4f06-70bc-b1e6-64efab052d60\",\"url\":\"http:\\\/\\\/127.0.0.1:8080\\\/storage\\\/products\\\/68ad2275-5861-45ba-a719-bf0918908462\\\/1.jpg\",\"position\":0,\"alt\":\"Neque blanditiis odio veritatis.\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d225-73a0-b7e9-cff1e9b2a011\",\"name\":\"Eius et animi\",\"slug\":\"eius-et-animi-5625\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"active\",\"rejection_reason\":null,\"reviewed_at\":\"2026-10-20T15:15:47-03:00\",\"category\":{\"id\":\"01a15a86-d225-73a0-b7e9-cff1e90f11fc\",\"name\":\"Veniam corporis\",\"slug\":\"veniam-corporis-3805\"},\"store\":{\"id\":\"01a15a86-d225-73a0-b7e9-cff1e8c045b4\",\"store_name\":\"Gaylord and Sons\",\"slug\":\"gaylord-and-sons-4954\"},\"images\":[{\"id\":\"01a15a86-d226-7077-ac69-2131294b5848\",\"url\":\"http:\\\/\\\/127.0.0.1:8080\\\/storage\\\/products\\\/4035d46e-d04e-4153-b8c3-6cf0b4462ade\\\/1.jpg\",\"position\":0,\"alt\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -1419,7 +1419,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":[{\"id\":\"01a15a6f-4f2c-713b-85fa-1131d570a076\",\"name\":\"Aut tenetur voluptate\",\"slug\":\"aut-tenetur-voluptate-4951\",\"description\":\"Deleniti aut quia facere quasi. Vel dignissimos doloribus sit ut aut recusandae. Minus reiciendis ut necessitatibus sit. Nemo facere et et ipsa rem.\",\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"draft\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"},{\"id\":\"01a15a6f-4f2f-71b2-97e8-33e8dca4a2d6\",\"name\":\"Ea praesentium quia\",\"slug\":\"ea-praesentium-quia-8408\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"draft\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"links\":{\"first\":null,\"last\":null,\"prev\":null,\"next\":null},\"meta\":{\"path\":\"\\\/\",\"per_page\":20,\"next_cursor\":null,\"prev_cursor\":null}}",
+                                    "body": "{\"data\":[{\"id\":\"01a15a86-d24c-71a5-9b26-e47c6e8ec523\",\"name\":\"Qui nemo repellendus\",\"slug\":\"qui-nemo-repellendus-8440\",\"description\":\"Voluptatem et qui sit. Perferendis vel dolor distinctio error. Itaque enim est optio sit dolores. Voluptate sed quia accusantium amet quasi.\",\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"draft\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"},{\"id\":\"01a15a86-d24e-7128-8c44-7012b2097419\",\"name\":\"Iure impedit laborum\",\"slug\":\"iure-impedit-laborum-8150\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"draft\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"links\":{\"first\":null,\"last\":null,\"prev\":null,\"next\":null},\"meta\":{\"path\":\"\\\/\",\"per_page\":20,\"next_cursor\":null,\"prev_cursor\":null}}",
                                     "name": ""
                                 }
                             ]
@@ -1454,7 +1454,7 @@
                                 {
                                     "header": [],
                                     "code": 201,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4f33-70bd-8e24-790a9fe6559b\",\"name\":\"Architecto eius et\",\"slug\":\"architecto-eius-et-0575\",\"description\":\"Mollitia modi deserunt aut ab provident perspiciatis quo. Nostrum aut adipisci quidem nostrum. Commodi incidunt iure odit. Et modi ipsum nostrum omnis autem et consequatur. Dolores enim non facere tempora.\",\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"draft\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d253-7339-ab63-4f4c37c2d317\",\"name\":\"Architecto eius et\",\"slug\":\"architecto-eius-et-0575\",\"description\":\"Mollitia modi deserunt aut ab provident perspiciatis quo. Nostrum aut adipisci quidem nostrum. Commodi incidunt iure odit. Et modi ipsum nostrum omnis autem et consequatur. Dolores enim non facere tempora.\",\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"draft\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -1494,7 +1494,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4f37-70c2-bd08-205c7e752f29\",\"name\":\"Nostrum qui commodi\",\"slug\":\"nostrum-qui-commodi-4902\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"pending_moderation\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d257-7376-9d76-deceacccba9b\",\"name\":\"Nostrum qui commodi\",\"slug\":\"nostrum-qui-commodi-4902\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"pending_moderation\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -1534,7 +1534,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4f3a-73fc-9700-5bebc0991a81\",\"name\":\"Incidunt iure odit\",\"slug\":\"incidunt-iure-odit-0034\",\"description\":\"Nostrum omnis autem et consequatur aut. Enim non facere tempora ex voluptatem laboriosam praesentium. Adipisci molestias fugit deleniti distinctio eum doloremque id. Libero aliquam veniam corporis dolorem mollitia deleniti. Odit quia officia est dignissimos neque blanditiis odio.\",\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"paused\",\"rejection_reason\":null,\"reviewed_at\":\"2026-10-20T14:50:06-03:00\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d25a-7092-a4fe-b529fd8675d9\",\"name\":\"Incidunt iure odit\",\"slug\":\"incidunt-iure-odit-0034\",\"description\":\"Nostrum omnis autem et consequatur aut. Enim non facere tempora ex voluptatem laboriosam praesentium. Adipisci molestias fugit deleniti distinctio eum doloremque id. Libero aliquam veniam corporis dolorem mollitia deleniti. Odit quia officia est dignissimos neque blanditiis odio.\",\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"paused\",\"rejection_reason\":null,\"reviewed_at\":\"2026-10-20T15:15:47-03:00\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -1574,7 +1574,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4f40-7183-8290-c30470bfa0d7\",\"name\":\"Et et modi\",\"slug\":\"et-et-modi-7365\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"active\",\"rejection_reason\":null,\"reviewed_at\":\"2026-10-20T14:50:06-03:00\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d25d-7093-b1c3-e22f841f80f6\",\"name\":\"Et et modi\",\"slug\":\"et-et-modi-7365\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"active\",\"rejection_reason\":null,\"reviewed_at\":\"2026-10-20T15:15:47-03:00\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -1629,7 +1629,7 @@
                                 {
                                     "header": [],
                                     "code": 201,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4f4f-714a-8909-ded35bd56ab7\",\"url\":\"http:\\\/\\\/127.0.0.1:8080\\\/storage\\\/products\\\/186f363d-9cb7-4a99-ac06-4a41e0777ecb\\\/1.jpg\",\"position\":0,\"alt\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d266-7344-b268-6ca4ab75838a\",\"url\":\"http:\\\/\\\/127.0.0.1:8080\\\/storage\\\/products\\\/41c1da2c-9805-4393-bb7a-660371836d0d\\\/1.jpg\",\"position\":0,\"alt\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -1672,7 +1672,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4f58-704e-892b-d8e1e41931dd\",\"name\":\"Animi quos velit\",\"slug\":\"animi-quos-velit-6343\",\"description\":\"Deserunt aut ab provident perspiciatis quo omnis nostrum. Adipisci quidem nostrum qui commodi incidunt iure. Et et modi ipsum nostrum.\",\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"draft\",\"rejection_reason\":null,\"reviewed_at\":null,\"images\":[{\"id\":\"01a15a6f-4f58-704e-892b-d8e1e4d3b30f\",\"url\":\"http:\\\/\\\/127.0.0.1:8080\\\/storage\\\/products\\\/3c1bc7e0-b3b4-4903-bbb6-c820c2e41cc5\\\/1.jpg\",\"position\":0,\"alt\":\"Laboriosam est alias.\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d26c-7268-b0c5-05b695388f93\",\"name\":\"Animi quos velit\",\"slug\":\"animi-quos-velit-6343\",\"description\":\"Deserunt aut ab provident perspiciatis quo omnis nostrum. Adipisci quidem nostrum qui commodi incidunt iure. Et et modi ipsum nostrum.\",\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"draft\",\"rejection_reason\":null,\"reviewed_at\":null,\"images\":[{\"id\":\"01a15a86-d26c-7268-b0c5-05b69544aa94\",\"url\":\"http:\\\/\\\/127.0.0.1:8080\\\/storage\\\/products\\\/88f4676e-5807-462b-b534-afe681345d3e\\\/1.jpg\",\"position\":0,\"alt\":\"Laboriosam est alias.\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -1758,7 +1758,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4f5f-7129-a4b9-3bd28f856b85\",\"name\":\"Ipsum nostrum omnis\",\"slug\":\"ipsum-nostrum-omnis-9606\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"draft\",\"rejection_reason\":null,\"reviewed_at\":null,\"category\":{\"id\":\"01a15a6f-4f5e-7265-948a-c45f92a66c7e\",\"name\":\"Dignissimos neque\",\"slug\":\"dignissimos-neque-0159\"},\"images\":[{\"id\":\"01a15a6f-4f5f-7129-a4b9-3bd290808ed6\",\"url\":\"http:\\\/\\\/127.0.0.1:8080\\\/storage\\\/products\\\/733947b5-60c5-4fa1-b9ef-4991263fb3b5\\\/1.jpg\",\"position\":0,\"alt\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d271-70e1-a734-5cdf506b7c32\",\"name\":\"Ipsum nostrum omnis\",\"slug\":\"ipsum-nostrum-omnis-9606\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"draft\",\"rejection_reason\":null,\"reviewed_at\":null,\"category\":{\"id\":\"01a15a86-d271-70e1-a734-5cdf4fdee3cc\",\"name\":\"Dignissimos neque\",\"slug\":\"dignissimos-neque-0159\"},\"images\":[{\"id\":\"01a15a86-d271-70e1-a734-5cdf509dd555\",\"url\":\"http:\\\/\\\/127.0.0.1:8080\\\/storage\\\/products\\\/19ab762f-582a-4de0-8e84-c619dbdfa8a2\\\/1.jpg\",\"position\":0,\"alt\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -1801,7 +1801,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4f65-7302-ae8e-b9e918aee6ae\",\"name\":\"Et fugiat sunt\",\"slug\":\"et-fugiat-sunt-0841\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"draft\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d27e-70df-92ec-cdec5bd00552\",\"name\":\"Et fugiat sunt\",\"slug\":\"et-fugiat-sunt-0841\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"draft\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -1874,7 +1874,7 @@
                                 ],
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\"status\":\"rejected\"}"
+                                    "raw": "{\"status\":\"active\"}"
                                 },
                                 "description": "Filtro opcional por `status`."
                             },
@@ -1882,7 +1882,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":[{\"id\":\"01a15a6f-4feb-7139-b02a-ae3636bb4479\",\"name\":\"Autem et consequatur\",\"slug\":\"autem-et-consequatur-6227\",\"description\":\"Molestias fugit deleniti distinctio eum doloremque id. Libero aliquam veniam corporis dolorem mollitia deleniti. Odit quia officia est dignissimos neque blanditiis odio. Excepturi doloribus delectus fugit qui repudiandae laboriosam.\",\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"draft\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"},{\"id\":\"01a15a6f-4fed-710a-a190-9f70d1c2b31f\",\"name\":\"Dicta vitae assumenda\",\"slug\":\"dicta-vitae-assumenda-1074\",\"description\":\"Quisquam sit repellendus ut eaque alias ratione. Sed rem ea ut aut deserunt.\",\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"draft\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"links\":{\"first\":null,\"last\":null,\"prev\":null,\"next\":null},\"meta\":{\"path\":\"\\\/\",\"per_page\":20,\"next_cursor\":null,\"prev_cursor\":null}}",
+                                    "body": "{\"data\":[{\"id\":\"01a15a86-d356-7241-81c3-5e43bbe0f9f4\",\"name\":\"Autem et consequatur\",\"slug\":\"autem-et-consequatur-1024\",\"description\":\"Praesentium quis adipisci molestias fugit. Distinctio eum doloremque id aut libero aliquam veniam corporis. Mollitia deleniti nemo odit quia officia. Dignissimos neque blanditiis odio.\",\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"draft\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"},{\"id\":\"01a15a86-d358-73c3-b46f-90eeb69aafb4\",\"name\":\"Ipsam dolorem et\",\"slug\":\"ipsam-dolorem-et-6176\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"draft\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"links\":{\"first\":null,\"last\":null,\"prev\":null,\"next\":null},\"meta\":{\"path\":\"\\\/\",\"per_page\":20,\"next_cursor\":null,\"prev_cursor\":null}}",
                                     "name": ""
                                 }
                             ]
@@ -1922,7 +1922,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4ff0-73ef-be53-3d81e481dcd0\",\"name\":\"Aut dolores enim\",\"slug\":\"aut-dolores-enim-0170\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"draft\",\"rejection_reason\":null,\"reviewed_at\":null,\"category\":{\"id\":\"01a15a6f-4ff0-73ef-be53-3d81e441e73b\",\"name\":\"Et tenetur\",\"slug\":\"et-tenetur-4519\"},\"store\":{\"id\":\"01a15a6f-4ff0-73ef-be53-3d81e40c7bcf\",\"store_name\":\"Hettinger, Nitzsche and Ankunding\",\"slug\":\"hettinger-nitzsche-and-ankunding-3706\"},\"images\":[{\"id\":\"01a15a6f-4ff1-72e9-9dd4-b31e13d6bb3c\",\"url\":\"http:\\\/\\\/127.0.0.1:8080\\\/storage\\\/products\\\/e41564a4-f66b-4b91-9b89-2429f3018796\\\/1.jpg\",\"position\":0,\"alt\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d35b-73ac-a7e3-5cc19b3bbe9c\",\"name\":\"Aut dolores enim\",\"slug\":\"aut-dolores-enim-5490\",\"description\":\"Adipisci molestias fugit deleniti distinctio eum doloremque id. Libero aliquam veniam corporis dolorem mollitia deleniti. Odit quia officia est dignissimos neque blanditiis odio. Excepturi doloribus delectus fugit qui repudiandae laboriosam.\",\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"draft\",\"rejection_reason\":null,\"reviewed_at\":null,\"category\":{\"id\":\"01a15a86-d35b-73ac-a7e3-5cc19adce479\",\"name\":\"Suscipit doloribus\",\"slug\":\"suscipit-doloribus-8241\"},\"store\":{\"id\":\"01a15a86-d35b-73ac-a7e3-5cc19a8324fa\",\"store_name\":\"Franecki Inc\",\"slug\":\"franecki-inc-2438\"},\"images\":[{\"id\":\"01a15a86-d35b-73ac-a7e3-5cc19bef6356\",\"url\":\"http:\\\/\\\/127.0.0.1:8080\\\/storage\\\/products\\\/93b1975c-1d79-4b2a-b62d-6fcee98b0552\\\/1.jpg\",\"position\":0,\"alt\":\"Et ut dicta.\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -1965,7 +1965,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4ff6-71b6-aa38-fcadf7f2b215\",\"name\":\"Nihil accusantium harum\",\"slug\":\"nihil-accusantium-harum-0782\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"draft\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d361-724e-8fe9-6576fb8578e1\",\"name\":\"Nihil accusantium harum\",\"slug\":\"nihil-accusantium-harum-6227\",\"description\":\"Molestias fugit deleniti distinctio eum doloremque id. Libero aliquam veniam corporis dolorem mollitia deleniti. Odit quia officia est dignissimos neque blanditiis odio. Excepturi doloribus delectus fugit qui repudiandae laboriosam.\",\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"draft\",\"rejection_reason\":null,\"reviewed_at\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -2005,7 +2005,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4ffa-7178-aea7-e8f1a290aa0c\",\"name\":\"Non facere tempora\",\"slug\":\"non-facere-tempora-5127\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"active\",\"rejection_reason\":null,\"reviewed_at\":\"2026-10-20T14:50:06-03:00\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d364-71a3-b826-c52d6f537298\",\"name\":\"Non facere tempora\",\"slug\":\"non-facere-tempora-0170\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"active\",\"rejection_reason\":null,\"reviewed_at\":\"2026-10-20T15:15:47-03:00\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -2048,7 +2048,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4ffd-72a9-847c-1979ff0b3eb9\",\"name\":\"Mollitia modi deserunt\",\"slug\":\"mollitia-modi-deserunt-0089\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"rejected\",\"rejection_reason\":\"Produto fora do padr\\u00e3o da plataforma.\",\"reviewed_at\":\"2026-10-20T14:50:06-03:00\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d368-7145-9206-75ad0ad2dc47\",\"name\":\"Mollitia modi deserunt\",\"slug\":\"mollitia-modi-deserunt-0782\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"rejected\",\"rejection_reason\":\"Produto fora do padr\\u00e3o da plataforma.\",\"reviewed_at\":\"2026-10-20T15:15:47-03:00\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -2088,7 +2088,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-5000-73a4-a770-cd8b9b35afee\",\"name\":\"Praesentium quis adipisci\",\"slug\":\"praesentium-quis-adipisci-3733\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"paused\",\"rejection_reason\":null,\"reviewed_at\":\"2026-10-20T14:50:06-03:00\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d36b-7256-9202-e2b1a4dc75cd\",\"name\":\"Praesentium quis adipisci\",\"slug\":\"praesentium-quis-adipisci-5127\",\"description\":null,\"weight_grams\":null,\"length_cm\":null,\"width_cm\":null,\"height_cm\":null,\"status\":\"paused\",\"rejection_reason\":null,\"reviewed_at\":\"2026-10-20T15:15:47-03:00\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -2132,7 +2132,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":[{\"id\":\"01a15a6f-4f6c-73b6-a855-301ff5e72c15\",\"product_id\":\"01a15a6f-4f6b-7368-b71d-605ed69df68f\",\"price\":\"663.68\",\"price_cents\":66368,\"promotional_price\":null,\"promotional_price_cents\":null,\"current_price\":\"663.68\",\"current_price_cents\":66368,\"promo_starts_at\":null,\"promo_ends_at\":null,\"available_stock\":25,\"status\":\"active\",\"store\":{\"id\":\"01a15a6f-4f6b-7368-b71d-605ed81a38d3\",\"store_name\":\"Ortiz Inc\",\"slug\":\"ortiz-inc-1439\"},\"product\":{\"id\":\"01a15a6f-4f6b-7368-b71d-605ed69df68f\",\"name\":\"Quidem nostrum qui\",\"slug\":\"quidem-nostrum-qui-0719\"},\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"},{\"id\":\"01a15a6f-4f6f-70a4-b4d7-d39da14efa78\",\"product_id\":\"01a15a6f-4f6e-73b2-a73c-46d58f9b3a56\",\"price\":\"832.67\",\"price_cents\":83267,\"promotional_price\":null,\"promotional_price_cents\":null,\"current_price\":\"832.67\",\"current_price_cents\":83267,\"promo_starts_at\":null,\"promo_ends_at\":null,\"available_stock\":57,\"status\":\"active\",\"store\":{\"id\":\"01a15a6f-4f6f-70a4-b4d7-d39da14531f3\",\"store_name\":\"Nienow Ltd\",\"slug\":\"nienow-ltd-2089\"},\"product\":{\"id\":\"01a15a6f-4f6e-73b2-a73c-46d58f9b3a56\",\"name\":\"Recusandae et ipsam\",\"slug\":\"recusandae-et-ipsam-6330\"},\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"links\":{\"first\":null,\"last\":null,\"prev\":null,\"next\":null},\"meta\":{\"path\":\"\\\/\",\"per_page\":20,\"next_cursor\":null,\"prev_cursor\":null}}",
+                                    "body": "{\"data\":[{\"id\":\"01a15a86-d28c-7027-abc6-44ce74843404\",\"product_id\":\"01a15a86-d28a-719e-acc8-14d5965ac9a1\",\"price\":\"663.68\",\"price_cents\":66368,\"promotional_price\":null,\"promotional_price_cents\":null,\"current_price\":\"663.68\",\"current_price_cents\":66368,\"promo_starts_at\":null,\"promo_ends_at\":null,\"available_stock\":25,\"status\":\"active\",\"store\":{\"id\":\"01a15a86-d28b-73a4-a505-cb24f862fb2a\",\"store_name\":\"Ortiz Inc\",\"slug\":\"ortiz-inc-1439\"},\"product\":{\"id\":\"01a15a86-d28a-719e-acc8-14d5965ac9a1\",\"name\":\"Quidem nostrum qui\",\"slug\":\"quidem-nostrum-qui-0719\"},\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"},{\"id\":\"01a15a86-d290-723d-bcc9-4a208caa1ddb\",\"product_id\":\"01a15a86-d28f-72d9-b1d7-2a75d7a8ac35\",\"price\":\"832.67\",\"price_cents\":83267,\"promotional_price\":null,\"promotional_price_cents\":null,\"current_price\":\"832.67\",\"current_price_cents\":83267,\"promo_starts_at\":null,\"promo_ends_at\":null,\"available_stock\":57,\"status\":\"active\",\"store\":{\"id\":\"01a15a86-d28f-72d9-b1d7-2a75d8724e1e\",\"store_name\":\"Nienow Ltd\",\"slug\":\"nienow-ltd-2089\"},\"product\":{\"id\":\"01a15a86-d28f-72d9-b1d7-2a75d7a8ac35\",\"name\":\"Recusandae et ipsam\",\"slug\":\"recusandae-et-ipsam-6330\"},\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"links\":{\"first\":null,\"last\":null,\"prev\":null,\"next\":null},\"meta\":{\"path\":\"\\\/\",\"per_page\":20,\"next_cursor\":null,\"prev_cursor\":null}}",
                                     "name": ""
                                 }
                             ]
@@ -2167,7 +2167,7 @@
                                 {
                                     "header": [],
                                     "code": 201,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4f75-7107-9b12-5c9aa9e3e2a7\",\"product_id\":\"01a15a6f-4f74-7399-9a90-2702e7f8aa1f\",\"price\":\"2171.27\",\"price_cents\":217127,\"promotional_price\":null,\"promotional_price_cents\":null,\"current_price\":\"2171.27\",\"current_price_cents\":217127,\"promo_starts_at\":null,\"promo_ends_at\":null,\"available_stock\":72,\"status\":\"active\",\"store\":{\"id\":\"01a15a6f-4f74-7399-9a90-2702e88f5ec1\",\"store_name\":\"O'Connell, Beier and Bradtke\",\"slug\":\"oconnell-beier-and-bradtke-8637\"},\"product\":{\"id\":\"01a15a6f-4f74-7399-9a90-2702e7f8aa1f\",\"name\":\"Velit et fugiat\",\"slug\":\"velit-et-fugiat-1582\"},\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d295-72a4-b71c-5b8b6b4bf99d\",\"product_id\":\"01a15a86-d294-734e-8dd1-7e10e4bf5cbe\",\"price\":\"2171.27\",\"price_cents\":217127,\"promotional_price\":null,\"promotional_price_cents\":null,\"current_price\":\"2171.27\",\"current_price_cents\":217127,\"promo_starts_at\":null,\"promo_ends_at\":null,\"available_stock\":72,\"status\":\"active\",\"store\":{\"id\":\"01a15a86-d295-72a4-b71c-5b8b6adfdea0\",\"store_name\":\"O'Reilly Inc\",\"slug\":\"oreilly-inc-3974\"},\"product\":{\"id\":\"01a15a86-d294-734e-8dd1-7e10e4bf5cbe\",\"name\":\"Velit et fugiat\",\"slug\":\"velit-et-fugiat-1582\"},\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -2207,7 +2207,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4f7a-72fc-aa50-9d83f4c781a0\",\"product_id\":\"01a15a6f-4f79-70fd-ac8e-134b0206d30a\",\"price\":\"663.68\",\"price_cents\":66368,\"promotional_price\":null,\"promotional_price_cents\":null,\"current_price\":\"663.68\",\"current_price_cents\":66368,\"promo_starts_at\":null,\"promo_ends_at\":null,\"available_stock\":25,\"status\":\"paused\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d29c-7028-82b0-411068979296\",\"product_id\":\"01a15a86-d29b-71e7-8bf9-8ff3af681a5b\",\"price\":\"663.68\",\"price_cents\":66368,\"promotional_price\":null,\"promotional_price_cents\":null,\"current_price\":\"663.68\",\"current_price_cents\":66368,\"promo_starts_at\":null,\"promo_ends_at\":null,\"available_stock\":25,\"status\":\"paused\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -2247,7 +2247,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4f7e-70d4-8678-e3b2685fc969\",\"product_id\":\"01a15a6f-4f7d-7321-ae2e-a57543e73b21\",\"price\":\"663.68\",\"price_cents\":66368,\"promotional_price\":null,\"promotional_price_cents\":null,\"current_price\":\"663.68\",\"current_price_cents\":66368,\"promo_starts_at\":null,\"promo_ends_at\":null,\"available_stock\":25,\"status\":\"active\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d2a3-717a-8a73-b4d1b0eaced4\",\"product_id\":\"01a15a86-d2a1-7281-9acd-10fb39cb4a40\",\"price\":\"663.68\",\"price_cents\":66368,\"promotional_price\":null,\"promotional_price_cents\":null,\"current_price\":\"663.68\",\"current_price_cents\":66368,\"promo_starts_at\":null,\"promo_ends_at\":null,\"available_stock\":25,\"status\":\"active\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -2287,7 +2287,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4f82-70ee-9429-19ef1707ae92\",\"product_id\":\"01a15a6f-4f82-70ee-9429-19ef152fe07b\",\"price\":\"663.68\",\"price_cents\":66368,\"promotional_price\":null,\"promotional_price_cents\":null,\"current_price\":\"663.68\",\"current_price_cents\":66368,\"promo_starts_at\":null,\"promo_ends_at\":null,\"available_stock\":25,\"status\":\"active\",\"store\":{\"id\":\"01a15a6f-4f82-70ee-9429-19ef16843036\",\"store_name\":\"Hammes-Brekke\",\"slug\":\"hammes-brekke-5721\"},\"product\":{\"id\":\"01a15a6f-4f82-70ee-9429-19ef152fe07b\",\"name\":\"Modi ipsum nostrum\",\"slug\":\"modi-ipsum-nostrum-5058\"},\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d2ae-7164-a25e-bf0944e52324\",\"product_id\":\"01a15a86-d2ab-70b3-9fab-10a95550962c\",\"price\":\"663.68\",\"price_cents\":66368,\"promotional_price\":null,\"promotional_price_cents\":null,\"current_price\":\"663.68\",\"current_price_cents\":66368,\"promo_starts_at\":null,\"promo_ends_at\":null,\"available_stock\":25,\"status\":\"active\",\"store\":{\"id\":\"01a15a86-d2ae-7164-a25e-bf09447d371c\",\"store_name\":\"Douglas Group\",\"slug\":\"douglas-group-6823\"},\"product\":{\"id\":\"01a15a86-d2ab-70b3-9fab-10a95550962c\",\"name\":\"Modi ipsum nostrum\",\"slug\":\"modi-ipsum-nostrum-5058\"},\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -2330,7 +2330,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4f88-7063-9ff1-33d116c85988\",\"product_id\":\"01a15a6f-4f87-70cb-a3ba-1637532340ae\",\"price\":\"2171.27\",\"price_cents\":217127,\"promotional_price\":null,\"promotional_price_cents\":null,\"current_price\":\"2171.27\",\"current_price_cents\":217127,\"promo_starts_at\":null,\"promo_ends_at\":null,\"available_stock\":72,\"status\":\"active\",\"store\":{\"id\":\"01a15a6f-4f88-7063-9ff1-33d116136e92\",\"store_name\":\"Kuhn-Kreiger\",\"slug\":\"kuhn-kreiger-3531\"},\"product\":{\"id\":\"01a15a6f-4f87-70cb-a3ba-1637532340ae\",\"name\":\"Sunt nihil accusantium\",\"slug\":\"sunt-nihil-accusantium-4763\"},\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d2bd-7178-b464-2458e3f341b8\",\"product_id\":\"01a15a86-d2ba-73ce-8a81-157f876f9062\",\"price\":\"2171.27\",\"price_cents\":217127,\"promotional_price\":null,\"promotional_price_cents\":null,\"current_price\":\"2171.27\",\"current_price_cents\":217127,\"promo_starts_at\":null,\"promo_ends_at\":null,\"available_stock\":72,\"status\":\"active\",\"store\":{\"id\":\"01a15a86-d2bc-7243-a3f9-c929eb92fa31\",\"store_name\":\"Marvin, Robel and Carter\",\"slug\":\"marvin-robel-and-carter-6151\"},\"product\":{\"id\":\"01a15a86-d2ba-73ce-8a81-157f876f9062\",\"name\":\"Sunt nihil accusantium\",\"slug\":\"sunt-nihil-accusantium-4763\"},\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -2419,7 +2419,7 @@
                                 {
                                     "header": [],
                                     "code": 201,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4fc2-71c2-98d8-280649342adf\",\"offer_id\":\"01a15a6f-4fc2-71c2-98d8-280648af824c\",\"quantity\":1,\"status\":\"active\",\"expires_at\":\"2026-10-20T15:05:06-03:00\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d32b-7395-a085-22d18f476f58\",\"offer_id\":\"01a15a86-d32a-7024-9b96-ea0d7a876581\",\"quantity\":1,\"status\":\"active\",\"expires_at\":\"2026-10-20T15:30:47-03:00\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -2505,7 +2505,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":\"01a15a6f-4e84-7296-b5a3-6b37b96cdd33\",\"label\":null,\"recipient_name\":\"Johanna Runolfsson\",\"phone\":\"39643094836\",\"cep\":\"13858-214\",\"street\":\"Gulgowski Flats\",\"number\":\"3271\",\"complement\":\"Apt. 683\",\"district\":\"haven\",\"city\":\"New Haylee\",\"state\":\"SC\",\"is_default\":false,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"},{\"id\":\"01a15a6f-4e87-72ff-a811-20c9cdf99272\",\"label\":\"Casa\",\"recipient_name\":\"Yvette Corwin\",\"phone\":\"53312267495\",\"cep\":\"18716-447\",\"street\":\"Shanny Burg\",\"number\":\"2733\",\"complement\":\"Suite 408\",\"district\":\"burgh\",\"city\":\"Rooseveltshire\",\"state\":\"SC\",\"is_default\":false,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}]}",
+                            "body": "{\"data\":[{\"id\":\"01a15a86-d1a3-723f-bfdb-8d6834064b70\",\"label\":null,\"recipient_name\":\"Clara Cronin V\",\"phone\":\"44731071902\",\"cep\":\"21988-862\",\"street\":\"McLaughlin Mountain\",\"number\":\"1769\",\"complement\":null,\"district\":\"fort\",\"city\":\"Careymouth\",\"state\":\"RJ\",\"is_default\":false,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"},{\"id\":\"01a15a86-d1a5-734e-b15c-848691cb9db6\",\"label\":\"Outro\",\"recipient_name\":\"Akeem Hettinger\",\"phone\":\"43996512788\",\"cep\":\"32873-706\",\"street\":\"Batz Manors\",\"number\":\"2460\",\"complement\":null,\"district\":\"borough\",\"city\":\"Lake Noahberg\",\"state\":\"SC\",\"is_default\":false,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}]}",
                             "name": ""
                         }
                     ]
@@ -2540,7 +2540,7 @@
                         {
                             "header": [],
                             "code": 201,
-                            "body": "{\"data\":{\"id\":\"01a15a6f-4e8e-704d-b672-45e8f1c89e42\",\"label\":null,\"recipient_name\":\"Ms. Elisabeth Okuneva\",\"phone\":\"62900056432\",\"cep\":\"12965-625\",\"street\":\"Dach Lakes\",\"number\":\"5546\",\"complement\":null,\"district\":\"view\",\"city\":\"Schusterport\",\"state\":\"CE\",\"is_default\":false,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                            "body": "{\"data\":{\"id\":\"01a15a86-d1aa-711f-af60-3966f51d0bbb\",\"label\":null,\"recipient_name\":\"Ms. Elisabeth Okuneva\",\"phone\":\"62900056432\",\"cep\":\"12965-625\",\"street\":\"Dach Lakes\",\"number\":\"5546\",\"complement\":null,\"district\":\"view\",\"city\":\"Schusterport\",\"state\":\"CE\",\"is_default\":false,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                             "name": ""
                         }
                     ]
@@ -2580,7 +2580,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":{\"id\":\"01a15a6f-4e92-732a-a982-4a121e12d1e7\",\"label\":null,\"recipient_name\":\"Clara Cronin V\",\"phone\":\"44731071902\",\"cep\":\"21988-862\",\"street\":\"McLaughlin Mountain\",\"number\":\"1769\",\"complement\":null,\"district\":\"fort\",\"city\":\"Careymouth\",\"state\":\"RJ\",\"is_default\":false,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                            "body": "{\"data\":{\"id\":\"01a15a86-d1ac-729b-96a3-6c1c0f830d46\",\"label\":null,\"recipient_name\":\"Clara Cronin V\",\"phone\":\"44731071902\",\"cep\":\"21988-862\",\"street\":\"McLaughlin Mountain\",\"number\":\"1769\",\"complement\":null,\"district\":\"fort\",\"city\":\"Careymouth\",\"state\":\"RJ\",\"is_default\":false,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                             "name": ""
                         }
                     ]
@@ -2620,7 +2620,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":{\"id\":\"01a15a6f-4e95-7357-a3c5-bce2b36e1b21\",\"label\":null,\"recipient_name\":\"Clara Cronin V\",\"phone\":\"44731071902\",\"cep\":\"21988-862\",\"street\":\"McLaughlin Mountain\",\"number\":\"1769\",\"complement\":null,\"district\":\"fort\",\"city\":\"Careymouth\",\"state\":\"RJ\",\"is_default\":false,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                            "body": "{\"data\":{\"id\":\"01a15a86-d1af-7190-921c-ef21fb74070c\",\"label\":null,\"recipient_name\":\"Clara Cronin V\",\"phone\":\"44731071902\",\"cep\":\"21988-862\",\"street\":\"McLaughlin Mountain\",\"number\":\"1769\",\"complement\":null,\"district\":\"fort\",\"city\":\"Careymouth\",\"state\":\"RJ\",\"is_default\":false,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                             "name": ""
                         }
                     ]
@@ -2663,7 +2663,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":{\"id\":\"01a15a6f-4e9c-7087-9bda-dd341103aca0\",\"label\":null,\"recipient_name\":\"Ms. Elisabeth Okuneva\",\"phone\":\"62900056432\",\"cep\":\"12965-625\",\"street\":\"Dach Lakes\",\"number\":\"5546\",\"complement\":null,\"district\":\"view\",\"city\":\"Schusterport\",\"state\":\"CE\",\"is_default\":false,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                            "body": "{\"data\":{\"id\":\"01a15a86-d1b3-733a-8ed5-0cb2fb76e321\",\"label\":null,\"recipient_name\":\"Ms. Elisabeth Okuneva\",\"phone\":\"62900056432\",\"cep\":\"12965-625\",\"street\":\"Dach Lakes\",\"number\":\"5546\",\"complement\":null,\"district\":\"view\",\"city\":\"Schusterport\",\"state\":\"CE\",\"is_default\":false,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                             "name": ""
                         }
                     ]
@@ -2741,7 +2741,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":{\"id\":\"01a15a6f-4ea3-7318-9537-cb7391cba12d\",\"items_count\":2,\"subtotal\":\"7498.94\",\"subtotal_cents\":749894,\"currency\":\"BRL\",\"items\":[{\"id\":\"01a15a6f-4eaa-73fa-9267-2d8c5e19e453\",\"offer_id\":\"01a15a6f-4ea9-7399-ae03-d03ad3e4f3fa\",\"quantity\":2,\"unit_price\":\"3749.47\",\"unit_price_cents\":374947,\"line_total\":\"7498.94\",\"line_total_cents\":749894,\"offer\":{\"id\":\"01a15a6f-4ea9-7399-ae03-d03ad3e4f3fa\",\"product_id\":\"01a15a6f-4ea7-7103-bf59-0eae997fe212\",\"price\":\"3749.47\",\"price_cents\":374947,\"promotional_price\":null,\"promotional_price_cents\":null,\"current_price\":\"3749.47\",\"current_price_cents\":374947,\"promo_starts_at\":null,\"promo_ends_at\":null,\"available_stock\":10,\"status\":\"active\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"},\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                            "body": "{\"data\":{\"id\":\"01a15a86-d1ba-727d-b0bd-ad48a5cb2bec\",\"items_count\":2,\"subtotal\":\"7498.94\",\"subtotal_cents\":749894,\"currency\":\"BRL\",\"items\":[{\"id\":\"01a15a86-d1c1-717f-9acc-41dab6351439\",\"offer_id\":\"01a15a86-d1c0-70ce-82ce-c230b9ada091\",\"quantity\":2,\"unit_price\":\"3749.47\",\"unit_price_cents\":374947,\"line_total\":\"7498.94\",\"line_total_cents\":749894,\"offer\":{\"id\":\"01a15a86-d1c0-70ce-82ce-c230b9ada091\",\"product_id\":\"01a15a86-d1be-73a1-a26e-f3413c1d8e46\",\"price\":\"3749.47\",\"price_cents\":374947,\"promotional_price\":null,\"promotional_price_cents\":null,\"current_price\":\"3749.47\",\"current_price_cents\":374947,\"promo_starts_at\":null,\"promo_ends_at\":null,\"available_stock\":10,\"status\":\"active\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"},\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                             "name": ""
                         }
                     ]
@@ -2776,7 +2776,7 @@
                         {
                             "header": [],
                             "code": 201,
-                            "body": "{\"data\":{\"id\":\"01a15a6f-4eaf-72db-a7ad-83ca972b13ea\",\"items_count\":1,\"subtotal\":\"1081.26\",\"subtotal_cents\":108126,\"currency\":\"BRL\",\"items\":[{\"id\":\"01a15a6f-4eb2-708a-a878-5aac911c431c\",\"offer_id\":\"01a15a6f-4eb2-708a-a878-5aac904c4ffd\",\"quantity\":1,\"unit_price\":\"1081.26\",\"unit_price_cents\":108126,\"line_total\":\"1081.26\",\"line_total_cents\":108126,\"offer\":{\"id\":\"01a15a6f-4eb2-708a-a878-5aac904c4ffd\",\"product_id\":\"01a15a6f-4eb1-7255-8331-12a775a96a79\",\"price\":\"1081.26\",\"price_cents\":108126,\"promotional_price\":null,\"promotional_price_cents\":null,\"current_price\":\"1081.26\",\"current_price_cents\":108126,\"promo_starts_at\":null,\"promo_ends_at\":null,\"available_stock\":10,\"status\":\"active\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"},\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                            "body": "{\"data\":{\"id\":\"01a15a86-d1c6-7001-bef3-04d6c2624e2d\",\"items_count\":1,\"subtotal\":\"1081.26\",\"subtotal_cents\":108126,\"currency\":\"BRL\",\"items\":[{\"id\":\"01a15a86-d1c9-7030-985e-5974f16c26b3\",\"offer_id\":\"01a15a86-d1c9-7030-985e-5974f0725ffa\",\"quantity\":1,\"unit_price\":\"1081.26\",\"unit_price_cents\":108126,\"line_total\":\"1081.26\",\"line_total_cents\":108126,\"offer\":{\"id\":\"01a15a86-d1c9-7030-985e-5974f0725ffa\",\"product_id\":\"01a15a86-d1c8-7090-8b34-d337f5f28773\",\"price\":\"1081.26\",\"price_cents\":108126,\"promotional_price\":null,\"promotional_price_cents\":null,\"current_price\":\"1081.26\",\"current_price_cents\":108126,\"promo_starts_at\":null,\"promo_ends_at\":null,\"available_stock\":10,\"status\":\"active\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"},\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                             "name": ""
                         }
                     ]
@@ -2819,7 +2819,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":{\"id\":\"01a15a6f-4eb5-7081-baf7-89ae4e645213\",\"items_count\":1,\"subtotal\":\"3904.19\",\"subtotal_cents\":390419,\"currency\":\"BRL\",\"items\":[{\"id\":\"01a15a6f-4eb8-7166-ad1b-662e4f12cd60\",\"offer_id\":\"01a15a6f-4eb8-7166-ad1b-662e4e20a16f\",\"quantity\":1,\"unit_price\":\"3904.19\",\"unit_price_cents\":390419,\"line_total\":\"3904.19\",\"line_total_cents\":390419,\"offer\":{\"id\":\"01a15a6f-4eb8-7166-ad1b-662e4e20a16f\",\"product_id\":\"01a15a6f-4eb7-70ff-b42a-0130bec9fa68\",\"price\":\"3904.19\",\"price_cents\":390419,\"promotional_price\":null,\"promotional_price_cents\":null,\"current_price\":\"3904.19\",\"current_price_cents\":390419,\"promo_starts_at\":null,\"promo_ends_at\":null,\"available_stock\":10,\"status\":\"active\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"},\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                            "body": "{\"data\":{\"id\":\"01a15a86-d1cd-73e9-a3db-cd9e96f31e2f\",\"items_count\":1,\"subtotal\":\"3904.19\",\"subtotal_cents\":390419,\"currency\":\"BRL\",\"items\":[{\"id\":\"01a15a86-d1d1-7185-a026-fb5474e439f2\",\"offer_id\":\"01a15a86-d1d0-7246-8c5d-3b601223007c\",\"quantity\":1,\"unit_price\":\"3904.19\",\"unit_price_cents\":390419,\"line_total\":\"3904.19\",\"line_total_cents\":390419,\"offer\":{\"id\":\"01a15a86-d1d0-7246-8c5d-3b601223007c\",\"product_id\":\"01a15a86-d1cf-73b7-8247-c0403d5788db\",\"price\":\"3904.19\",\"price_cents\":390419,\"promotional_price\":null,\"promotional_price_cents\":null,\"current_price\":\"3904.19\",\"current_price_cents\":390419,\"promo_starts_at\":null,\"promo_ends_at\":null,\"available_stock\":10,\"status\":\"active\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"},\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                             "name": ""
                         }
                     ]
@@ -2859,7 +2859,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":{\"id\":\"01a15a6f-4ec2-707a-b967-c6cc5a4fb374\",\"items_count\":2,\"subtotal\":\"8165.98\",\"subtotal_cents\":816598,\"currency\":\"BRL\",\"items\":[{\"id\":\"01a15a6f-4ec4-738f-b2ce-d2990ed2c2c2\",\"offer_id\":\"01a15a6f-4ec4-738f-b2ce-d2990e12b06c\",\"quantity\":2,\"unit_price\":\"4082.99\",\"unit_price_cents\":408299,\"line_total\":\"8165.98\",\"line_total_cents\":816598,\"offer\":{\"id\":\"01a15a6f-4ec4-738f-b2ce-d2990e12b06c\",\"product_id\":\"01a15a6f-4ec3-7179-807b-a7293c842ef4\",\"price\":\"4082.99\",\"price_cents\":408299,\"promotional_price\":null,\"promotional_price_cents\":null,\"current_price\":\"4082.99\",\"current_price_cents\":408299,\"promo_starts_at\":null,\"promo_ends_at\":null,\"available_stock\":10,\"status\":\"active\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"},\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                            "body": "{\"data\":{\"id\":\"01a15a86-d1da-73a2-94e9-7ae914f78cba\",\"items_count\":2,\"subtotal\":\"8165.98\",\"subtotal_cents\":816598,\"currency\":\"BRL\",\"items\":[{\"id\":\"01a15a86-d1de-70f0-8f80-0a83be303b8c\",\"offer_id\":\"01a15a86-d1de-70f0-8f80-0a83bda6cc0f\",\"quantity\":2,\"unit_price\":\"4082.99\",\"unit_price_cents\":408299,\"line_total\":\"8165.98\",\"line_total_cents\":816598,\"offer\":{\"id\":\"01a15a86-d1de-70f0-8f80-0a83bda6cc0f\",\"product_id\":\"01a15a86-d1dc-7350-9379-115da27be3d0\",\"price\":\"4082.99\",\"price_cents\":408299,\"promotional_price\":null,\"promotional_price_cents\":null,\"current_price\":\"4082.99\",\"current_price_cents\":408299,\"promo_starts_at\":null,\"promo_ends_at\":null,\"available_stock\":10,\"status\":\"active\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"},\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                             "name": ""
                         }
                     ]
@@ -2977,7 +2977,7 @@
                         {
                             "header": [],
                             "code": 201,
-                            "body": "{\"data\":{\"id\":\"01a15a6f-4ecc-706c-9900-24fa31dc643f\",\"status\":\"pending_payment\",\"currency\":\"BRL\",\"subtotal_cents\":217127,\"shipping_cents\":1767,\"total_cents\":218894,\"address_id\":null,\"address_snapshot\":{\"recipient_name\":\"Ramiro Okuneva\",\"phone\":\"62900056432\",\"cep\":\"12965625\",\"street\":\"Dach Lakes\",\"number\":\"5546\",\"complement\":null,\"district\":\"view\",\"city\":\"Schusterport\",\"state\":\"RS\"},\"idempotency_key\":\"276c890d-1fcb-4f37-b1b4-7ca59d0ee1ff\",\"payment_due_at\":null,\"sellers\":[{\"id\":\"01a15a6f-4ece-7169-8173-89dbe334e95b\",\"store_id\":\"01a15a6f-4ecd-71bc-b8e8-35bb093b5926\",\"status\":\"pending_payment\",\"subtotal_cents\":36581,\"shipping_cents\":2691,\"total_cents\":39272,\"shipping\":{\"service_code\":null,\"service_name\":null,\"eta_days\":null,\"quoted_at\":null},\"order_id\":\"01a15a6f-4ecc-706c-9900-24fa31dc643f\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                            "body": "{\"data\":{\"id\":\"01a15a86-d1e6-7211-94ff-acdd0552d3aa\",\"status\":\"pending_payment\",\"currency\":\"BRL\",\"subtotal_cents\":217127,\"shipping_cents\":1767,\"total_cents\":218894,\"address_id\":null,\"address_snapshot\":{\"recipient_name\":\"Ramiro Okuneva\",\"phone\":\"62900056432\",\"cep\":\"12965625\",\"street\":\"Dach Lakes\",\"number\":\"5546\",\"complement\":null,\"district\":\"view\",\"city\":\"Schusterport\",\"state\":\"RS\"},\"idempotency_key\":\"3f7a4594-cf90-45d0-a7fb-1d88f3cbc77f\",\"payment_due_at\":null,\"sellers\":[{\"id\":\"01a15a86-d1e8-721e-87d1-8e35e515f8a0\",\"store_id\":\"01a15a86-d1e8-721e-87d1-8e35e4ce8427\",\"status\":\"pending_payment\",\"subtotal_cents\":36581,\"shipping_cents\":2691,\"total_cents\":39272,\"shipping\":{\"service_code\":null,\"service_name\":null,\"eta_days\":null,\"quoted_at\":null},\"order_id\":\"01a15a86-d1e6-7211-94ff-acdd0552d3aa\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                             "name": ""
                         },
                         {
@@ -3025,7 +3025,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":[{\"id\":\"01a15a6f-4ed2-7286-80bf-6853ceb3833f\",\"status\":\"pending_payment\",\"currency\":\"BRL\",\"subtotal_cents\":66368,\"shipping_cents\":621,\"total_cents\":66989,\"address_id\":null,\"address_snapshot\":{\"recipient_name\":\"Miss Pearl Hauck\",\"phone\":\"59021490262\",\"cep\":\"10319279\",\"street\":\"Ferne Locks\",\"number\":\"6877\",\"complement\":null,\"district\":\"shire\",\"city\":\"Baileemouth\",\"state\":\"MG\"},\"idempotency_key\":\"887c447c-008a-4575-999d-0dc9933b4af2\",\"payment_due_at\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"},{\"id\":\"01a15a6f-4ed3-73dd-9987-84790e8dc914\",\"status\":\"pending_payment\",\"currency\":\"BRL\",\"subtotal_cents\":352382,\"shipping_cents\":2078,\"total_cents\":354460,\"address_id\":null,\"address_snapshot\":{\"recipient_name\":\"Kirstin Nitzsche V\",\"phone\":\"73287370603\",\"cep\":\"73350574\",\"street\":\"Juliet Brooks\",\"number\":\"1076\",\"complement\":\"Apt. 669\",\"district\":\"berg\",\"city\":\"East Nedra\",\"state\":\"PR\"},\"idempotency_key\":\"363b16c5-2bf6-4ce7-9426-e085f373f5ab\",\"payment_due_at\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"links\":{\"first\":null,\"last\":null,\"prev\":null,\"next\":null},\"meta\":{\"path\":\"\\\/\",\"per_page\":20,\"next_cursor\":null,\"prev_cursor\":null}}",
+                                    "body": "{\"data\":[{\"id\":\"01a15a86-d1ed-72ef-8511-94026d0dd846\",\"status\":\"pending_payment\",\"currency\":\"BRL\",\"subtotal_cents\":66368,\"shipping_cents\":621,\"total_cents\":66989,\"address_id\":null,\"address_snapshot\":{\"recipient_name\":\"Miss Pearl Hauck\",\"phone\":\"59021490262\",\"cep\":\"10319279\",\"street\":\"Ferne Locks\",\"number\":\"6877\",\"complement\":null,\"district\":\"shire\",\"city\":\"Baileemouth\",\"state\":\"MG\"},\"idempotency_key\":\"8bcf4fd5-2462-4f0a-a809-ad2e7351ed53\",\"payment_due_at\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"},{\"id\":\"01a15a86-d1ee-7122-94c1-6aaeacd155a7\",\"status\":\"pending_payment\",\"currency\":\"BRL\",\"subtotal_cents\":352382,\"shipping_cents\":2078,\"total_cents\":354460,\"address_id\":null,\"address_snapshot\":{\"recipient_name\":\"Kirstin Nitzsche V\",\"phone\":\"73287370603\",\"cep\":\"73350574\",\"street\":\"Juliet Brooks\",\"number\":\"1076\",\"complement\":\"Apt. 669\",\"district\":\"berg\",\"city\":\"East Nedra\",\"state\":\"PR\"},\"idempotency_key\":\"cbaac23f-6499-4e5e-98c7-bfc5a7e774e6\",\"payment_due_at\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"links\":{\"first\":null,\"last\":null,\"prev\":null,\"next\":null},\"meta\":{\"path\":\"\\\/\",\"per_page\":20,\"next_cursor\":null,\"prev_cursor\":null}}",
                                     "name": ""
                                 }
                             ]
@@ -3065,7 +3065,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4ed6-72a2-ac1e-63a911ccb506\",\"status\":\"pending_payment\",\"currency\":\"BRL\",\"subtotal_cents\":66368,\"shipping_cents\":621,\"total_cents\":66989,\"address_id\":null,\"address_snapshot\":{\"recipient_name\":\"Miss Pearl Hauck\",\"phone\":\"59021490262\",\"cep\":\"10319279\",\"street\":\"Ferne Locks\",\"number\":\"6877\",\"complement\":null,\"district\":\"shire\",\"city\":\"Baileemouth\",\"state\":\"MG\"},\"idempotency_key\":\"eed3f28a-f808-49d2-ba8f-c96b05c09517\",\"payment_due_at\":null,\"sellers\":[{\"id\":\"01a15a6f-4ed7-7314-9993-a4ccaeeb09d9\",\"store_id\":\"01a15a6f-4ed7-7314-9993-a4ccae99bd4f\",\"status\":\"pending_payment\",\"subtotal_cents\":124393,\"shipping_cents\":1830,\"total_cents\":126223,\"shipping\":{\"service_code\":null,\"service_name\":null,\"eta_days\":null,\"quoted_at\":null},\"order_id\":\"01a15a6f-4ed6-72a2-ac1e-63a911ccb506\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"status_histories\":[{\"id\":\"01a15a6f-4ed8-71e1-a8c3-1f2512e2573d\",\"from_status\":null,\"to_status\":\"pending_payment\",\"reason\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\"}],\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d1f2-71bb-bec5-9d018b03b68d\",\"status\":\"pending_payment\",\"currency\":\"BRL\",\"subtotal_cents\":66368,\"shipping_cents\":621,\"total_cents\":66989,\"address_id\":null,\"address_snapshot\":{\"recipient_name\":\"Miss Pearl Hauck\",\"phone\":\"59021490262\",\"cep\":\"10319279\",\"street\":\"Ferne Locks\",\"number\":\"6877\",\"complement\":null,\"district\":\"shire\",\"city\":\"Baileemouth\",\"state\":\"MG\"},\"idempotency_key\":\"f1d4f57f-655a-4379-af95-b9b65612f78c\",\"payment_due_at\":null,\"sellers\":[{\"id\":\"01a15a86-d1f3-7177-98d5-71c98594e6e0\",\"store_id\":\"01a15a86-d1f3-7177-98d5-71c98589b8c7\",\"status\":\"pending_payment\",\"subtotal_cents\":124393,\"shipping_cents\":1830,\"total_cents\":126223,\"shipping\":{\"service_code\":null,\"service_name\":null,\"eta_days\":null,\"quoted_at\":null},\"order_id\":\"01a15a86-d1f2-71bb-bec5-9d018b03b68d\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"status_histories\":[{\"id\":\"01a15a86-d1f4-73b6-b2aa-bb7665f8747b\",\"from_status\":null,\"to_status\":\"pending_payment\",\"reason\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\"}],\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -3108,7 +3108,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4edc-705a-b34b-b4c0ed6471e1\",\"status\":\"pending_payment\",\"currency\":\"BRL\",\"subtotal_cents\":217127,\"shipping_cents\":1767,\"total_cents\":218894,\"address_id\":null,\"address_snapshot\":{\"recipient_name\":\"Ramiro Okuneva\",\"phone\":\"62900056432\",\"cep\":\"12965625\",\"street\":\"Dach Lakes\",\"number\":\"5546\",\"complement\":null,\"district\":\"view\",\"city\":\"Schusterport\",\"state\":\"RS\"},\"idempotency_key\":\"5ce7a668-340d-419b-b3f8-3c519e73186f\",\"payment_due_at\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d1f8-73aa-847a-00ef140dade2\",\"status\":\"pending_payment\",\"currency\":\"BRL\",\"subtotal_cents\":217127,\"shipping_cents\":1767,\"total_cents\":218894,\"address_id\":null,\"address_snapshot\":{\"recipient_name\":\"Ramiro Okuneva\",\"phone\":\"62900056432\",\"cep\":\"12965625\",\"street\":\"Dach Lakes\",\"number\":\"5546\",\"complement\":null,\"district\":\"view\",\"city\":\"Schusterport\",\"state\":\"RS\"},\"idempotency_key\":\"984692de-aa49-4133-9ce7-c6877aa2a540\",\"payment_due_at\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -3146,7 +3146,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":[{\"id\":\"01a15a6f-4f8d-7114-9284-a906c82b32a5\",\"store_id\":\"01a15a6f-4f8d-7114-9284-a906c79e6916\",\"status\":\"pending_payment\",\"subtotal_cents\":159868,\"shipping_cents\":1979,\"total_cents\":161847,\"shipping\":{\"service_code\":null,\"service_name\":null,\"eta_days\":null,\"quoted_at\":null},\"order_id\":\"01a15a6f-4f8c-700f-aeaf-6b2d02aaa111\",\"items\":[{\"id\":\"01a15a6f-4f90-70c2-abd1-7f243ecc739a\",\"offer_id\":null,\"product_id\":\"01a15a6f-4f8f-70fa-b03b-84bb9950e95a\",\"store_id\":\"01a15a6f-4f90-70c2-abd1-7f243dea24ac\",\"product_name\":\"rem est esse\",\"product_slug\":\"rem-est-esse-937\",\"unit_price_cents\":37423,\"quantity\":2,\"line_total_cents\":74846,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"},{\"id\":\"01a15a6f-4f92-721a-9f46-236cd6d79312\",\"store_id\":\"01a15a6f-4f92-721a-9f46-236cd6d54903\",\"status\":\"pending_payment\",\"subtotal_cents\":23933,\"shipping_cents\":1725,\"total_cents\":25658,\"shipping\":{\"service_code\":null,\"service_name\":null,\"eta_days\":null,\"quoted_at\":null},\"order_id\":\"01a15a6f-4f91-7237-be90-6a98c1f2d222\",\"items\":[{\"id\":\"01a15a6f-4f95-70f0-80ac-5d470c89935a\",\"offer_id\":null,\"product_id\":\"01a15a6f-4f94-7009-8d12-c16809526481\",\"store_id\":\"01a15a6f-4f94-7009-8d12-c16809bcec5f\",\"product_name\":\"et itaque nihil\",\"product_slug\":\"et-itaque-nihil-334\",\"unit_price_cents\":25694,\"quantity\":2,\"line_total_cents\":51388,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"links\":{\"first\":null,\"last\":null,\"prev\":null,\"next\":null},\"meta\":{\"path\":\"\\\/\",\"per_page\":20,\"next_cursor\":null,\"prev_cursor\":null}}",
+                                    "body": "{\"data\":[{\"id\":\"01a15a86-d2cd-702e-8e7a-041af797aade\",\"store_id\":\"01a15a86-d2cc-721c-a277-5a6471020f6a\",\"status\":\"pending_payment\",\"subtotal_cents\":6269,\"shipping_cents\":1202,\"total_cents\":7471,\"shipping\":{\"service_code\":null,\"service_name\":null,\"eta_days\":null,\"quoted_at\":null},\"order_id\":\"01a15a86-d2cb-7315-9460-04d81998573c\",\"items\":[{\"id\":\"01a15a86-d2cf-7108-b05c-8eeda9d42aa4\",\"offer_id\":null,\"product_id\":\"01a15a86-d2ce-7135-a457-33e67b1d160d\",\"store_id\":\"01a15a86-d2cf-7108-b05c-8eeda9324df7\",\"product_name\":\"dolor possimus minima\",\"product_slug\":\"dolor-possimus-minima-165\",\"unit_price_cents\":40961,\"quantity\":5,\"line_total_cents\":204805,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"},{\"id\":\"01a15a86-d2d2-738f-9b0a-af72c819a84c\",\"store_id\":\"01a15a86-d2d2-738f-9b0a-af72c798dcec\",\"status\":\"pending_payment\",\"subtotal_cents\":138362,\"shipping_cents\":1245,\"total_cents\":139607,\"shipping\":{\"service_code\":null,\"service_name\":null,\"eta_days\":null,\"quoted_at\":null},\"order_id\":\"01a15a86-d2d1-7111-a5bb-e5479e6a6a20\",\"items\":[{\"id\":\"01a15a86-d2d5-7346-87a5-cfa7240a25fa\",\"offer_id\":null,\"product_id\":\"01a15a86-d2d4-727c-8b98-8e00bd64d8e6\",\"store_id\":\"01a15a86-d2d5-7346-87a5-cfa723548897\",\"product_name\":\"ipsa libero non\",\"product_slug\":\"ipsa-libero-non-079\",\"unit_price_cents\":38292,\"quantity\":2,\"line_total_cents\":76584,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"links\":{\"first\":null,\"last\":null,\"prev\":null,\"next\":null},\"meta\":{\"path\":\"\\\/\",\"per_page\":20,\"next_cursor\":null,\"prev_cursor\":null}}",
                                     "name": ""
                                 }
                             ]
@@ -3186,7 +3186,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4f99-7062-b98f-9eeb4f412ca7\",\"store_id\":\"01a15a6f-4f99-7062-b98f-9eeb4f1d9058\",\"status\":\"pending_payment\",\"subtotal_cents\":159868,\"shipping_cents\":1979,\"total_cents\":161847,\"shipping\":{\"service_code\":null,\"service_name\":null,\"eta_days\":null,\"quoted_at\":null},\"shipment\":{\"id\":\"01a15a6f-4f9c-721d-a5da-38376ce84cea\",\"tracking_code\":\"SM953098916BR\",\"carrier\":\"simulated\",\"service_code\":\"simulated_standard\",\"status\":\"in_transit\",\"shipped_at\":\"2026-10-20T14:50:06-03:00\",\"estimated_delivery_at\":\"2026-10-25T14:50:06-03:00\",\"delivered_at\":null},\"order_id\":\"01a15a6f-4f98-7041-a56a-87b309eb3d0a\",\"items\":[{\"id\":\"01a15a6f-4f9c-721d-a5da-38376c8d3807\",\"offer_id\":null,\"product_id\":\"01a15a6f-4f9b-72ca-ac75-983512a11db7\",\"store_id\":\"01a15a6f-4f9b-72ca-ac75-983513b1cb81\",\"product_name\":\"esse sint aut\",\"product_slug\":\"esse-sint-aut-721\",\"unit_price_cents\":2923,\"quantity\":2,\"line_total_cents\":5846,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d2df-725e-bdcd-442a2ada69ca\",\"store_id\":\"01a15a86-d2de-716f-8452-ce40db71f20a\",\"status\":\"pending_payment\",\"subtotal_cents\":159868,\"shipping_cents\":1979,\"total_cents\":161847,\"shipping\":{\"service_code\":null,\"service_name\":null,\"eta_days\":null,\"quoted_at\":null},\"shipment\":{\"id\":\"01a15a86-d2eb-7183-8615-ee854877c11e\",\"tracking_code\":\"SM395564525BR\",\"carrier\":\"simulated\",\"service_code\":\"simulated_standard\",\"status\":\"in_transit\",\"shipped_at\":\"2026-10-20T15:15:47-03:00\",\"estimated_delivery_at\":\"2026-10-25T15:15:47-03:00\",\"delivered_at\":null},\"order_id\":\"01a15a86-d2dd-7026-bc8f-71d40a23a999\",\"items\":[{\"id\":\"01a15a86-d2e7-720c-8015-a829859eb1c9\",\"offer_id\":null,\"product_id\":\"01a15a86-d2e4-71a3-aa9e-f5dad750214c\",\"store_id\":\"01a15a86-d2e6-725d-8bc3-70211877451b\",\"product_name\":\"et dolores quia\",\"product_slug\":\"et-dolores-quia-199\",\"unit_price_cents\":2208,\"quantity\":3,\"line_total_cents\":6624,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -3229,7 +3229,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4fa1-717a-a200-36cd23e0d959\",\"store_id\":\"01a15a6f-4fa1-717a-a200-36cd23c5014b\",\"status\":\"pending_payment\",\"subtotal_cents\":99642,\"shipping_cents\":1926,\"total_cents\":101568,\"shipping\":{\"service_code\":null,\"service_name\":null,\"eta_days\":null,\"quoted_at\":null},\"order_id\":\"01a15a6f-4fa0-7203-bfd5-6f1bc2bd4f8f\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d2fe-7373-8703-a09f298d6ae7\",\"store_id\":\"01a15a86-d2fd-72fd-ad25-6233ac7ce450\",\"status\":\"pending_payment\",\"subtotal_cents\":99642,\"shipping_cents\":1926,\"total_cents\":101568,\"shipping\":{\"service_code\":null,\"service_name\":null,\"eta_days\":null,\"quoted_at\":null},\"order_id\":\"01a15a86-d2f8-7120-ba03-237bc0685bc0\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -3267,7 +3267,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":[{\"id\":\"01a15a6f-5003-728a-bded-dc16b91d6490\",\"status\":\"pending_payment\",\"currency\":\"BRL\",\"subtotal_cents\":66368,\"shipping_cents\":621,\"total_cents\":66989,\"address_id\":null,\"address_snapshot\":{\"recipient_name\":\"Miss Pearl Hauck\",\"phone\":\"59021490262\",\"cep\":\"10319279\",\"street\":\"Ferne Locks\",\"number\":\"6877\",\"complement\":null,\"district\":\"shire\",\"city\":\"Baileemouth\",\"state\":\"MG\"},\"idempotency_key\":\"717bb2c7-414d-439c-baf5-5fe18245ec0e\",\"payment_due_at\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"},{\"id\":\"01a15a6f-5004-72a2-bcd0-46d7732401e5\",\"status\":\"pending_payment\",\"currency\":\"BRL\",\"subtotal_cents\":96001,\"shipping_cents\":2521,\"total_cents\":98522,\"address_id\":null,\"address_snapshot\":{\"recipient_name\":\"Ms. Shaina Balistreri\",\"phone\":\"02615366933\",\"cep\":\"39704945\",\"street\":\"Ward Dale\",\"number\":\"7\",\"complement\":null,\"district\":\"mouth\",\"city\":\"East Eltonhaven\",\"state\":\"RS\"},\"idempotency_key\":\"286e528e-1dcf-4d5b-ad66-76e208126570\",\"payment_due_at\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"links\":{\"first\":null,\"last\":null,\"prev\":null,\"next\":null},\"meta\":{\"path\":\"\\\/\",\"per_page\":20,\"next_cursor\":null,\"prev_cursor\":null}}",
+                                    "body": "{\"data\":[{\"id\":\"01a15a86-d36e-7399-b95b-cfc1a9041c9c\",\"status\":\"pending_payment\",\"currency\":\"BRL\",\"subtotal_cents\":66368,\"shipping_cents\":621,\"total_cents\":66989,\"address_id\":null,\"address_snapshot\":{\"recipient_name\":\"Miss Pearl Hauck\",\"phone\":\"59021490262\",\"cep\":\"10319279\",\"street\":\"Ferne Locks\",\"number\":\"6877\",\"complement\":null,\"district\":\"shire\",\"city\":\"Baileemouth\",\"state\":\"MG\"},\"idempotency_key\":\"70519244-0156-4840-913f-89828c3a4db3\",\"payment_due_at\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"},{\"id\":\"01a15a86-d36f-72c5-a735-41d5f66a6137\",\"status\":\"pending_payment\",\"currency\":\"BRL\",\"subtotal_cents\":96001,\"shipping_cents\":2521,\"total_cents\":98522,\"address_id\":null,\"address_snapshot\":{\"recipient_name\":\"Ms. Shaina Balistreri\",\"phone\":\"02615366933\",\"cep\":\"39704945\",\"street\":\"Ward Dale\",\"number\":\"7\",\"complement\":null,\"district\":\"mouth\",\"city\":\"East Eltonhaven\",\"state\":\"RS\"},\"idempotency_key\":\"b534bb3f-a06e-40bd-935f-a33d2bb0e6d0\",\"payment_due_at\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"links\":{\"first\":null,\"last\":null,\"prev\":null,\"next\":null},\"meta\":{\"path\":\"\\\/\",\"per_page\":20,\"next_cursor\":null,\"prev_cursor\":null}}",
                                     "name": ""
                                 }
                             ]
@@ -3307,7 +3307,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-5007-717c-96ff-ac27025076d9\",\"status\":\"pending_payment\",\"currency\":\"BRL\",\"subtotal_cents\":66368,\"shipping_cents\":621,\"total_cents\":66989,\"address_id\":null,\"address_snapshot\":{\"recipient_name\":\"Miss Pearl Hauck\",\"phone\":\"59021490262\",\"cep\":\"10319279\",\"street\":\"Ferne Locks\",\"number\":\"6877\",\"complement\":null,\"district\":\"shire\",\"city\":\"Baileemouth\",\"state\":\"MG\"},\"idempotency_key\":\"e2e76d71-d143-4251-a2ef-b2c01ee9c216\",\"payment_due_at\":null,\"sellers\":[{\"id\":\"01a15a6f-5008-715e-b0cd-78fb1f0e0767\",\"store_id\":\"01a15a6f-5007-717c-96ff-ac27032926ed\",\"status\":\"pending_payment\",\"subtotal_cents\":194684,\"shipping_cents\":2619,\"total_cents\":197303,\"shipping\":{\"service_code\":null,\"service_name\":null,\"eta_days\":null,\"quoted_at\":null},\"order_id\":\"01a15a6f-5007-717c-96ff-ac27025076d9\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}],\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d372-72ac-86ca-f3dcbdd5a7d3\",\"status\":\"pending_payment\",\"currency\":\"BRL\",\"subtotal_cents\":66368,\"shipping_cents\":621,\"total_cents\":66989,\"address_id\":null,\"address_snapshot\":{\"recipient_name\":\"Miss Pearl Hauck\",\"phone\":\"59021490262\",\"cep\":\"10319279\",\"street\":\"Ferne Locks\",\"number\":\"6877\",\"complement\":null,\"district\":\"shire\",\"city\":\"Baileemouth\",\"state\":\"MG\"},\"idempotency_key\":\"4675888f-20e1-4849-8f9c-5be4f4fe712c\",\"payment_due_at\":null,\"sellers\":[{\"id\":\"01a15a86-d373-7019-b5ee-b6e17b1b5ba3\",\"store_id\":\"01a15a86-d373-7019-b5ee-b6e17ab888b6\",\"status\":\"pending_payment\",\"subtotal_cents\":92292,\"shipping_cents\":1772,\"total_cents\":94064,\"shipping\":{\"service_code\":null,\"service_name\":null,\"eta_days\":null,\"quoted_at\":null},\"order_id\":\"01a15a86-d372-72ac-86ca-f3dcbdd5a7d3\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}],\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -3355,7 +3355,7 @@
                         {
                             "header": [],
                             "code": 200,
-                            "body": "{\"data\":[{\"id\":\"01a15a6f-4ee1-7371-9738-cd67a2a0fc2a\",\"order_id\":\"01a15a6f-4ee0-73ac-b7df-26597ecd5ee3\",\"provider\":\"mock\",\"method\":\"pix\",\"status\":\"pending\",\"external_id\":\"mock_pay_01m5d6ykpzd9wnjk8wvbmz5p8g\",\"currency\":\"BRL\",\"amount_cents\":66368,\"instructions\":[],\"paid_at\":null,\"failed_at\":null,\"cancelled_at\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"},{\"id\":\"01a15a6f-4ee3-70c1-9530-c1381cf68fdb\",\"order_id\":\"01a15a6f-4ee2-72af-a75e-ec8e7afa27b9\",\"provider\":\"mock\",\"method\":\"pix\",\"status\":\"pending\",\"external_id\":\"mock_pay_01m5d6ykq209p4scnw8md5d5wz\",\"currency\":\"BRL\",\"amount_cents\":350238,\"instructions\":[],\"paid_at\":null,\"failed_at\":null,\"cancelled_at\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}]}",
+                            "body": "{\"data\":[{\"id\":\"01a15a86-d1ff-72b0-80be-ffb34ef99c58\",\"order_id\":\"01a15a86-d1fe-733f-a798-989736b7971e\",\"provider\":\"mock\",\"method\":\"pix\",\"status\":\"pending\",\"external_id\":\"mock_pay_01m5d8dmfxvtbk191hnh599c1v\",\"currency\":\"BRL\",\"amount_cents\":382685,\"instructions\":[],\"paid_at\":null,\"failed_at\":null,\"cancelled_at\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"},{\"id\":\"01a15a86-d201-735d-9f44-8e357e4f06c4\",\"order_id\":\"01a15a86-d201-735d-9f44-8e357da1f31b\",\"provider\":\"mock\",\"method\":\"pix\",\"status\":\"pending\",\"external_id\":\"mock_pay_01m5d8dmg01vtaa7ep2zescrce\",\"currency\":\"BRL\",\"amount_cents\":470449,\"instructions\":[],\"paid_at\":null,\"failed_at\":null,\"cancelled_at\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}]}",
                             "name": ""
                         }
                     ]
@@ -3402,7 +3402,7 @@
                         {
                             "header": [],
                             "code": 201,
-                            "body": "{\"data\":{\"id\":\"01a15a6f-4ee6-7256-ab18-73dddd647ff1\",\"order_id\":\"01a15a6f-4ee5-739e-9fa8-35d75d8aabff\",\"provider\":\"mock\",\"method\":\"pix\",\"status\":\"pending\",\"external_id\":\"mock_pay_01m5d6ykq593a202szqh0t2ekp\",\"currency\":\"BRL\",\"amount_cents\":66368,\"instructions\":[],\"paid_at\":null,\"failed_at\":null,\"cancelled_at\":null,\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                            "body": "{\"data\":{\"id\":\"01a15a86-d205-7181-8a85-b635ff4134a7\",\"order_id\":\"01a15a86-d204-72eb-bd37-6d29b0d94967\",\"provider\":\"mock\",\"method\":\"pix\",\"status\":\"pending\",\"external_id\":\"mock_pay_01m5d8dmg4e56b3rv1sd6s4yy4\",\"currency\":\"BRL\",\"amount_cents\":66368,\"instructions\":[],\"paid_at\":null,\"failed_at\":null,\"cancelled_at\":null,\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                             "name": ""
                         }
                     ]
@@ -3494,7 +3494,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4fa8-70b4-aef2-ee70a0c56323\",\"store_id\":\"01a15a6f-4fa8-70b4-aef2-ee70a03599d2\",\"status\":\"pending_payment\",\"subtotal_cents\":68420,\"shipping_cents\":2959,\"total_cents\":71379,\"shipping\":{\"service_code\":null,\"service_name\":null,\"eta_days\":null,\"quoted_at\":null},\"order_id\":\"01a15a6f-4fa7-732a-b9ab-696a8add6271\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d30d-7336-8540-3cdcd47fb384\",\"store_id\":\"01a15a86-d30c-729d-bf28-ceb1954feedb\",\"status\":\"pending_payment\",\"subtotal_cents\":159868,\"shipping_cents\":1979,\"total_cents\":161847,\"shipping\":{\"service_code\":null,\"service_name\":null,\"eta_days\":null,\"quoted_at\":null},\"order_id\":\"01a15a86-d30a-715d-80ef-73a3a1a76971\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -3534,7 +3534,7 @@
                                 {
                                     "header": [],
                                     "code": 201,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4fac-7220-8cfa-bae5637d9af9\",\"store_id\":\"01a15a6f-4fac-7220-8cfa-bae562f3f13d\",\"status\":\"pending_payment\",\"subtotal_cents\":159868,\"shipping_cents\":1979,\"total_cents\":161847,\"shipping\":{\"service_code\":null,\"service_name\":null,\"eta_days\":null,\"quoted_at\":null},\"shipment\":{\"id\":\"01a15a6f-4fac-7220-8cfa-bae563ee113e\",\"tracking_code\":\"SM231385721BR\",\"carrier\":\"simulated\",\"service_code\":\"simulated_standard\",\"status\":\"in_transit\",\"shipped_at\":\"2026-10-20T14:50:06-03:00\",\"estimated_delivery_at\":\"2026-10-25T14:50:06-03:00\",\"delivered_at\":null},\"order_id\":\"01a15a6f-4fab-73e9-b240-6388ebec16e2\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d313-72a0-9ed6-b8724890f05a\",\"store_id\":\"01a15a86-d313-72a0-9ed6-b8724856a53c\",\"status\":\"pending_payment\",\"subtotal_cents\":159868,\"shipping_cents\":1979,\"total_cents\":161847,\"shipping\":{\"service_code\":null,\"service_name\":null,\"eta_days\":null,\"quoted_at\":null},\"shipment\":{\"id\":\"01a15a86-d314-7296-a5f6-3f2bac0e1ee8\",\"tracking_code\":\"SM893520724BR\",\"carrier\":\"simulated\",\"service_code\":\"simulated_standard\",\"status\":\"in_transit\",\"shipped_at\":\"2026-10-20T15:15:47-03:00\",\"estimated_delivery_at\":\"2026-10-25T15:15:47-03:00\",\"delivered_at\":null},\"order_id\":\"01a15a86-d312-71b7-8a0a-0ab6c4c6fadf\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -3574,7 +3574,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4fb0-72e3-a25f-4643c317c437\",\"store_id\":\"01a15a6f-4fb0-72e3-a25f-4643c3058a7f\",\"status\":\"pending_payment\",\"subtotal_cents\":159868,\"shipping_cents\":1979,\"total_cents\":161847,\"shipping\":{\"service_code\":null,\"service_name\":null,\"eta_days\":null,\"quoted_at\":null},\"shipment\":{\"id\":\"01a15a6f-4fb0-72e3-a25f-4643c337438b\",\"tracking_code\":\"SM025646330BR\",\"carrier\":\"simulated\",\"service_code\":\"simulated_standard\",\"status\":\"in_transit\",\"shipped_at\":\"2026-10-20T14:50:06-03:00\",\"estimated_delivery_at\":\"2026-10-25T14:50:06-03:00\",\"delivered_at\":null},\"order_id\":\"01a15a6f-4faf-73c4-9413-4b75390f551c\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d318-7335-a9fc-848a352d41f2\",\"store_id\":\"01a15a86-d318-7335-a9fc-848a35091765\",\"status\":\"pending_payment\",\"subtotal_cents\":159868,\"shipping_cents\":1979,\"total_cents\":161847,\"shipping\":{\"service_code\":null,\"service_name\":null,\"eta_days\":null,\"quoted_at\":null},\"shipment\":{\"id\":\"01a15a86-d318-7335-a9fc-848a35763a68\",\"tracking_code\":\"SM255436146BR\",\"carrier\":\"simulated\",\"service_code\":\"simulated_standard\",\"status\":\"in_transit\",\"shipped_at\":\"2026-10-20T15:15:47-03:00\",\"estimated_delivery_at\":\"2026-10-25T15:15:47-03:00\",\"delivered_at\":null},\"order_id\":\"01a15a86-d317-715e-8cae-c00db3bd566d\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -3620,7 +3620,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-500e-7210-89eb-ec54d2a3c721\",\"store_id\":\"01a15a6f-500e-7210-89eb-ec54d22cfcbb\",\"status\":\"pending_payment\",\"subtotal_cents\":159868,\"shipping_cents\":1979,\"total_cents\":161847,\"shipping\":{\"service_code\":null,\"service_name\":null,\"eta_days\":null,\"quoted_at\":null},\"shipment\":{\"id\":\"01a15a6f-500f-71bb-aff9-f92fd8cb8a36\",\"tracking_code\":\"SM204317937BR\",\"carrier\":\"simulated\",\"service_code\":\"simulated_standard\",\"status\":\"in_transit\",\"shipped_at\":\"2026-10-20T14:50:06-03:00\",\"estimated_delivery_at\":\"2026-10-25T14:50:06-03:00\",\"delivered_at\":null},\"order_id\":\"01a15a6f-500d-706d-b5cc-4ba969a77a98\",\"created_at\":\"2026-10-20T14:50:06-03:00\",\"updated_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d37a-73b7-bc21-fb560c8136cb\",\"store_id\":\"01a15a86-d379-731a-86d3-597343089618\",\"status\":\"pending_payment\",\"subtotal_cents\":159868,\"shipping_cents\":1979,\"total_cents\":161847,\"shipping\":{\"service_code\":null,\"service_name\":null,\"eta_days\":null,\"quoted_at\":null},\"shipment\":{\"id\":\"01a15a86-d37a-73b7-bc21-fb560c8719e0\",\"tracking_code\":\"SM655295083BR\",\"carrier\":\"simulated\",\"service_code\":\"simulated_standard\",\"status\":\"in_transit\",\"shipped_at\":\"2026-10-20T15:15:47-03:00\",\"estimated_delivery_at\":\"2026-10-25T15:15:47-03:00\",\"delivered_at\":null},\"order_id\":\"01a15a86-d379-731a-86d3-597342149fd0\",\"created_at\":\"2026-10-20T15:15:47-03:00\",\"updated_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -3996,7 +3996,7 @@
                                 {
                                     "header": [],
                                     "code": 200,
-                                    "body": "{\"data\":[{\"id\":\"01a15a6f-4f12-72bc-9b93-365136febd0d\",\"product_id\":\"01a15a6f-4f0f-712d-8e10-ea23864ec0e4\",\"rating\":2,\"title\":\"Quos velit et fugiat sunt nihil.\",\"body\":\"Modi deserunt aut ab provident perspiciatis. Omnis nostrum aut adipisci quidem nostrum qui commodi. Iure odit et et modi ipsum nostrum omnis. Et consequatur aut dolores enim.\",\"author\":{\"name\":\"Prof.\"},\"created_at\":\"2026-10-20T14:50:06-03:00\"},{\"id\":\"01a15a6f-4f18-7095-b54b-44484bb7bbd0\",\"product_id\":\"01a15a6f-4f16-7117-8ad3-94cb10621682\",\"rating\":2,\"title\":\"In aliquid facilis.\",\"body\":null,\"author\":{\"name\":\"Reva\"},\"created_at\":\"2026-10-20T14:50:06-03:00\"}],\"links\":{\"first\":null,\"last\":null,\"prev\":null,\"next\":null},\"meta\":{\"path\":\"\\\/\",\"per_page\":20,\"next_cursor\":null,\"prev_cursor\":null},\"summary\":{\"average\":4.5,\"count\":2}}",
+                                    "body": "{\"data\":[{\"id\":\"01a15a86-d231-726d-a134-181c3a0538e2\",\"product_id\":\"01a15a86-d22f-7258-bd42-464cbef60335\",\"rating\":2,\"title\":\"Quos velit et fugiat sunt nihil.\",\"body\":\"Modi deserunt aut ab provident perspiciatis. Omnis nostrum aut adipisci quidem nostrum qui commodi. Iure odit et et modi ipsum nostrum omnis. Et consequatur aut dolores enim.\",\"author\":{\"name\":\"Prof.\"},\"created_at\":\"2026-10-20T15:15:47-03:00\"},{\"id\":\"01a15a86-d238-71b1-9978-5a33d0ca1fcc\",\"product_id\":\"01a15a86-d236-72ce-b53c-71ab4ad3580b\",\"rating\":2,\"title\":\"In aliquid facilis.\",\"body\":null,\"author\":{\"name\":\"Reva\"},\"created_at\":\"2026-10-20T15:15:47-03:00\"}],\"links\":{\"first\":null,\"last\":null,\"prev\":null,\"next\":null},\"meta\":{\"path\":\"\\\/\",\"per_page\":20,\"next_cursor\":null,\"prev_cursor\":null},\"summary\":{\"average\":4.5,\"count\":2}}",
                                     "name": ""
                                 }
                             ]
@@ -4045,7 +4045,7 @@
                                 {
                                     "header": [],
                                     "code": 201,
-                                    "body": "{\"data\":{\"id\":\"01a15a6f-4f25-70ee-ae45-e10c201a290e\",\"product_id\":\"01a15a6f-4f23-702f-b14e-b9ddb108dc5c\",\"rating\":1,\"title\":null,\"body\":\"Velit et fugiat sunt nihil accusantium. Mollitia modi deserunt aut ab provident perspiciatis quo. Nostrum aut adipisci quidem nostrum. Commodi incidunt iure odit.\",\"author\":{\"name\":\"Dr.\"},\"created_at\":\"2026-10-20T14:50:06-03:00\"}}",
+                                    "body": "{\"data\":{\"id\":\"01a15a86-d244-72b0-8b59-5446374707ca\",\"product_id\":\"01a15a86-d242-7039-8c65-732690a40cea\",\"rating\":1,\"title\":null,\"body\":\"Velit et fugiat sunt nihil accusantium. Mollitia modi deserunt aut ab provident perspiciatis quo. Nostrum aut adipisci quidem nostrum. Commodi incidunt iure odit.\",\"author\":{\"name\":\"Dr.\"},\"created_at\":\"2026-10-20T15:15:47-03:00\"}}",
                                     "name": ""
                                 }
                             ]
@@ -4545,6 +4545,167 @@
                                     "name": ""
                                 }
                             ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Notifica\u00e7\u00f5es",
+            "description": "",
+            "item": [
+                {
+                    "name": "Minhas notifica\u00e7\u00f5es",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/notifications",
+                            "query": [
+                                {
+                                    "key": "unread",
+                                    "value": "1",
+                                    "description": "S\u00f3 as n\u00e3o lidas (1) ou todas (0, padr\u00e3o).",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "per_page",
+                                    "value": "20",
+                                    "description": "Itens por p\u00e1gina (1 a 100). Must be at least 1. Must not be greater than 100.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "cursor",
+                                    "value": "architecto",
+                                    "description": "Cursor devolvido em meta.next_cursor.",
+                                    "disabled": false
+                                }
+                            ],
+                            "raw": "{{baseUrl}}\/api\/v1\/notifications?unread=1&per_page=20&cursor=architecto"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Caixa de notifica\u00e7\u00f5es do usu\u00e1rio (as mesmas enviadas por e-mail), mais recentes primeiro. `type` identifica o evento (ex.: `order.paid`, `sale.paid`, `dispute.opened`); `action_path` \u00e9 a rota sugerida no app cliente."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"data\":[{\"id\":\"0b3c7a52-6f0e-4a8e-9a43-5d2f1c9e7b10\",\"type\":\"order.paid\",\"title\":\"Pagamento aprovado\",\"message\":\"Recebemos o pagamento de R$ 1.825,80. As lojas j\u00e1 foram avisadas e voc\u00ea recebe um e-mail a cada envio, com o c\u00f3digo de rastreio.\",\"action_path\":\"\/pedidos\/01a159cb-1747-7071-882b-d52cc184d218\",\"data\":{\"order_id\":\"01a159cb-1747-7071-882b-d52cc184d218\",\"total_cents\":182580},\"read_at\":null,\"created_at\":\"2026-10-20T15:00:00-03:00\"}],\"links\":{\"first\":null,\"last\":null,\"prev\":null,\"next\":null},\"meta\":{\"path\":\"http:\/\/127.0.0.1:8080\/api\/v1\/notifications\",\"per_page\":20,\"next_cursor\":null,\"prev_cursor\":null}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Contar n\u00e3o lidas",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/notifications\/unread-count",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/notifications\/unread-count"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"data\":{\"unread\":3}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Marcar todas como lidas",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/notifications\/read-all",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/notifications\/read-all"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"data\":{\"updated\":3}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Marcar como lida",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/notifications\/:notification\/read",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/notifications\/:notification\/read",
+                            "variable": [
+                                {
+                                    "id": "notification",
+                                    "key": "notification",
+                                    "value": "0b3c7a52-6f0e-4a8e-9a43-5d2f1c9e7b10",
+                                    "description": "ID da notifica\u00e7\u00e3o."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Idempotente. Notifica\u00e7\u00e3o de outro usu\u00e1rio responde 404."
+                    },
+                    "response": [
+                        {
+                            "header": [],
+                            "code": 200,
+                            "body": "{\"data\":{\"id\":\"0b3c7a52-6f0e-4a8e-9a43-5d2f1c9e7b10\",\"type\":\"order.paid\",\"title\":\"Pagamento aprovado\",\"message\":\"Recebemos o pagamento de R$ 1.825,80. As lojas j\u00e1 foram avisadas e voc\u00ea recebe um e-mail a cada envio, com o c\u00f3digo de rastreio.\",\"action_path\":\"\/pedidos\/01a159cb-1747-7071-882b-d52cc184d218\",\"data\":{\"order_id\":\"01a159cb-1747-7071-882b-d52cc184d218\",\"total_cents\":182580},\"read_at\":null,\"created_at\":\"2026-10-20T15:00:00-03:00\"}}",
+                            "name": ""
                         }
                     ]
                 }

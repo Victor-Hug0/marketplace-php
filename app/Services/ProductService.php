@@ -7,6 +7,8 @@ namespace App\Services;
 use App\Enums\ProductStatus;
 use App\Enums\RoleName;
 use App\Enums\StoreStatus;
+use App\Events\ProductDecided;
+use App\Events\ProductSubmitted;
 use App\Models\AuditLog;
 use App\Models\Category;
 use App\Models\Offer;
@@ -262,6 +264,7 @@ final class ProductService
                 'rejection_reason' => null,
             ]);
 
+            event(new ProductSubmitted($product));
             $this->audit($actor, $product, 'product.submitted');
 
             return $product->refresh()->load(self::DETAIL_RELATIONS);
@@ -282,6 +285,7 @@ final class ProductService
                 'reviewed_at' => now(),
             ]);
 
+            event(new ProductDecided($product));
             $this->audit($admin, $product, 'product.approved');
 
             return $product->refresh()->load(self::DETAIL_RELATIONS);
@@ -302,6 +306,7 @@ final class ProductService
                 'reviewed_at' => now(),
             ]);
 
+            event(new ProductDecided($product));
             $this->audit($admin, $product, 'product.rejected', ['reason' => $reason]);
 
             return $product->refresh()->load(self::DETAIL_RELATIONS);
