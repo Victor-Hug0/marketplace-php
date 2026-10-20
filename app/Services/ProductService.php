@@ -9,6 +9,7 @@ use App\Enums\RoleName;
 use App\Enums\StoreStatus;
 use App\Models\AuditLog;
 use App\Models\Category;
+use App\Models\Offer;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\Store;
@@ -26,13 +27,20 @@ final class ProductService
 {
     private const MAX_IMAGES = 8;
 
+    public const DETAIL_RELATIONS = ['images', 'store', 'category', 'attributeValues.categoryAttribute'];
+
+    public function __construct(
+        private readonly ProductAttributeService $attributes,
+    ) {}
+
     /**
      * @param  array{
      *     q?: string|null,
      *     category_id?: string|null,
      *     category?: string|null,
      *     store_id?: string|null,
-     *     store?: string|null
+     *     store?: string|null,
+     *     attr?: array<string, string>|null
      * }  $filters
      * @return Builder<Product>
      */
@@ -45,7 +53,14 @@ final class ProductService
                 'images',
                 'store:id,store_name,slug,status',
                 'category:id,name,slug',
+                'attributeValues.categoryAttribute',
             ]);
+
+        $this->addFromPrice($query);
+
+        foreach ($filters['attr'] ?? [] as $code => $rawValues) {
+            $this->filterByAttribute($query, (string) $code, (string) $rawValues);
+        }
 
         if (! empty($filters['q'])) {
             $term = trim((string) $filters['q']);
@@ -84,6 +99,62 @@ final class ProductService
     }
 
     /**
+     * Adds from_price_cents (lowest current price among purchasable offers, null without offers)
+     * and available_offers_count, using the same eligibility as the Buy Box.
+     *
+     * @param  Builder<Product>  $query
+     */
+    private function addFromPrice(Builder $query): void
+    {
+        $now = now();
+        $purchasable = fn () => Offer::query()->purchasable()->whereColumn('offers.product_id', 'products.id');
+
+        $query->addSelect([
+            'from_price_cents' => $purchasable()->selectRaw('MIN('.Offer::currentPriceCentsSql().')', [$now, $now]),
+            'available_offers_count' => $purchasable()->selectRaw('COUNT(*)'),
+        ]);
+    }
+
+    /**
+     * attr[code]=v1,v2 matches products whose value for that filterable attribute is any of the values
+     * (case-insensitive for text and options); several attr[] keys must all match.
+     *
+     * @param  Builder<Product>  $query
+     */
+    private function filterByAttribute(Builder $query, string $code, string $rawValues): void
+    {
+        $values = array_values(array_filter(array_map('trim', explode(',', $rawValues)), fn (string $value): bool => $value !== ''));
+
+        if ($values === []) {
+            return;
+        }
+
+        $numbers = array_values(array_filter($values, 'is_numeric'));
+        $booleans = array_values(array_unique(array_filter(
+            array_map(fn (string $value): ?bool => filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE), $values),
+            fn (?bool $value): bool => $value !== null,
+        )));
+
+        $query->whereHas('attributeValues', function (Builder $value) use ($code, $values, $numbers, $booleans): void {
+            $value
+                ->whereHas('categoryAttribute', fn (Builder $attribute) => $attribute
+                    ->where('code', $code)
+                    ->where('is_filterable', true))
+                ->where(function (Builder $match) use ($values, $numbers, $booleans): void {
+                    $match->whereIn(DB::raw('lower(value_string)'), array_map('mb_strtolower', $values));
+
+                    if ($numbers !== []) {
+                        $match->orWhereIn('value_number', $numbers);
+                    }
+
+                    if ($booleans !== []) {
+                        $match->orWhereIn('value_boolean', $booleans);
+                    }
+                });
+        });
+    }
+
+    /**
      * @param  array<string, mixed>  $data
      */
     public function create(User $actor, Store $store, array $data): Product
@@ -105,13 +176,15 @@ final class ProductService
                 'status' => ProductStatus::DRAFT,
             ]);
 
+            $this->attributes->apply($product, $data['attributes'] ?? []);
+
             $this->audit($actor, $product, 'product.created', [
                 'name' => $product->name,
                 'slug' => $product->slug,
                 'store_id' => $store->id,
             ]);
 
-            return $product->load(['images', 'store', 'category']);
+            return $product->load(self::DETAIL_RELATIONS);
         });
     }
 
@@ -157,12 +230,18 @@ final class ProductService
                 'height_cm',
             ])));
 
+            if ($product->wasChanged('category_id')) {
+                $this->attributes->pruneOutsideCategory($product);
+            }
+
+            $this->attributes->apply($product, $data['attributes'] ?? []);
+
             $this->audit($actor, $product, 'product.updated', [
                 'name' => $product->name,
                 'slug' => $product->slug,
             ]);
 
-            return $product->refresh()->load(['images', 'store', 'category']);
+            return $product->refresh()->load(self::DETAIL_RELATIONS);
         });
     }
 
@@ -176,6 +255,7 @@ final class ProductService
                 ProductStatus::DRAFT,
                 ProductStatus::REJECTED,
             ]);
+            $this->attributes->assertRequiredFilled($product);
 
             $product->update([
                 'status' => ProductStatus::PENDING_MODERATION,
@@ -184,7 +264,7 @@ final class ProductService
 
             $this->audit($actor, $product, 'product.submitted');
 
-            return $product->refresh()->load(['images', 'store', 'category']);
+            return $product->refresh()->load(self::DETAIL_RELATIONS);
         });
     }
 
@@ -204,7 +284,7 @@ final class ProductService
 
             $this->audit($admin, $product, 'product.approved');
 
-            return $product->refresh()->load(['images', 'store', 'category']);
+            return $product->refresh()->load(self::DETAIL_RELATIONS);
         });
     }
 
@@ -224,7 +304,7 @@ final class ProductService
 
             $this->audit($admin, $product, 'product.rejected', ['reason' => $reason]);
 
-            return $product->refresh()->load(['images', 'store', 'category']);
+            return $product->refresh()->load(self::DETAIL_RELATIONS);
         });
     }
 
@@ -248,7 +328,7 @@ final class ProductService
 
             $this->audit($actor, $product, 'product.paused');
 
-            return $product->refresh()->load(['images', 'store', 'category']);
+            return $product->refresh()->load(self::DETAIL_RELATIONS);
         });
     }
 
@@ -266,7 +346,7 @@ final class ProductService
 
             $this->audit($actor, $product, 'product.resumed');
 
-            return $product->refresh()->load(['images', 'store', 'category']);
+            return $product->refresh()->load(self::DETAIL_RELATIONS);
         });
     }
 
@@ -420,7 +500,7 @@ final class ProductService
                 'image_ids' => $imageIds,
             ]);
 
-            return $product->refresh()->load(['images', 'store', 'category']);
+            return $product->refresh()->load(self::DETAIL_RELATIONS);
         });
     }
 

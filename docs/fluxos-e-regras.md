@@ -95,7 +95,10 @@ stateDiagram-v2
 
 - Árvore com **no máximo 3 níveis**; mover uma categoria revalida ciclo e profundidade da subárvore (422).
 - Exclusão é soft delete e é bloqueada se houver subcategorias ou produtos (409).
-- Atributos (`category_attributes`): `code` único na categoria; `data_type` `string`, `integer`, `decimal`, `boolean` ou `enum`; `options` obrigatório para `enum`. Valores de atributo por produto ainda não existem (B2.4).
+- Atributos (`category_attributes`): `code` único na categoria; `data_type` `string`, `integer`, `decimal`, `boolean` ou `enum`; `options` obrigatório para `enum`.
+- Valores por produto (`product_attribute_values`): um por atributo, na coluna do tipo (`value_string` para texto e opções, `value_number` para inteiro e decimal, `value_boolean`). O seller envia `attributes: {código: valor}` ao criar ou editar; opção é aceita sem diferenciar maiúsculas e gravada como cadastrada; `null` remove; códigos omitidos não mudam. Trocar a categoria apaga os valores da categoria anterior. Atributos `is_required` só são cobrados ao submeter para moderação (422 listando os que faltam), então o rascunho pode ficar incompleto.
+- Busca: `attr[código]=v1,v2` filtra por atributos `is_filterable` (vírgula = OU; códigos diferentes = E). Índices por `(atributo, valor)`, inclusive `lower(value_string)`.
+- "A partir de": a listagem pública traz o menor preço vigente (`from_price_cents`) e a quantidade de ofertas compráveis (`available_offers_count`), com a mesma regra do Buy Box (oferta ativa, loja ativa, estoque disponível, promoção dentro da janela), num subselect da própria consulta, sem N+1.
 
 ### Produto
 

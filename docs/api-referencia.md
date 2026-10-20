@@ -138,7 +138,7 @@ Todo cadastro recebe o papel `buyer`. `POST /checkout`, `POST /stores` e `POST /
 |--------|------|--------|---------------|---------|-------|
 | `POST` | `/stores` | Autenticado (buyer) | `store_name`, `document_type` (`cpf`\|`cnpj`), `document` (11 ou 14 dígitos, único), `description?`, `commercial_email?`, `commercial_phone?` (10–15 dígitos), `origin_cep?` (CEP; gravado só com dígitos) | `201` loja `pending` | `403` e-mail não confirmado, `409` usuário já tem loja (inclusive rejeitada), `422` |
 | `GET` | `/stores/me` | Autenticado + Dono | — | `200` loja completa | `404` sem loja |
-| `GET` | `/stores/{slug}` | Público | `q`, `category`, `category_id`, `per_page`, `cursor` | `200` vitrine (`data` sem documento nem motivo de rejeição; `data.rating`) + `products` paginados | `404` loja inexistente ou não `active` |
+| `GET` | `/stores/{slug}` | Público | `q`, `category`, `category_id`, `attr[código]`, `per_page`, `cursor` | `200` vitrine (`data` sem documento nem motivo de rejeição; `data.rating`) + `products` paginados (com `from_price` e `attributes`) | `404` loja inexistente ou não `active` |
 | `GET` | `/admin/stores` | Admin | `per_page`, `cursor` | `200` lista com dono | `403` |
 | `POST` | `/admin/stores/{store}/approve` | Admin | — | `200` loja `active`; dono ganha papel `seller` | `409` não está `pending` |
 | `POST` | `/admin/stores/{store}/reject` | Admin | `reason` (10–2000) | `200` loja `rejected` | `409`, `422` |
@@ -168,7 +168,7 @@ Todo cadastro recebe o papel `buyer`. `POST /checkout`, `POST /stores` e `POST /
 
 | Método | Rota | Query | Sucesso | Observações |
 |--------|------|-------|---------|-------------|
-| `GET` | `/products` | `q` (nome/descrição, até 120), `category` (slug) ou `category_id`, `store` (slug) ou `store_id`, `per_page`, `cursor` | `200` lista | só produto `active` de loja `active`; mais recentes primeiro |
+| `GET` | `/products` | `q` (nome/descrição, até 120), `category` (slug) ou `category_id`, `store` (slug) ou `store_id`, `attr[código]=v1,v2` (até 10; vírgula = OU, códigos diferentes = E; só atributos filtráveis; texto e opções sem diferenciar maiúsculas), `per_page`, `cursor` | `200` lista; cada item com `attributes[]`, `from_price`/`from_price_cents` (menor preço vigente entre as ofertas compráveis; `null` sem oferta) e `available_offers_count` | só produto `active` de loja `active`; mais recentes primeiro; `422` código de atributo inválido |
 | `GET` | `/products/{slug}` | — | `200` produto + `images[]` + `offers[]` elegíveis + `rating { average, count }`; `buy_box` como chave de topo | `404` se produto ou loja não estiver `active` |
 | `GET` | `/products/{slug}/reviews` | `per_page`, `cursor` | `200` avaliações (autor só com primeiro nome) + `summary { average, count }` | `404` |
 
@@ -177,11 +177,11 @@ Todo cadastro recebe o papel `buyer`. `POST /checkout`, `POST /stores` e `POST /
 | Método | Rota | Corpo | Sucesso | Erros |
 |--------|------|-------|---------|-------|
 | `GET` | `/seller/products` | `per_page`, `cursor` | `200` produtos da própria loja | `403` |
-| `POST` | `/seller/products` | `category_id` (ativa), `name` (3–180), `slug?`, `description?`, `weight_grams?` (1–100000), `length_cm?`, `width_cm?`, `height_cm?` (1–300) | `201` produto `draft` | `403` loja não ativa, `422` |
+| `POST` | `/seller/products` | `category_id` (ativa), `name` (3–180), `slug?`, `description?`, `weight_grams?` (1–100000), `length_cm?`, `width_cm?`, `height_cm?` (1–300), `attributes?` (`{código: valor}`, validado pelo `data_type` e `options` do atributo; `null` remove) | `201` produto `draft` com `attributes[]` | `403` loja não ativa, `422` (inclusive código fora da categoria ou valor inválido em `attributes.<código>`) |
 | `GET` | `/seller/products/{product}` | — | `200` | `404` de outra loja |
 | `PUT`/`PATCH` | `/seller/products/{product}` | mesmos campos, opcionais | `200` | `409` fora de `draft`/`rejected` |
 | `DELETE` | `/seller/products/{product}` | — | `204` (soft delete, apaga as imagens do disco) | `409` fora de `draft`/`rejected`/`paused` |
-| `POST` | `/seller/products/{product}/submit` | — | `200` `pending_moderation` | `409` fora de `draft`/`rejected` |
+| `POST` | `/seller/products/{product}/submit` | — | `200` `pending_moderation` | `409` fora de `draft`/`rejected`, `422` atributo obrigatório sem valor (`attributes.<código>`) |
 | `POST` | `/seller/products/{product}/pause` | — | `200` `paused` | `409` não está `active` |
 | `POST` | `/seller/products/{product}/resume` | — | `200` `active` | `409` não está `paused` |
 | `POST` | `/seller/products/{product}/images` | multipart: `image` (jpeg, jpg, png, webp; até 2 MB), `alt?` | `201` imagem; a primeira vira capa (`position` 0) | `409` limite de 8 imagens, `422` |

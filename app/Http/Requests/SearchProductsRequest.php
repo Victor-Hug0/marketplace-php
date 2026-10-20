@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class SearchProductsRequest extends FormRequest
@@ -26,6 +27,21 @@ final class SearchProductsRequest extends FormRequest
             'store' => ['sometimes', 'nullable', 'string', 'max:255'],
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
             'cursor' => ['sometimes', 'nullable', 'string'],
+            'attr' => [
+                'sometimes',
+                'array',
+                'max:10',
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    foreach (array_keys((array) $value) as $code) {
+                        if (! is_string($code) || ! preg_match('/^[A-Za-z0-9_-]{1,64}$/', $code)) {
+                            $fail('Use attr[código]=valor, com o código do atributo (letras, números, - e _).');
+
+                            return;
+                        }
+                    }
+                },
+            ],
+            'attr.*' => ['string', 'max:255'],
         ];
     }
 
@@ -61,6 +77,10 @@ final class SearchProductsRequest extends FormRequest
             ],
             'cursor' => [
                 'description' => 'Cursor devolvido em meta.next_cursor.',
+            ],
+            'attr' => [
+                'description' => 'Filtros por atributo filtrável: attr[código]=valor. Vários valores separados por vírgula valem como OU; vários códigos, como E. Texto e opções ignoram maiúsculas.',
+                'example' => ['color' => 'preto,branco', 'storage' => '128GB'],
             ],
         ];
     }

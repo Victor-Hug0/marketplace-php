@@ -44,7 +44,7 @@ Documento derivado de [`roadmap-implementacao-api.md`](roadmap-implementacao-api
 | Fundação (auth, docker, audit) | `done` | Pré-requisito |
 | B1 Atores / loja | `done` | Store + roles + middleware |
 | B2 Catálogo | `done` | Categorias, produtos, vitrine, busca |
-| B2-extra (atributos valorados, filtros, resize) | `todo` | Opcional; B2.4.06 (limite de upload) já feito |
+| B2-extra (atributos valorados, filtros, resize) | `parcial` | Valores de atributo e filtros feitos (B2.4.01–04) e limite de upload (B2.4.06); faltam resize em fila e flag `is_platform` |
 | B3 Ofertas / estoque / Buy Box | `done` | Em `develop` (PR #3) |
 | B4 Carrinho / checkout / pedidos | `done` | B4.1–B4.5 em `develop` |
 | B5 Pagamento / ledger | `done` | B5.1–B5.3 em `develop` (PRs #9–#11) |
@@ -164,10 +164,10 @@ seller edita conteúdo só em draft|rejected
 
 | ID | Item | Status | Esforço | Detalhe técnico |
 |----|------|--------|---------|-----------------|
-| B2.4.01 | Migration `product_attribute_values` | `todo` | M | `product_id`, `category_attribute_id`, `value_string`/`value_number`/`value_boolean`, unique `(product_id, category_attribute_id)` |
-| B2.4.02 | Validação valores vs `data_type` + `options` | `todo` | M | Service no create/update produto |
-| B2.4.03 | Expor atributos no `ProductResource` | `todo` | S | |
-| B2.4.04 | Filtro público `?attr[color]=preto` | `todo` | L | joins; índices em value_* |
+| B2.4.01 | Migration `product_attribute_values` | `done` | M | `product_id`, `category_attribute_id`, `value_string`/`value_number`/`value_boolean`, unique `(product_id, category_attribute_id)` |
+| B2.4.02 | Validação valores vs `data_type` + `options` | `done` | M | `ProductAttributeService` no create/update; obrigatórios cobrados no submit; troca de categoria limpa valores |
+| B2.4.03 | Expor atributos no `ProductResource` | `done` | S | `attributes[] { code, label, data_type, value }` tipado, na ordem de `position` |
+| B2.4.04 | Filtro público `?attr[color]=preto` | `done` | L | `whereHas` por atributo filtrável; vírgula = OU, códigos = E; índices em `value_number`, `value_boolean` e `lower(value_string)` (`ProductAttributesTest`) |
 | B2.4.05 | Job `ProcessProductImage` (resize/webp) | `todo` | M | queue redis; path relativo |
 | B2.4.06 | Limite MIME/size upload reforçado | `done` | S | `StoreProductImageRequest`: `jpeg,jpg,png,webp`, até 2 MB; máximo 8 imagens por produto (409) |
 | B2.4.07 | Flag `is_platform` / store platform seeder | `todo` | S | produto da plataforma |
@@ -267,7 +267,7 @@ DELETE /api/v1/seller/offers/{offer}
 | B3.3.01 | `BuyBoxService::winner(Product): ?Offer` | `done` | M | regras abaixo |
 | B3.3.02 | `BuyBoxService::eligibleOffers(Product)` | `done` | M | oferta `active`, loja `active`, `availableStock() > 0` |
 | B3.3.03 | `GET /products/{slug}` com `offers[]` + `buy_box` | `done` | M | `buy_box` vem como chave de topo, ao lado de `data` |
-| B3.3.04 | Listagem pública com "a partir de" (menor preço) | `todo` | L | não implementado; cuidado com N+1 |
+| B3.3.04 | Listagem pública com "a partir de" (menor preço) | `done` | L | subselect `MIN(preço vigente)` com `Offer::purchasable()` (mesma regra do Buy Box); `from_price`, `from_price_cents`, `available_offers_count`; teste garante número de queries constante (`FromPriceTest`) |
 | B3.3.05 | Testes: 2 sellers, empates preço/estoque/idade | `done` | M | `test_buy_box_picks_lowest_current_price_then_stock_then_oldest` |
 
 **Algoritmo Buy Box (implementado):**
@@ -656,12 +656,12 @@ FEITO:
   + hardening: preventLazyLoading, limpeza de tokens, /up com banco e Redis (X.1.01, X.1.03, X.1.04)
   + L1 completa: verificação de e-mail (exigida no checkout, pedido de loja e saque), reset de senha e login com Google, e-mails via Resend em fila
   + X.1.02: preço da oferta em centavos (dinheiro inteiro de ponta a ponta)
+  + B2.4.01–04 e B3.3.04: atributos valorados, filtros ?attr[...] e preço "a partir de" na busca
 
 PENDÊNCIAS OPCIONAIS DO CORE:
   B1.3    KYC do seller
-  B2.4    atributos valorados, filtros ?attr[...], resize em fila, flag is_platform
+  B2.4    resize de imagem em fila (B2.4.05), flag is_platform (B2.4.07)
   B3.2.08 rotas admin de oferta
-  B3.3.04 "a partir de R$ X" na listagem pública
   B3.4.07 idempotência de reserva avulsa
 
 FASES LATER (liberadas):

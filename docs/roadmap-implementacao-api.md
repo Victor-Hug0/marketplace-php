@@ -77,7 +77,7 @@ Enquanto essa jornada não existir com testes, **não** investir em e-mail verif
 
 ## 3. Estado atual do repositório
 
-**Revisão de 20/10/2026.** O caminho crítico **B1 → B7 está completo** em `develop` e `main` (release no PR #17). A jornada mínima da seção 2 roda de ponta a ponta e está coberta por testes de feature (261 testes em 30 arquivos).
+**Revisão de 20/10/2026.** O caminho crítico **B1 → B7 está completo** em `develop` e `main` (release no PR #17). A jornada mínima da seção 2 roda de ponta a ponta e está coberta por testes de feature (274 testes em 32 arquivos).
 
 ### Fundação
 
@@ -103,7 +103,7 @@ Enquanto essa jornada não existir com testes, **não** investir em e-mail verif
 
 ### O que ficou de fora do core (opcional)
 
-KYC do seller (B1.3), valores de atributo e filtros no catálogo (B2.4), rotas admin de oferta (B3.2.08), "a partir de R$ X" na listagem (B3.3.04), idempotência de reserva avulsa (B3.4.07). Detalhes no [backlog](roadmap-backlog-tecnico.md).
+KYC do seller (B1.3), resize de imagem em fila e flag de produto da plataforma (restante da B2.4), rotas admin de oferta (B3.2.08), idempotência de reserva avulsa (B3.4.07). Detalhes no [backlog](roadmap-backlog-tecnico.md).
 
 ### Próximos passos
 
@@ -265,7 +265,7 @@ Nesta fase o foco é **produto + categoria + mídia + moderação**. Preço/esto
 - [x] Produto rejeitado/pausado some da busca — `ProductWorkflowTest::test_non_active_products_are_hidden_from_public_listing`
 - [x] Seed com categorias e alguns produtos para demo — `CategorySeeder`, `ProductSeeder`
 
-**Implementação:** moderação pela opção B (`pending_moderation` → admin aprova/rejeita). Atributos valorados por produto e filtros por atributo ficaram para depois (B2.4).
+**Implementação:** moderação pela opção B (`pending_moderation` → admin aprova/rejeita). Atributos valorados por produto e filtros `?attr[...]` entraram depois, em B2.4.
 
 #### Cuidados
 
@@ -633,7 +633,7 @@ Só começar com a jornada B1→B6 (e B7 mínimo) **verde**.
 - [x] Comissão e saldo seller batem com o ledger — `PayoutWorkflowTest::test_financial_totals_reconcile_across_sales_refunds_and_payouts`
 - [x] Frete congelado e tracking por subpedido — `ShippingQuoteTest::test_checkout_freezes_shipping_per_sub_order`, `ShipmentWorkflowTest::test_buyer_and_seller_see_tracking`
 - [x] Seller pendente não vende; admin opera com Policy — `StoreWorkflowTest`, `ProductWorkflowTest::test_buyer_cannot_access_admin_product_routes`
-- [x] Feature tests cobrem o caminho feliz + principais 403/409 — 261 testes (`tests/Feature` e `tests/Unit`)
+- [x] Feature tests cobrem o caminho feliz + principais 403/409 — 274 testes (`tests/Feature` e `tests/Unit`)
 
 **Status (20/10/2026): core pronto.**
 

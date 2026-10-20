@@ -77,6 +77,7 @@ final class StoreController extends Controller
                 'q' => $request->validated('q'),
                 'category_id' => $request->validated('category_id'),
                 'category' => $request->validated('category'),
+                'attr' => $request->validated('attr'),
             ]),
             $request,
             cursorColumn: 'id',
