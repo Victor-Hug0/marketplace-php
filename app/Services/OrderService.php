@@ -69,6 +69,8 @@ final class OrderService
             'sellers.items',
             'sellers.refunds',
             'sellers.shipment',
+            'sellers.dispute',
+            'sellers.returnRequest',
             'statusHistories',
             'sellers.statusHistories',
         ]);
@@ -81,6 +83,8 @@ final class OrderService
             'items',
             'refunds',
             'shipment',
+            'dispute',
+            'returnRequest',
             'statusHistories',
             'order:id,buyer_id,status,currency,subtotal_cents,shipping_cents,total_cents,created_at',
         ]);
@@ -214,7 +218,31 @@ final class OrderService
         string $reason,
         string $idempotencyKey,
     ): array {
-        return DB::transaction(function () use ($admin, $orderSeller, $amountCents, $reason, $idempotencyKey): array {
+        return $this->issueRefund(
+            $admin,
+            $orderSeller,
+            $amountCents,
+            $reason,
+            $idempotencyKey,
+            'order_seller.refunded_by_admin',
+        );
+    }
+
+    /**
+     * Refunds a sub-order (null amount = everything left), restocking only
+     * when the goods never left the seller, and closes it once fully refunded.
+     *
+     * @return array{refund: Refund, created: bool}
+     */
+    public function issueRefund(
+        User $actor,
+        OrderSeller $orderSeller,
+        ?int $amountCents,
+        string $reason,
+        string $idempotencyKey,
+        string $auditAction,
+    ): array {
+        return DB::transaction(function () use ($actor, $orderSeller, $amountCents, $reason, $idempotencyKey, $auditAction): array {
             $order = Order::query()->lockForUpdate()->findOrFail($orderSeller->order_id);
             $orderSeller = OrderSeller::query()->lockForUpdate()->findOrFail($orderSeller->id);
 
@@ -239,7 +267,7 @@ final class OrderService
                 $orderSeller,
                 $payment,
                 $amountCents ?? $this->refundService->remainingCents($orderSeller),
-                $admin,
+                $actor,
                 $reason,
                 $idempotencyKey,
                 restockOnFullRefund: $restock,
@@ -251,12 +279,12 @@ final class OrderService
                 $fullyRefunded
                 && $this->stateMachine->canTransitionOrderSeller($orderSeller->status, OrderSellerStatus::REFUNDED)
             ) {
-                $this->transitionOrderSeller($orderSeller, OrderSellerStatus::REFUNDED, $admin, $reason);
+                $this->transitionOrderSeller($orderSeller, OrderSellerStatus::REFUNDED, $actor, $reason);
             }
 
-            $this->syncOrderWithSellers($order, $admin, $reason);
+            $this->syncOrderWithSellers($order, $actor, $reason);
 
-            $this->audit($admin, $order, 'order_seller.refunded_by_admin', [
+            $this->audit($actor, $order, $auditAction, [
                 'order_seller_id' => $orderSeller->id,
                 'refund_id' => $refund->id,
                 'amount_cents' => $refund->amount_cents,

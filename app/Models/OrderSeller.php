@@ -69,6 +69,16 @@ class OrderSeller extends Model
         return $this->hasOne(Shipment::class);
     }
 
+    public function dispute(): HasOne
+    {
+        return $this->hasOne(Dispute::class);
+    }
+
+    public function returnRequest(): HasOne
+    {
+        return $this->hasOne(ReturnRequest::class);
+    }
+
     public function statusHistories(): MorphMany
     {
         return $this->morphMany(OrderStatusHistory::class, 'statusable')->latest();

@@ -38,6 +38,13 @@ final class OrderSellerPolicy
         return $orderSeller->store?->user_id === $user->id;
     }
 
+    public function openPostSale(User $user, OrderSeller $orderSeller): bool
+    {
+        $orderSeller->loadMissing('order:id,buyer_id');
+
+        return $orderSeller->order?->buyer_id === $user->id;
+    }
+
     public function fulfill(User $user, OrderSeller $orderSeller): bool
     {
         $orderSeller->loadMissing('store');

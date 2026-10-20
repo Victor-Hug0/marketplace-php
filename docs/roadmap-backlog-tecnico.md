@@ -48,7 +48,7 @@ Documento derivado de [`roadmap-implementacao-api.md`](roadmap-implementacao-api
 | B4 Carrinho / checkout / pedidos | `done` | B4.1–B4.5 em `develop` |
 | B5 Pagamento / ledger | `done` | B5.1–B5.3 em `develop` (PRs #9–#11) |
 | B6 Frete / envio | `done` | B6.1 cotação (PR #12) e B6.2 envio (PR #13) em `develop` |
-| B7 Pós-venda | `wip` | B7.1 avaliações em `feature/b7-1-reviews`; B7.2 disputas/RMA pendente |
+| B7 Pós-venda | `wip` | B7.1 avaliações em `develop` (PR #14); B7.2 disputas/devoluções em `feature/b7-2-disputes-returns` |
 | L1–L3 | `later` | Após jornada core verde |
 
 ---
@@ -569,16 +569,29 @@ GET    /api/v1/seller/balance                              # balance_cents, pend
 | B7.1.04 | Endpoints create/list | `done` | M | `POST /order-items/{id}/reviews` (201); `GET /products/{slug}/reviews` público, cursor + `summary` |
 | B7.1.05 | Testes 403 sem compra | `done` | S | `tests/Feature/Review/ProductReviewTest.php` (401/403/409/422, agregados) |
 
+### Decisões técnicas da B7.2
+
+| Decisão | Escolha |
+|---------|---------|
+| Trava do saque | **Derivada do status**, sem coluna `hold_payout`: enquanto a disputa está `open` ou a devolução está `requested`, o saldo de seller daquele subpedido entra em `held_cents` e sai do `available_cents` (`LedgerService::heldBalanceCents`) |
+| Devolução também trava | Sim. Uma devolução aprovada debita o seller; travar durante a análise evita que ele saque um valor que pode ser estornado |
+| Janela | 7 dias após `shipments.delivered_at`, configurável em `config/post_sale.php` (`dispute_window_days`, `return_window_days`) |
+| Quantidade por subpedido | No máximo uma disputa e uma devolução por subpedido em toda a vida dele (unique `order_seller_id`), e nunca as duas em andamento ao mesmo tempo |
+| Quem decide | Disputa: só o **admin** resolve; o seller pode registrar uma resposta. Devolução: o **seller** do subpedido ou um admin aprova/recusa (recusa exige justificativa) |
+| Reembolso | Disputa resolvida a favor do comprador e devolução aprovada usam `OrderService::issueRefund` (mesmo fluxo da B5: ledger proporcional, idempotência por `dispute:{id}` / `return:{id}`) |
+| Estoque | Sem reposição automática: a mercadoria já foi entregue e pode voltar avariada. O seller ajusta o estoque da oferta manualmente |
+| FSM | `delivered → refunded` passou a ser permitido (subpedido e pedido), para o reembolso total pós-entrega fechar o subpedido. Reembolso parcial mantém `delivered` |
+
 ### Slice B7.2 — Disputas e RMA
 
 | ID | Item | Status | Esforço | Detalhe |
 |----|------|--------|---------|---------|
-| B7.2.01 | Migration `disputes` | `todo` | M | order_seller_id, status, reason, hold_payout bool |
-| B7.2.02 | Buyer abre disputa em janela (ex. 7 dias pós-delivered) | `todo` | M | |
-| B7.2.03 | Admin resolve; libera/bloqueia payout | `todo` | L | integração B5 |
-| B7.2.04 | Migration `return_requests` (RMA) | `todo` | M | |
-| B7.2.05 | Aprovar RMA → RefundService | `todo` | L | |
-| B7.2.06 | Feature tests fluxo mínimo | `todo` | M | |
+| B7.2.01 | Migration `disputes` | `done` | M | order_seller_id unique, opened_by, status (`open`/`resolved_refunded`/`resolved_rejected`), reason (`not_received`/`not_as_described`/`damaged`/`other`), description, resposta do seller, resolução, refund_id |
+| B7.2.02 | Buyer abre disputa em janela (7 dias pós-delivered) | `done` | M | `POST /order-sellers/{id}/disputes`; `PostSaleEligibility` (comprador, `delivered`, janela, nada em andamento) |
+| B7.2.03 | Admin resolve; libera/bloqueia payout | `done` | L | `POST /admin/disputes/{id}/resolve` (`refund` com valor opcional ou `reject`); seller responde em `POST /seller/disputes/{id}/respond`; `held_cents` no saldo |
+| B7.2.04 | Migration `return_requests` (RMA) | `done` | M | order_seller_id unique, requested_by, status (`requested`/`approved`/`rejected`), reason, amount_cents, decisão, refund_id |
+| B7.2.05 | Aprovar RMA → RefundService | `done` | L | `POST /order-sellers/{id}/returns`; seller e admin `.../returns/{id}/approve` e `/reject` |
+| B7.2.06 | Feature tests fluxo mínimo | `done` | M | `tests/Feature/PostSale/DisputeWorkflowTest.php` e `ReturnRequestWorkflowTest.php` |
 
 ---
 

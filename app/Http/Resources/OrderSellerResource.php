@@ -28,6 +28,8 @@ final class OrderSellerResource extends JsonResource
                 'quoted_at' => $this->shipping_quoted_at?->timezone(config('app.timezone'))->toIso8601String(),
             ],
             'shipment' => new ShipmentResource($this->whenLoaded('shipment')),
+            'dispute' => new DisputeResource($this->whenLoaded('dispute')),
+            'return_request' => new ReturnRequestResource($this->whenLoaded('returnRequest')),
             'store' => $this->whenLoaded('store', fn () => [
                 'id' => $this->store->id,
                 'store_name' => $this->store->store_name,
