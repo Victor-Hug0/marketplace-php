@@ -4,7 +4,8 @@ Documento derivado de [`roadmap-implementacao-api.md`](roadmap-implementacao-api
 
 **Fluxo Git:** `feature/*` → `develop` → `main`  
 **Convenção de ID:** `{FASE}.{SLICE}.{ITEM}` (ex.: `B3.2.03`)  
-**Status:** `done` · `wip` · `todo` · `blocked` · `later`
+**Status:** `done` · `wip` · `todo` · `blocked` · `later`  
+**Última revisão:** 20/10/2026 — B1 a B7 concluídas em `develop` e `main` (PR #17). Referência de endpoints: [`api-referencia.md`](api-referencia.md); estados e regras: [`fluxos-e-regras.md`](fluxos-e-regras.md).
 
 ---
 
@@ -28,7 +29,7 @@ Documento derivado de [`roadmap-implementacao-api.md`](roadmap-implementacao-api
 | Validação | Form Request |
 | Resposta | API Resource + `{ data, meta?, links? }` / `ApiErrorResponse` |
 | Paginação | Cursor (`CursorPaginates`) |
-| Dinheiro | `decimal(12,2)` ou integer **centavos** — **decidir e padronizar na B3**; preferir **centavos `bigint`** para evitar float |
+| Dinheiro | Ofertas guardam preço em `decimal(12,2)` (`price`, `promotional_price`); **a partir do checkout tudo é centavos `bigint`** (`*_cents` em pedidos, itens, pagamentos, ledger, reembolsos, saques, frete). Ver X.1.02 |
 | Concorrência | `DB::transaction` + `lockForUpdate()` em estoque/checkout/pagamento |
 | Audit | `AuditLog` sem tokens, senhas, PAN, paths absolutos |
 | Testes | Feature + factories; cenários 200/201/204/401/403/404/409/422 |
@@ -43,13 +44,15 @@ Documento derivado de [`roadmap-implementacao-api.md`](roadmap-implementacao-api
 | Fundação (auth, docker, audit) | `done` | Pré-requisito |
 | B1 Atores / loja | `done` | Store + roles + middleware |
 | B2 Catálogo | `done` | Categorias, produtos, vitrine, busca |
-| B2-extra (atributos valorados, resize) | `todo` | Paralelo seguro à B3 |
+| B2-extra (atributos valorados, filtros, resize) | `todo` | Opcional; B2.4.06 (limite de upload) já feito |
 | B3 Ofertas / estoque / Buy Box | `done` | Em `develop` (PR #3) |
 | B4 Carrinho / checkout / pedidos | `done` | B4.1–B4.5 em `develop` |
 | B5 Pagamento / ledger | `done` | B5.1–B5.3 em `develop` (PRs #9–#11) |
 | B6 Frete / envio | `done` | B6.1 cotação (PR #12) e B6.2 envio (PR #13) em `develop` |
-| B7 Pós-venda | `wip` | B7.1 avaliações em `develop` (PR #14); B7.2 disputas/devoluções em `feature/b7-2-disputes-returns` |
-| L1–L3 | `later` | Após jornada core verde |
+| B7 Pós-venda | `done` | B7.1 avaliações (PR #14) e B7.2 disputas/devoluções (PR #15) |
+| Expiração de pedidos não pagos | `done` | PR #16 (`orders:expire-unpaid`, `reservations:release-expired`, serviço `scheduler`) |
+| Release `develop → main` | `done` | PR #17 |
+| L1–L3 | `later` | Liberadas: o checklist "core pronto" do roadmap está completo |
 
 ---
 
@@ -166,98 +169,94 @@ seller edita conteúdo só em draft|rejected
 | B2.4.03 | Expor atributos no `ProductResource` | `todo` | S | |
 | B2.4.04 | Filtro público `?attr[color]=preto` | `todo` | L | joins; índices em value_* |
 | B2.4.05 | Job `ProcessProductImage` (resize/webp) | `todo` | M | queue redis; path relativo |
-| B2.4.06 | Limite MIME/size upload reforçado | `todo` | S | Form Request + config |
+| B2.4.06 | Limite MIME/size upload reforçado | `done` | S | `StoreProductImageRequest`: `jpeg,jpg,png,webp`, até 2 MB; máximo 8 imagens por produto (409) |
 | B2.4.07 | Flag `is_platform` / store platform seeder | `todo` | S | produto da plataforma |
 
 ---
 
-# B3 — Ofertas, estoque, preços (Buy Box) — `wip`
+# B3 — Ofertas, estoque, preços (Buy Box) — `done`
 
 **Objetivo:** multi-seller no mesmo produto; inventário seguro.  
-**Branch ativa:** `feature/b3-offers-inventory`  
-**Dependência:** B2 done; B4 bloqueada até B3.3 (reserve) existir.
+**Entregue em:** PR #3 (`feature/b3-offers-inventory`), expiração de reservas no PR #16.  
+**Testes:** `tests/Feature/Offer/OfferWorkflowTest.php`, `tests/Feature/Order/UnpaidOrderExpirationTest.php`.
 
-### Decisões técnicas a fixar no início da B3
+### Decisões técnicas da B3 (como ficou)
 
-| Decisão | Recomendação MVP |
-|---------|------------------|
-| Dinheiro | `price_cents` `bigint` + `currency=BRL` |
-| Estoque | `stock` int + `reserved_stock` int **ou** só `stock` + soma de `inventory_reservations` ativas — preferir **coluna `reserved_stock` denormalizada** atualizada no mesmo lock |
-| Variantes | **Adiar** `product_variants` no MVP; `offers.product_id` direto; coluna nullable `product_variant_id` reservada |
-| Unique oferta | unique `(store_id, product_id)` where not deleted |
-| Promo | `promotional_price_cents` + `promo_starts_at`/`promo_ends_at` |
+| Decisão | Planejado | Implementado |
+|---------|-----------|--------------|
+| Dinheiro na oferta | `price_cents` `bigint` | `offers.price` e `promotional_price` em **`decimal(12,2)`**. A conversão para centavos acontece no checkout (`unit_price_cents` congelado no `order_item`); de pedido em diante tudo é centavos `bigint` (ver X.1.02) |
+| Estoque | `stock` + `reserved_stock` denormalizado | Igual: `stock` e `reserved_stock` (`unsigned int`) atualizados sob `lockForUpdate()` na mesma transação; `availableStock() = max(0, stock − reserved_stock)` |
+| Variantes | adiar | Adiado: `offers.product_id` direto, sem `product_variants` |
+| Unicidade | `(store_id, product_id)` | unique `(product_id, store_id)`; segunda oferta da mesma loja → 409 |
+| Promoção | preço promocional + janela | `promotional_price` + `promo_starts_at` / `promo_ends_at`; `currentPrice()` usa a promoção só dentro da janela |
+| Reserva | `user_id`/`cart_id` + `idempotency_key` | `user_id` obrigatório + `order_id` (adicionado na B4.4); sem `cart_id` nem `idempotency_key` |
 
 ### Slice B3.1 — Schema e domínio
 
 | ID | Item | Status | Esforço | Detalhe técnico |
 |----|------|--------|---------|-----------------|
-| B3.1.01 | Migration `offers` | `wip` | M | ver colunas abaixo |
-| B3.1.02 | Migration `inventory_reservations` | `wip` | M | |
-| B3.1.03 | Enums `OfferStatus`, `ReservationStatus` | `wip` | S | |
-| B3.1.04 | Models `Offer`, `InventoryReservation` + relations | `wip` | M | `Store::offers`, `Product::offers` |
-| B3.1.05 | Factories + states | `wip` | S | active/paused, inStock |
-| B3.1.06 | Helpers: `currentPriceCents()`, `availableStock()` | `todo` | S | promo window timezone app |
+| B3.1.01 | Migration `offers` | `done` | M | `2026_10_16_160000_create_offers_and_inventory_tables.php` |
+| B3.1.02 | Migration `inventory_reservations` | `done` | M | mesma migration; `order_id` em `2026_10_16_210000_add_order_id_to_inventory_reservations.php` |
+| B3.1.03 | Enums `OfferStatus`, `ReservationStatus` | `done` | S | `active`/`paused`; `active`/`released`/`committed` |
+| B3.1.04 | Models `Offer`, `InventoryReservation` + relations | `done` | M | `Store::offers`, `Product::offers`, `Offer::reservations`, `Offer::cartItems` |
+| B3.1.05 | Factories + states | `done` | S | `OfferFactory`: `active`, `paused`, `withStock`, `priced`, `belongingToStore`, `onProduct` |
+| B3.1.06 | Helpers de preço e estoque | `done` | S | `Offer::currentPrice()` (string decimal), `hasActivePromotion()`, `availableStock()`, `isActive()` |
 
-**Schema sugerido `offers`:**
+**Schema implementado `offers`:**
 
 ```text
 id uuid PK
-store_id uuid FK stores restrict
 product_id uuid FK products restrict
-price_cents bigint not null check >= 0
-promotional_price_cents bigint nullable check >= 0
-promo_starts_at timestamptz nullable
-promo_ends_at timestamptz nullable
-stock unsigned int not null default 0
-reserved_stock unsigned int not null default 0
-status string not null default 'active'  -- active|paused
+store_id uuid FK stores restrict
+price decimal(12,2)
+promotional_price decimal(12,2) nullable
+promo_starts_at timestamp nullable
+promo_ends_at timestamp nullable
+stock unsigned int
+reserved_stock unsigned int default 0
+status string            -- active | paused
 softDeletes, timestamps
-unique (store_id, product_id)
-index (product_id, status)
-index (store_id, status)
-check (reserved_stock <= stock)
+unique (product_id, store_id)
+index (status), (product_id, status), (store_id)
 ```
 
-**Schema sugerido `inventory_reservations`:**
+**Schema implementado `inventory_reservations`:**
 
 ```text
 id uuid PK
-offer_id uuid FK offers restrict
-user_id uuid nullable FK users nullOnDelete   -- até B4 ter cart_id
-cart_id uuid nullable                         -- preenchido na B4
-quantity unsigned int not null check > 0
-status string not null  -- pending|committed|released|expired
-expires_at timestamptz not null
-idempotency_key string nullable unique
+offer_id uuid FK offers cascade
+user_id uuid FK users cascade
+order_id uuid nullable FK orders nullOnDelete   -- preenchido no checkout
+quantity unsigned int
+status string            -- active | released | committed
+expires_at timestamp     -- TTL de 15 min; só vale para reservas avulsas
 timestamps
-index (offer_id, status)
-index (expires_at)  -- job de expiração
+index (offer_id, status), (user_id, status), (order_id, status), (expires_at)
 ```
 
 ### Slice B3.2 — CRUD de ofertas (seller)
 
 | ID | Item | Status | Esforço | Detalhe |
 |----|------|--------|---------|---------|
-| B3.2.01 | `OfferService::create/update` | `todo` | L | só store active + role seller; product active; unique store+product |
-| B3.2.02 | Pause / resume oferta | `todo` | S | |
-| B3.2.03 | Ajuste de estoque (`adjustStock`) | `todo` | M | delta com lock; nunca negativo em available |
-| B3.2.04 | Soft delete oferta (só se reserved=0) | `todo` | S | 409 se há reserva |
-| B3.2.05 | Policy `OfferPolicy` | `todo` | M | |
-| B3.2.06 | Form Requests + `OfferResource` | `todo` | M | expor `current_price_cents`, `available_stock` |
-| B3.2.07 | Rotas `seller/offers` | `todo` | M | CRUD + pause/resume |
-| B3.2.08 | Admin list/pause oferta | `todo` | S | |
-| B3.2.09 | Feature tests CRUD + isolamento IDOR | `todo` | M | |
+| B3.2.01 | `OfferService::create/update` | `done` | L | seller com loja `active`; produto `active` (pode ser de outra loja); unique loja+produto → 409 |
+| B3.2.02 | Pause / resume oferta | `done` | S | `active ↔ paused`; transição inválida → 409 |
+| B3.2.03 | Ajuste de estoque | `done` | M | via `PUT/PATCH seller/offers/{id}` com `stock` absoluto; recusa valor menor que `reserved_stock` (409). Não há endpoint de delta |
+| B3.2.04 | Soft delete oferta (só se reserved=0) | `done` | S | 409 "Não é possível remover uma oferta com reservas ativas." |
+| B3.2.05 | Policy `OfferPolicy` | `done` | M | criar/editar/excluir/pausar/retomar exige ser dono e ter loja `active`; a policy já autoriza admin a ver, editar e pausar |
+| B3.2.06 | Form Requests + `OfferResource` | `done` | M | `StoreOfferRequest`, `UpdateOfferRequest`; resource expõe `current_price` e `available_stock`, e `stock`/`reserved_stock` só para dono ou admin |
+| B3.2.07 | Rotas `seller/offers` | `done` | M | index, store, show, update, pause, resume, destroy |
+| B3.2.08 | Admin list/pause oferta | `todo` | S | faltam só as rotas `admin/offers` (a policy já permite). Hoje o admin modera o **produto**: pausar o produto tira todas as ofertas da compra |
+| B3.2.09 | Feature tests CRUD + isolamento IDOR | `done` | M | `OfferWorkflowTest` |
 
-**Endpoints sugeridos:**
+**Endpoints implementados:**
 
 ```http
 GET    /api/v1/seller/offers
 POST   /api/v1/seller/offers
 GET    /api/v1/seller/offers/{offer}
-PUT    /api/v1/seller/offers/{offer}
+PUT    /api/v1/seller/offers/{offer}      # também PATCH
 POST   /api/v1/seller/offers/{offer}/pause
 POST   /api/v1/seller/offers/{offer}/resume
-PATCH  /api/v1/seller/offers/{offer}/stock   # { "delta": 5 } ou { "absolute": 20 }
 DELETE /api/v1/seller/offers/{offer}
 ```
 
@@ -265,60 +264,58 @@ DELETE /api/v1/seller/offers/{offer}
 
 | ID | Item | Status | Esforço | Detalhe |
 |----|------|--------|---------|---------|
-| B3.3.01 | `BuyBoxService::resolve(Product): ?Offer` | `todo` | M | regras ordenadas abaixo |
-| B3.3.02 | Listar ofertas elegíveis do produto | `todo` | M | store active, offer active, available>0 |
-| B3.3.03 | Enriquecer `GET /products/{slug}` com `buy_box` + `offers[]` | `todo` | M | |
-| B3.3.04 | Listagem pública: opcional `min_price_cents` (subquery/join) | `todo` | L | cuidado N+1 |
-| B3.3.05 | Testes: 2 sellers, empates preço/estoque/idade | `todo` | M | |
+| B3.3.01 | `BuyBoxService::winner(Product): ?Offer` | `done` | M | regras abaixo |
+| B3.3.02 | `BuyBoxService::eligibleOffers(Product)` | `done` | M | oferta `active`, loja `active`, `availableStock() > 0` |
+| B3.3.03 | `GET /products/{slug}` com `offers[]` + `buy_box` | `done` | M | `buy_box` vem como chave de topo, ao lado de `data` |
+| B3.3.04 | Listagem pública com "a partir de" (menor preço) | `todo` | L | não implementado; cuidado com N+1 |
+| B3.3.05 | Testes: 2 sellers, empates preço/estoque/idade | `done` | M | `test_buy_box_picks_lowest_current_price_then_stock_then_oldest` |
 
-**Algoritmo Buy Box (MVP — documentar e testar):**
+**Algoritmo Buy Box (implementado):**
 
 ```text
-candidatos = offers where
-  status=active
-  AND store.status=active
-  AND product.status=active
-  AND (stock - reserved_stock) > 0
-  AND (promotional vigente OU price)
+candidatos = ofertas do produto onde
+  status = active
+  AND loja.status = active
+  AND stock - reserved_stock > 0
+  (o produto já precisa estar active para o detalhe público existir)
 
 ordenar por:
-  1. current_price_cents ASC
-  2. available_stock DESC
+  1. currentPrice() ASC     (promoção vigente, senão price)
+  2. availableStock() DESC
   3. created_at ASC
-limite 1
+vencedora = primeira
 ```
 
 ### Slice B3.4 — Inventário (reserve / release / commit / expire)
 
 | ID | Item | Status | Esforço | Detalhe |
 |----|------|--------|---------|---------|
-| B3.4.01 | `InventoryService::reserve(offer, qty, user|cart, ttl, idemKey)` | `todo` | L | transaction + lock offer; increment reserved; create reservation |
-| B3.4.02 | `release(reservation)` | `todo` | M | decrementa reserved; status released |
-| B3.4.03 | `commit(reservation)` | `todo` | M | stock-=qty; reserved-=qty; status committed |
+| B3.4.01 | `InventoryService::reserve(offer, user, qty, ttl = 15)` | `done` | L | transação + `lockForUpdate` na oferta; incrementa `reserved_stock`; oferta pausada ou loja inativa → 409 |
+| B3.4.02 | `release(reservation)` | `done` | M | decrementa `reserved_stock`; status `released` |
+| B3.4.03 | `commit(reservation)` | `done` | M | `stock -= qty`, `reserved_stock -= qty`; status `committed` (no pagamento) |
 | B3.4.04 | Expiração agendada de reservas e pedidos não pagos | `done` | M | `reservations:release-expired` libera só reservas avulsas (sem `order_id`); reservas de pedido seguem `orders.payment_due_at` via `orders:expire-unpaid`, que cancela o pedido pelo fluxo de cancelamento. Ambos rodam a cada minuto no serviço `scheduler` do compose |
-| B3.4.05 | Endpoint interno/admin ou seller debug (opcional) | `todo` | S | MVP: só service; HTTP na B4 via cart |
-| B3.4.06 | Teste concorrência: 2 reserves no último item | `todo` | L | `Http::pool` ou parallel processes / DB locks assert |
-| B3.4.07 | Idempotência de reserve por key | `todo` | M | mesma key retorna mesma reservation |
+| B3.4.05 | Endpoint de reserva avulsa | `done` | S | `POST /offers/{offer}/reservations`, `DELETE /offers/{offer}/reservations/{reservation}` |
+| B3.4.06 | Teste concorrência: 2 reservas no último item | `done` | L | `test_concurrent_reservations_of_last_unit_allow_only_one_success` |
+| B3.4.07 | Idempotência de reserva por chave | `todo` | M | não implementado; o checkout já é idempotente por `Idempotency-Key`, o que cobre o caso principal |
+| B3.4.08 | `restock(offerId, qty)` | `done` | S | usado por reembolso/cancelamento que devolve mercadoria ao estoque |
 
-**Invariantes (assert em testes):**
+**Invariantes (garantidos sob lock):**
 
 ```text
 0 <= reserved_stock <= stock
 available = stock - reserved_stock
-commit: stock e reserved diminuem juntos
-release/expire: só reserved diminui
+commit: stock e reserved_stock diminuem juntos
+release: só reserved_stock diminui
 ```
 
 ### Slice B3.5 — Hardening B3
 
 | ID | Item | Status | Esforço | Detalhe |
 |----|------|--------|---------|---------|
-| B3.5.01 | Store suspended → ofertas inelegíveis Buy Box | `todo` | S | |
-| B3.5.02 | Product paused/rejected → ofertas ocultas | `todo` | S | |
-| B3.5.03 | Seeder multi-oferta no mesmo produto | `todo` | S | |
-| B3.5.04 | Atualizar README + roadmap status B3 | `todo` | S | |
-
-**Critério de pronto B3:** checklist do roadmap §B3 + testes de oversell.
+| B3.5.01 | Loja suspensa → ofertas fora do Buy Box e da reserva | `done` | S | `test_paused_offer_and_suspended_store_are_excluded_from_buy_box_and_reservations` |
+| B3.5.02 | Produto pausado/rejeitado → ofertas fora da compra | `done` | S | detalhe e busca públicos exigem produto `active`; carrinho e checkout recusam produto inativo (409) |
+| B3.5.03 | Seeder multi-oferta no mesmo produto | `done` | S | `smartphone-demo-128gb` tem oferta da "Loja Demo" (R$ 1.999,90, `ProductSeeder`) e da "Loja Rival Demo" (R$ 1.899,00, `OfferSeeder`), que vence o Buy Box |
+| B3.5.04 | Atualizar README + roadmap status B3 | `done` | S | atualização de documentação de 20/10/2026 |
 
 ---
 
@@ -636,36 +633,42 @@ GET    /api/v1/seller/balance                              # balance_cents, pend
 | ID | Item | Status | Esforço | Quando |
 |----|------|--------|---------|--------|
 | X.1.01 | `preventLazyLoading()` em local/testing | `todo` | S | agora |
-| X.1.02 | Padronizar dinheiro em centavos em todo o código | `todo` | M | B3 |
+| X.1.02 | Padronizar dinheiro em centavos em todo o código | `todo` | M | só falta a oferta (`decimal(12,2)`); exige migration de `offers` + ajuste de `OfferResource`, `BuyBoxService` (`bccomp`) e `CheckoutService::priceToCents` |
 | X.1.03 | Job/Command limpeza tokens Sanctum expirados | `todo` | S | qualquer |
 | X.1.04 | Health check DB/redis em `/up` estendido | `todo` | S | qualquer |
-| X.1.05 | Atualizar README com fluxo develop + matriz endpoints | `todo` | M | após B3 |
-| X.1.06 | Matriz de Policies documentada | `todo` | S | contínuo |
+| X.1.05 | Atualizar README com fluxo develop + matriz endpoints | `done` | M | README reescrito + `docs/api-referencia.md` + `docs/fluxos-e-regras.md` |
+| X.1.06 | Matriz de Policies documentada | `done` | S | seção "Autorização" de `docs/fluxos-e-regras.md` |
 | X.1.07 | Teste de regressão full suite no CI | `todo` | M | L3/agora se houver CI |
 | X.1.08 | Prazo de pagamento do pedido (`payment_due_at`) | `done` | M | Checkout define agora + `orders.unpaid_ttl_minutes` (60). Cada tentativa de pagamento só estende: Pix até a validade do QR (30 min), boleto até o fim do dia de vencimento (3 dias), cartão + TTL. Pagamento que chega depois do cancelamento é ignorado (`payment_not_pending`) |
 
 ---
 
-## Ordem de execução recomendada (pós-criação de `develop`)
+## Ordem de execução recomendada (após o core)
 
 ```text
-AGORA (outro agente):
-  B3.1 → B3.2 → B3.3 → B3.4 → B3.5
-  merge → develop
+FEITO:
+  B1 → B2 → B3 → B4 → B5 → B6 → B7
+  + expiração de pedidos não pagos (PR #16)
+  + release develop → main (PR #17)
 
-PARALELO SEGURO (este agente, se ocioso):
-  B2.4.01–07  OU  X.1.01 / X.1.05
+PRÓXIMO (qualidade, baixo risco):
+  X.1.07  CI no GitHub Actions (suíte + Pint em PR para develop/main)
+  X.1.01  preventLazyLoading em local/testing
+  X.1.03  limpeza agendada de tokens Sanctum expirados
+  X.1.04  /up checando banco e Redis
 
-EM SEGUIDA:
-  B4.1 → B4.2 → B4.3 → B4.4 → B4.5
+PENDÊNCIAS OPCIONAIS DO CORE:
+  B1.3    KYC do seller
+  B2.4    atributos valorados, filtros ?attr[...], resize em fila, flag is_platform
+  B3.2.08 rotas admin de oferta
+  B3.3.04 "a partir de R$ X" na listagem pública
+  B3.4.07 idempotência de reserva avulsa
+  X.1.02  oferta em centavos
 
-DEPOIS:
-  B5.*  (pagamento + ledger)
-  B6.*  (frete; cotação pode iniciar após B4.3)
-  B7.*  (reviews; disputa após B5+B6)
-
-SÓ ENTÃO:
-  L1 → L2 → L3
+FASES LATER (liberadas):
+  L3 (OpenAPI, seeders de demo, relatórios)  — melhor retorno para portfólio
+  L1 (verificação de e-mail, reset de senha, Google) — próxima pela ordem do roadmap
+  L2 (cupons, wishlist, notificações)
 ```
 
 ### Definition of Done por item
@@ -681,17 +684,25 @@ SÓ ENTÃO:
 
 ---
 
-## Referência rápida de arquivos atuais (B1–B2)
+## Referência rápida de arquivos
 
-| Área | Caminhos |
-|------|----------|
-| Auth | `app/Http/Controllers/AuthController.php`, `app/Services/AuthService.php` |
-| Store | `app/Services/StoreService.php`, `app/Http/Controllers/StoreController.php`, `Admin/StoreController.php` |
-| Category | `app/Services/CategoryService.php`, `CategoryController`, `Admin/CategoryController` |
-| Product | `app/Services/ProductService.php`, `Seller/ProductController`, `Admin/ProductController` |
-| Público | `ProductController`, `StoreController::show`, `PublicStoreResource` |
-| Rotas | `routes/api.php` |
-| Testes | `tests/Feature/{Auth,Store,Category,Product,Catalog}` |
+| Área | Services | Controllers | Testes (`tests/Feature/`) |
+|------|----------|-------------|---------------------------|
+| Auth | `AuthService` | `AuthController`, `UserController` | `Auth/` |
+| Loja | `StoreService` | `StoreController`, `Admin/StoreController` | `Store/` |
+| Categoria | `CategoryService` | `CategoryController`, `Admin/CategoryController` | `Category/` |
+| Produto | `ProductService` | `ProductController`, `Seller/ProductController`, `Admin/ProductController` | `Product/`, `Catalog/` |
+| Oferta / estoque | `OfferService`, `BuyBoxService`, `InventoryService` | `Seller/OfferController`, `OfferReservationController` | `Offer/` |
+| Endereço | `AddressService` | `AddressController` | `Address/` |
+| Carrinho | `CartService` | `CartController` | `Cart/` |
+| Checkout / pedido | `CheckoutService`, `OrderService`, `OrderStateMachine` | `CheckoutController`, `OrderController`, `Seller/OrderSellerController`, `Admin/OrderController` | `Checkout/`, `Order/` |
+| Pagamento | `PaymentService` + job `ProcessPaymentWebhookEvent` | `OrderPaymentController`, `PaymentWebhookController` | `Payment/` |
+| Comissão / ledger | `PlatformFeeService`, `LedgerService` | `Seller/LedgerController` | `Ledger/` |
+| Reembolso / saque | `RefundService`, `PayoutService` | `Admin/RefundController`, `Seller/PayoutController`, `Admin/PayoutController` | `Refund/`, `Payout/` |
+| Frete / envio | `ShippingQuoteService`, `FulfillmentService` | `ShippingQuoteController`, `Seller/FulfillmentController`, `Admin/FulfillmentController` | `Shipping/` |
+| Avaliação | `ProductReviewService` | `ProductReviewController` | `Review/` |
+| Pós-venda | `DisputeService`, `ReturnRequestService`, `PostSaleEligibility` | `PostSaleController`, `Seller/PostSaleController`, `Admin/PostSaleController` | `PostSale/` |
+| Agendados | `OrderService::expireUnpaid`, `InventoryService::releaseExpired` | `app/Console/Commands/*`, `routes/console.php` | `Order/UnpaidOrderExpirationTest.php` |
 
 ---
 

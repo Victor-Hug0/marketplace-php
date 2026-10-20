@@ -77,35 +77,40 @@ Enquanto essa jornada não existir com testes, **não** investir em e-mail verif
 
 ## 3. Estado atual do repositório
 
-### Fundação (pré-requisito)
+**Revisão de 20/10/2026.** O caminho crítico **B1 → B7 está completo** em `develop` e `main` (release no PR #17). A jornada mínima da seção 2 roda de ponta a ponta e está coberta por testes de feature (209 testes em 24 arquivos).
 
-- Auth Sanctum (register, login, logout, refresh) com abilities `access` / `refresh`
+### Fundação
+
+- Auth Sanctum: register, login, logout, refresh com rotação; abilities `access` (1 h) e `refresh` (30 dias)
 - User UUID + soft delete + CPF/telefone + `Password::defaults()`
-- Roles (`roles` / `role_user`) + enum `RoleName`
-- Audit log, erros JSON, cursor pagination, Redis + worker, testes de auth
-- Docker: app, postgres, redis, worker + `compose.test.yml`
-- Branch `develop` como integração; features nascem a partir dela
+- Papéis `buyer` / `seller` / `admin` (`roles`, `role_user`, middleware `role:`)
+- Audit log com morphs actor/auditable, envelope de erro JSON, paginação por cursor
+- Docker: `app`, `postgres`, `redis`, `worker` (fila) e `scheduler` (`schedule:work`) + `compose.test.yml`
+- Fluxo Git `feature/*` → `develop` → `main`
 
-### Domínio já entregue em `develop` / `main`
+### Domínio entregue
 
-| Fase | Entrega |
-|------|---------|
-| **B1** | Loja seller: solicitar / aprovar / rejeitar / suspender; role seller na aprovação; Policies + `role` middleware |
-| **B2** | Categorias + atributos; produtos + imagens + moderação; vitrine `GET /stores/{slug}`; busca pública `q`/categoria/loja |
+| Fase | Entrega | PRs |
+|------|---------|-----|
+| **B1** | Loja (`stores`, faz o papel do `seller_profile` planejado): solicitar / aprovar / rejeitar / suspender; papel `seller` concedido na aprovação e removido na rejeição/suspensão; Policies | #1 |
+| **B2** | Categorias em árvore (até 3 níveis) + atributos; produtos com moderação (`draft → pending_moderation → active`) e até 8 imagens; vitrine `GET /stores/{slug}`; busca pública por texto, categoria e loja | #1, #2 |
+| **B3** | Ofertas multi-seller por produto, preço promocional com janela, Buy Box, reservas de estoque com lock (teste de concorrência) | #3 |
+| **B4** | Endereços com CEP/UF, carrinho multi-seller, checkout atômico e idempotente (1 pedido, N subpedidos, preços congelados em centavos), FSM de pedido e subpedido, cancelamento | #4 – #8 |
+| **B5** | Pagamento mock (Pix, cartão, boleto) com webhook idempotente; comissão configurável (`platform_fee_rules`); ledger append-only; reembolso total/parcial com estorno proporcional; saque do seller | #9 – #11 |
+| **B6** | Cotação de frete simulada por subpedido (zona por CEP, peso volumétrico, tabela de faixas), congelada no checkout; envio com código de rastreio; fluxo `processing → shipped → delivered` | #12, #13 |
+| **B7** | Avaliação de item entregue com média por produto e por loja; disputa mediada pelo admin e devolução decidida pelo seller ou admin, ambas travando o saque e disparando reembolso | #14, #15 |
+| Correção | Pedidos não pagos expiram por `payment_due_at` e liberam o estoque | #16 |
 
-### Em andamento
+### O que ficou de fora do core (opcional)
 
-| Fase | Branch | Foco |
-|------|--------|------|
-| **B3** | `feature/b3-offers-inventory` | Ofertas, estoque, Buy Box, reservas |
+KYC do seller (B1.3), valores de atributo e filtros no catálogo (B2.4), rotas admin de oferta (B3.2.08), "a partir de R$ X" na listagem (B3.3.04), idempotência de reserva avulsa (B3.4.07), preço de oferta em centavos (X.1.02). Detalhes no [backlog](roadmap-backlog-tecnico.md).
 
-### Próximo após merge da B3
+### Próximos passos
 
-**B4** — carrinho, endereços, checkout idempotente, pedidos multi-seller + FSM.
+1. Qualidade: CI no GitHub Actions, `preventLazyLoading`, limpeza de tokens, health check ampliado.
+2. Fases later, agora liberadas: L3 (OpenAPI, seeders de demo) e L1 (conta).
 
-Detalhamento item a item: [`roadmap-backlog-tecnico.md`](roadmap-backlog-tecnico.md).
-
-Não reabrir fundação salvo bug bloqueante.
+Referência de endpoints: [`api-referencia.md`](api-referencia.md). Estados, regras e autorização: [`fluxos-e-regras.md`](fluxos-e-regras.md).
 
 ---
 
@@ -189,11 +194,13 @@ Sem papéis claros, qualquer user autenticado poderia criar oferta, aprovar sell
 
 #### Critérios de pronto
 
-- [ ] User novo sempre tem `buyer`
-- [ ] Seller pendente **não** cria oferta (403)
-- [ ] Admin aprova → user passa a `hasRole(seller)` e pode criar oferta
-- [ ] Buyer não acessa rotas admin
-- [ ] Feature tests de papel / isolamento
+- [x] User novo sempre tem `buyer` — `AuthenticationTest::test_user_can_register_with_valid_data`
+- [x] Seller pendente **não** cria oferta (403) — o papel `seller` só existe após a aprovação; rotas `seller/*` exigem `role:seller` (`ProductWorkflowTest::test_buyer_without_seller_role_cannot_access_seller_product_routes`)
+- [x] Admin aprova → user passa a `hasRole(seller)` e pode criar oferta — `StoreWorkflowTest::test_admin_can_approve_pending_store_and_assign_seller_role`
+- [x] Buyer não acessa rotas admin — `StoreWorkflowTest::test_buyer_cannot_access_admin_store_routes` e equivalentes em categoria, produto, pedido, saque e pós-venda
+- [x] Feature tests de papel / isolamento — `tests/Feature/Store/StoreWorkflowTest.php`
+
+**Implementação:** a entidade planejada `seller_profiles` virou `stores` (1 loja por usuário). KYC (`kyc_documents`) ficou para depois (B1.3 no backlog).
 
 #### Cuidados
 
@@ -253,10 +260,12 @@ Nesta fase o foco é **produto + categoria + mídia + moderação**. Preço/esto
 
 #### Critérios de pronto
 
-- [ ] Comprador lista/detalha produtos ativos sem auth
-- [ ] Dois sellers autenticados não editam o produto um do outro
-- [ ] Produto rejeitado/pausado some da busca
-- [ ] Seed com categorias e alguns produtos para demo
+- [x] Comprador lista/detalha produtos ativos sem auth — `PublicCatalogTest`
+- [x] Dois sellers autenticados não editam o produto um do outro — `ProductWorkflowTest::test_seller_cannot_edit_another_sellers_product`
+- [x] Produto rejeitado/pausado some da busca — `ProductWorkflowTest::test_non_active_products_are_hidden_from_public_listing`
+- [x] Seed com categorias e alguns produtos para demo — `CategorySeeder`, `ProductSeeder`
+
+**Implementação:** moderação pela opção B (`pending_moderation` → admin aprova/rejeita). Atributos valorados por produto e filtros por atributo ficaram para depois (B2.4).
 
 #### Cuidados
 
@@ -301,10 +310,12 @@ Preço no produto canônico impede multi-seller. Estoque sem reserva gera overse
 
 #### Critérios de pronto
 
-- [ ] Mesmo produto com ≥ 2 ofertas de sellers diferentes
-- [ ] Buy Box retorna oferta documentada pela regra
-- [ ] Reserva impede oversell (teste automatizado)
-- [ ] Oferta pausada não é comprável
+- [x] Mesmo produto com ≥ 2 ofertas de sellers diferentes — `OfferWorkflowTest::test_seller_can_create_offer_on_another_stores_product`, `OfferSeeder`
+- [x] Buy Box retorna oferta documentada pela regra — `OfferWorkflowTest::test_buy_box_picks_lowest_current_price_then_stock_then_oldest`
+- [x] Reserva impede oversell (teste automatizado) — `OfferWorkflowTest::test_concurrent_reservations_of_last_unit_allow_only_one_success`
+- [x] Oferta pausada não é comprável — `OfferWorkflowTest::test_paused_offer_and_suspended_store_are_excluded_from_buy_box_and_reservations`, `CartWorkflowTest::test_cannot_add_paused_offer_or_inactive_store_product`
+
+**Implementação:** sem variantes no MVP; preço da oferta em `decimal(12,2)` (centavos a partir do checkout).
 
 #### Cuidados
 
@@ -403,10 +414,12 @@ order / order_seller:
 
 #### Critérios de pronto
 
-- [ ] Checkout cria 1 order com N subpedidos quando há N sellers
-- [ ] Preço no item ≠ preço atual da offer após alteração posterior
-- [ ] FSM coberta por testes (transições válidas e inválidas)
-- [ ] Estoque reservado no checkout; liberado no cancelamento pré-pagamento
+- [x] Checkout cria 1 order com N subpedidos quando há N sellers — `CheckoutWorkflowTest::test_checkout_creates_multi_seller_order_and_clears_cart`
+- [x] Preço no item ≠ preço atual da offer após alteração posterior — `CheckoutWorkflowTest::test_checkout_snapshots_unit_price_even_if_offer_changes_later`
+- [x] FSM coberta por testes (transições válidas e inválidas) — `OrderWorkflowTest::test_order_state_machine_matrix`
+- [x] Estoque reservado no checkout; liberado no cancelamento pré-pagamento — `OrderWorkflowTest::test_buyer_cancels_pending_payment_order_and_releases_reservations`; expiração automática em `UnpaidOrderExpirationTest`
+
+**Implementação:** idempotência pelo header `Idempotency-Key` (unique por comprador). O comprador cancela só em `pending_payment`; o seller cancela o próprio subpedido até `processing` (com reembolso automático se já pago). Pedido não pago é cancelado ao vencer `payment_due_at`.
 
 #### Cuidados
 
@@ -460,11 +473,13 @@ Sem ledger, “saldo do seller” vira número editável e inconsistente. Sem id
 
 #### Critérios de pronto
 
-- [ ] Fluxo pending_payment → paid via webhook mock
-- [ ] Webhook duplicado é no-op seguro
-- [ ] Comissão e créditos batem com o total do pedido
-- [ ] Reembolso reflete no ledger
-- [ ] Feature tests dos 3 métodos mock
+- [x] Fluxo pending_payment → paid via webhook mock — `PaymentWorkflowTest::test_paid_webhook_marks_order_paid_and_commits_stock`
+- [x] Webhook duplicado é no-op seguro — `PaymentWorkflowTest::test_duplicate_webhook_is_a_safe_no_op`, `LedgerWorkflowTest::test_duplicate_or_repeated_paid_webhooks_do_not_duplicate_entries`
+- [x] Comissão e créditos batem com o total do pedido — `LedgerWorkflowTest::test_paid_order_credits_each_seller_and_platform_with_default_commission`, `PayoutWorkflowTest::test_financial_totals_reconcile_across_sales_refunds_and_payouts`
+- [x] Reembolso reflete no ledger — `RefundWorkflowTest::test_admin_partial_refund_reverses_ledger_proportionally_without_restock`
+- [x] Feature tests dos 3 métodos mock — `PaymentWorkflowTest::test_buyer_creates_mock_payment_intent` (data provider Pix, cartão, boleto)
+
+**Implementação:** comissão de 10% (1000 bps) por padrão, calculada só sobre o subtotal de itens; o frete vai inteiro para o seller. Ledger append-only: UPDATE e DELETE bloqueados no model e por trigger no Postgres.
 
 #### Cuidados
 
@@ -495,9 +510,11 @@ Integridade financeira, autorização de webhook, não vazar dados de pagamento.
 
 #### Critérios de pronto
 
-- [ ] Checkout persiste frete por subpedido
-- [ ] Buyer e seller veem tracking
-- [ ] Cotação determinística em testes com fixtures
+- [x] Checkout persiste frete por subpedido — `ShippingQuoteTest::test_checkout_freezes_shipping_per_sub_order`
+- [x] Buyer e seller veem tracking — `ShipmentWorkflowTest::test_buyer_and_seller_see_tracking`
+- [x] Cotação determinística em testes com fixtures — `ShippingQuoteTest` (seeder `ShippingRateRuleSeeder`)
+
+**Implementação:** zona pelo prefixo do CEP (`local` / `regional` / `national`); peso cobrado = maior entre real e volumétrico (÷ 6000). O pedido pai acompanha o subpedido mais atrasado. A entrega é confirmada pelo seller ou admin.
 
 #### Cuidados
 
@@ -531,9 +548,11 @@ Não misturar frete de sellers no mesmo cálculo cego; sempre por `order_seller`
 
 #### Critérios de pronto
 
-- [ ] Review pós-entrega funciona
-- [ ] Disputa altera/bloqueia fluxo financeiro conforme regra documentada
-- [ ] Devolução aprovada gera reembolso testado
+- [x] Review pós-entrega funciona — `ProductReviewTest::test_buyer_reviews_a_delivered_item`
+- [x] Disputa altera/bloqueia fluxo financeiro conforme regra documentada — `DisputeWorkflowTest::test_open_dispute_holds_the_sub_order_balance`, `test_seller_responds_and_admin_refunds_the_buyer`
+- [x] Devolução aprovada gera reembolso testado — `ReturnRequestWorkflowTest::test_seller_approves_full_return_and_buyer_is_refunded`
+
+**Implementação:** janela de 7 dias após a entrega; uma disputa e uma devolução por subpedido, nunca simultâneas; o saldo do subpedido fica em `held_cents` até a decisão. Sem reposição automática de estoque na devolução.
 
 ---
 
@@ -606,14 +625,16 @@ Só começar com a jornada B1→B6 (e B7 mínimo) **verde**.
 
 ## 10. Checklist “core pronto” (definição de pronto do produto)
 
-- [ ] Buyer compra de 2 sellers no mesmo checkout  
-- [ ] Preços históricos corretos após mudar oferta  
-- [ ] Oversell impossível sob concorrência  
-- [ ] Webhook mock paga uma vez só  
-- [ ] Comissão e saldo seller batem com o ledger  
-- [ ] Frete congelado e tracking por subpedido  
-- [ ] Seller pendente não vende; admin opera com Policy  
-- [ ] Feature tests cobrem o caminho feliz + principais 403/409  
+- [x] Buyer compra de 2 sellers no mesmo checkout — `CheckoutWorkflowTest::test_checkout_creates_multi_seller_order_and_clears_cart`
+- [x] Preços históricos corretos após mudar oferta — `CheckoutWorkflowTest::test_checkout_snapshots_unit_price_even_if_offer_changes_later`
+- [x] Oversell impossível sob concorrência — `OfferWorkflowTest::test_concurrent_reservations_of_last_unit_allow_only_one_success`, `UnpaidOrderExpirationTest::test_reservation_sweep_skips_order_reservations`
+- [x] Webhook mock paga uma vez só — `PaymentWorkflowTest::test_duplicate_webhook_is_a_safe_no_op`
+- [x] Comissão e saldo seller batem com o ledger — `PayoutWorkflowTest::test_financial_totals_reconcile_across_sales_refunds_and_payouts`
+- [x] Frete congelado e tracking por subpedido — `ShippingQuoteTest::test_checkout_freezes_shipping_per_sub_order`, `ShipmentWorkflowTest::test_buyer_and_seller_see_tracking`
+- [x] Seller pendente não vende; admin opera com Policy — `StoreWorkflowTest`, `ProductWorkflowTest::test_buyer_cannot_access_admin_product_routes`
+- [x] Feature tests cobrem o caminho feliz + principais 403/409 — 209 testes em `tests/Feature`
+
+**Status (20/10/2026): core pronto.**
 
 Quando isso estiver marcado, o marketplace **prova o negócio**. Aí sim vale polir conta (L1) e crescimento (L2/L3).
 
@@ -623,14 +644,14 @@ Quando isso estiver marcado, o marketplace **prova o negócio**. Aí sim vale po
 
 | Área | Caminho |
 |------|---------|
+| Referência de endpoints | [`api-referencia.md`](api-referencia.md) |
+| Estados, regras e autorização | [`fluxos-e-regras.md`](fluxos-e-regras.md) |
 | Backlog técnico | [`roadmap-backlog-tecnico.md`](roadmap-backlog-tecnico.md) |
-| Rotas | [`routes/api.php`](../routes/api.php) |
-| Auth | [`app/Http/Controllers/AuthController.php`](../app/Http/Controllers/AuthController.php) |
-| Store | [`app/Services/StoreService.php`](../app/Services/StoreService.php) |
-| Category | [`app/Services/CategoryService.php`](../app/Services/CategoryService.php) |
-| Product | [`app/Services/ProductService.php`](../app/Services/ProductService.php) |
-| Roles | [`app/Models/Role.php`](../app/Models/Role.php), [`app/Enums/RoleName.php`](../app/Enums/RoleName.php) |
-| User | [`app/Models/User.php`](../app/Models/User.php) |
+| Rotas | [`routes/api.php`](../routes/api.php), agendamentos em [`routes/console.php`](../routes/console.php) |
+| Regras de negócio | [`app/Services/`](../app/Services) (um service por contexto: loja, produto, oferta, checkout, pedido, pagamento, ledger, frete, pós-venda) |
+| Máquina de estados do pedido | [`app/Services/OrderStateMachine.php`](../app/Services/OrderStateMachine.php) |
+| Autorização | [`app/Policies/`](../app/Policies), [`app/Http/Middleware/EnsureUserHasRole.php`](../app/Http/Middleware/EnsureUserHasRole.php) |
+| Configuração de domínio | [`config/payments.php`](../config/payments.php), [`config/shipping.php`](../config/shipping.php), [`config/orders.php`](../config/orders.php), [`config/post_sale.php`](../config/post_sale.php) |
 | Docker | [`compose.yml`](../compose.yml), [`compose.test.yml`](../compose.test.yml) |
 | README | [`README.md`](../README.md) |
 | Rules | [`.cursor/rules/laravel-backend.mdc`](../.cursor/rules/laravel-backend.mdc) |
