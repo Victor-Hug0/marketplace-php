@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\DisputeStatus;
 use App\Enums\LedgerAccountType;
 use App\Enums\LedgerEntryReason;
 use App\Enums\OrderSellerStatus;
 use App\Enums\PayoutStatus;
+use App\Enums\ReturnRequestStatus;
 use App\Models\LedgerEntry;
 use App\Models\Order;
 use App\Models\OrderSeller;
@@ -178,11 +180,36 @@ final class LedgerService
     }
 
     /**
-     * Ledger balance minus payouts still awaiting settlement.
+     * Ledger balance minus payouts still awaiting settlement and the money of
+     * sub-orders under an open dispute or a pending return.
      */
     public function availableBalanceCents(Store $store): int
     {
-        return $this->sellerBalanceCents($store) - $this->pendingPayoutCents($store);
+        return $this->sellerBalanceCents($store)
+            - $this->pendingPayoutCents($store)
+            - $this->heldBalanceCents($store);
+    }
+
+    public function heldBalanceCents(Store $store): int
+    {
+        $heldOrderSellerIds = OrderSeller::query()
+            ->where('store_id', $store->id)
+            ->where(static fn (Builder $query): Builder => $query
+                ->whereHas('dispute', static fn (Builder $dispute): Builder => $dispute
+                    ->where('status', DisputeStatus::OPEN))
+                ->orWhereHas('returnRequest', static fn (Builder $return): Builder => $return
+                    ->where('status', ReturnRequestStatus::REQUESTED)))
+            ->pluck('id');
+
+        if ($heldOrderSellerIds->isEmpty()) {
+            return 0;
+        }
+
+        return max(0, (int) LedgerEntry::query()
+            ->where('account_type', LedgerAccountType::SELLER)
+            ->where('store_id', $store->id)
+            ->whereIn('order_seller_id', $heldOrderSellerIds)
+            ->sum('amount_cents'));
     }
 
     public function pendingPayoutCents(Store $store): int

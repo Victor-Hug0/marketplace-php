@@ -70,6 +70,21 @@ trait BuildsPaidOrders
         return Order::query()->findOrFail($orderId);
     }
 
+    protected function deliveredSubOrder(User $buyer, Offer $offer): OrderSeller
+    {
+        $subOrder = $this->subOrderOf($this->paidOrder($buyer, [$offer->id => 1]), $offer);
+        $sellerToken = $this->accessToken($this->sellerOf($offer->store));
+
+        $this->api($sellerToken)
+            ->postJson("/api/v1/seller/order-sellers/{$subOrder->id}/shipments")
+            ->assertCreated();
+        $this->api($sellerToken)
+            ->postJson("/api/v1/seller/order-sellers/{$subOrder->id}/deliver")
+            ->assertOk();
+
+        return $subOrder->fresh();
+    }
+
     protected function paymentOf(Order $order): Payment
     {
         return Payment::query()->where('order_id', $order->id)->latest()->firstOrFail();

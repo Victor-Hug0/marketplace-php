@@ -33,7 +33,10 @@ final class OrderStateMachine
             OrderStatus::SHIPPED->value => [
                 OrderStatus::DELIVERED->value,
             ],
-            OrderStatus::DELIVERED->value => [],
+            // Post-delivery returns and disputes can still refund the order.
+            OrderStatus::DELIVERED->value => [
+                OrderStatus::REFUNDED->value,
+            ],
             OrderStatus::CANCELLED->value => [],
             OrderStatus::REFUNDED->value => [],
         ];
@@ -62,7 +65,9 @@ final class OrderStateMachine
             OrderSellerStatus::SHIPPED->value => [
                 OrderSellerStatus::DELIVERED->value,
             ],
-            OrderSellerStatus::DELIVERED->value => [],
+            OrderSellerStatus::DELIVERED->value => [
+                OrderSellerStatus::REFUNDED->value,
+            ],
             OrderSellerStatus::CANCELLED->value => [],
             OrderSellerStatus::REFUNDED->value => [],
         ];

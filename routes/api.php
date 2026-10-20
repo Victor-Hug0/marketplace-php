@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\FulfillmentController as AdminFulfillmentController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PayoutController as AdminPayoutController;
+use App\Http\Controllers\Admin\PostSaleController as AdminPostSaleController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\RefundController as AdminRefundController;
 use App\Http\Controllers\Admin\StoreController as AdminStoreController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\OfferReservationController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderPaymentController;
 use App\Http\Controllers\PaymentWebhookController;
+use App\Http\Controllers\PostSaleController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\Seller\FulfillmentController as SellerFulfillmentController;
@@ -23,6 +25,7 @@ use App\Http\Controllers\Seller\LedgerController as SellerLedgerController;
 use App\Http\Controllers\Seller\OfferController as SellerOfferController;
 use App\Http\Controllers\Seller\OrderSellerController as SellerOrderSellerController;
 use App\Http\Controllers\Seller\PayoutController as SellerPayoutController;
+use App\Http\Controllers\Seller\PostSaleController as SellerPostSaleController;
 use App\Http\Controllers\Seller\ProductController as SellerProductController;
 use App\Http\Controllers\ShippingQuoteController;
 use App\Http\Controllers\StoreController;
@@ -104,6 +107,13 @@ Route::prefix('v1')->group(function () {
         Route::get('{slug}/reviews', [ProductReviewController::class, 'index']);
     });
 
+    Route::prefix('order-sellers')
+        ->middleware(['auth:sanctum', 'abilities:access', 'throttle:20,1'])
+        ->group(function () {
+            Route::post('{orderSeller}/disputes', [PostSaleController::class, 'openDispute']);
+            Route::post('{orderSeller}/returns', [PostSaleController::class, 'requestReturn']);
+        });
+
     Route::post('order-items/{orderItem}/reviews', [ProductReviewController::class, 'store'])
         ->middleware(['auth:sanctum', 'abilities:access', 'throttle:20,1']);
 
@@ -155,6 +165,11 @@ Route::prefix('v1')->group(function () {
             Route::get('ledger-entries', [SellerLedgerController::class, 'entries']);
             Route::get('payouts', [SellerPayoutController::class, 'index']);
             Route::post('payouts', [SellerPayoutController::class, 'store'])->middleware('throttle:10,1');
+            Route::get('disputes', [SellerPostSaleController::class, 'disputes']);
+            Route::post('disputes/{dispute}/respond', [SellerPostSaleController::class, 'respondDispute']);
+            Route::get('returns', [SellerPostSaleController::class, 'returns']);
+            Route::post('returns/{returnRequest}/approve', [SellerPostSaleController::class, 'approveReturn']);
+            Route::post('returns/{returnRequest}/reject', [SellerPostSaleController::class, 'rejectReturn']);
         });
 
     Route::prefix('offers')
@@ -210,6 +225,16 @@ Route::prefix('v1')->group(function () {
         ->group(function () {
             Route::post('{orderSeller}/refunds', [AdminRefundController::class, 'store']);
             Route::post('{orderSeller}/deliver', [AdminFulfillmentController::class, 'markDelivered']);
+        });
+
+    Route::prefix('admin')
+        ->middleware(['auth:sanctum', 'abilities:access', 'role:admin'])
+        ->group(function () {
+            Route::get('disputes', [AdminPostSaleController::class, 'disputes']);
+            Route::post('disputes/{dispute}/resolve', [AdminPostSaleController::class, 'resolveDispute']);
+            Route::get('returns', [AdminPostSaleController::class, 'returns']);
+            Route::post('returns/{returnRequest}/approve', [AdminPostSaleController::class, 'approveReturn']);
+            Route::post('returns/{returnRequest}/reject', [AdminPostSaleController::class, 'rejectReturn']);
         });
 
     Route::prefix('admin/payouts')
