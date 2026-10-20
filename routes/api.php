@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\FulfillmentController as AdminFulfillmentController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PayoutController as AdminPayoutController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderPaymentController;
 use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Seller\FulfillmentController as SellerFulfillmentController;
 use App\Http\Controllers\Seller\LedgerController as SellerLedgerController;
 use App\Http\Controllers\Seller\OfferController as SellerOfferController;
 use App\Http\Controllers\Seller\OrderSellerController as SellerOrderSellerController;
@@ -136,6 +138,9 @@ Route::prefix('v1')->group(function () {
             Route::get('/', [SellerOrderSellerController::class, 'index']);
             Route::get('{orderSeller}', [SellerOrderSellerController::class, 'show']);
             Route::post('{orderSeller}/cancel', [SellerOrderSellerController::class, 'cancel']);
+            Route::post('{orderSeller}/processing', [SellerFulfillmentController::class, 'startProcessing']);
+            Route::post('{orderSeller}/shipments', [SellerFulfillmentController::class, 'ship']);
+            Route::post('{orderSeller}/deliver', [SellerFulfillmentController::class, 'markDelivered']);
         });
 
     Route::prefix('seller')
@@ -199,6 +204,7 @@ Route::prefix('v1')->group(function () {
         ->middleware(['auth:sanctum', 'abilities:access', 'role:admin'])
         ->group(function () {
             Route::post('{orderSeller}/refunds', [AdminRefundController::class, 'store']);
+            Route::post('{orderSeller}/deliver', [AdminFulfillmentController::class, 'markDelivered']);
         });
 
     Route::prefix('admin/payouts')

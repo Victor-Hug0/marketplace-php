@@ -36,6 +36,7 @@ final class OrderService
             ->with([
                 'sellers.store:id,store_name,slug,status,user_id',
                 'sellers.items',
+                'sellers.shipment',
             ]);
     }
 
@@ -45,6 +46,7 @@ final class OrderService
             'buyer:id,name,email',
             'sellers.store:id,store_name,slug,status,user_id',
             'sellers.items',
+            'sellers.shipment',
         ]);
     }
 
@@ -55,6 +57,7 @@ final class OrderService
             ->with([
                 'store:id,store_name,slug,status,user_id',
                 'items',
+                'shipment',
                 'order:id,buyer_id,status,currency,subtotal_cents,shipping_cents,total_cents,created_at',
             ]);
     }
@@ -65,6 +68,7 @@ final class OrderService
             'sellers.store:id,store_name,slug,status,user_id',
             'sellers.items',
             'sellers.refunds',
+            'sellers.shipment',
             'statusHistories',
             'sellers.statusHistories',
         ]);
@@ -76,6 +80,7 @@ final class OrderService
             'store:id,store_name,slug,status,user_id',
             'items',
             'refunds',
+            'shipment',
             'statusHistories',
             'order:id,buyer_id,status,currency,subtotal_cents,shipping_cents,total_cents,created_at',
         ]);

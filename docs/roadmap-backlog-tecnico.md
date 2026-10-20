@@ -47,7 +47,7 @@ Documento derivado de [`roadmap-implementacao-api.md`](roadmap-implementacao-api
 | B3 Ofertas / estoque / Buy Box | `done` | Em `develop` (PR #3) |
 | B4 Carrinho / checkout / pedidos | `done` | B4.1–B4.5 em `develop` |
 | B5 Pagamento / ledger | `done` | B5.1–B5.3 em `develop` (PRs #9–#11) |
-| B6 Frete / envio | `wip` | B6.1 cotação em `feature/b6-1-shipping-quotes`; B6.2 envio pendente |
+| B6 Frete / envio | `wip` | B6.1 cotação em `develop` (PR #12); B6.2 envio em `feature/b6-2-shipments` |
 | B7 Pós-venda | `todo` | Depende B5+B6 |
 | L1–L3 | `later` | Após jornada core verde |
 
@@ -517,6 +517,9 @@ GET    /api/v1/seller/balance                              # balance_cents, pend
 | Destino do frete no ledger | O frete vai **inteiro para o seller**, sem comissão: o ledger calcula a comissão só sobre o subtotal de itens e credita ao seller o `total_cents` do subpedido (itens + frete) |
 | Falta de regra de frete | **Não** existe "sem regra = frete grátis" em produção, porque isso esconderia uma configuração faltando. Sem regra que atenda, o checkout retorna 409 |
 | Testes que não são sobre frete | Suítes de checkout, pedidos, pagamentos, ledger, reembolsos e saques chamam `ConfiguresShipping::useFreeShipping()`, que cria regras de preço zero, para manter os totais esperados iguais ao subtotal |
+| Status do pedido pai durante o envio | O pedido acompanha o **subpedido mais atrasado** entre os ativos: só vira `shipped` quando todos os sellers enviaram e `delivered` quando todos entregaram. Subpedidos cancelados ou reembolsados não seguram o pedido. As transições passam por cada etapa (`paid → processing → shipped → delivered`) e ficam no histórico |
+| Envio direto de `paid` | O seller pode enviar sem chamar "em separação" antes; o sistema registra `processing` e `shipped` em sequência |
+| Quem confirma a entrega | O seller do subpedido ou um admin (não há transportadora real para confirmar) |
 
 ### Slice B6.1 — Cotação
 
@@ -533,11 +536,11 @@ GET    /api/v1/seller/balance                              # balance_cents, pend
 
 | ID | Item | Status | Esforço | Detalhe |
 |----|------|--------|---------|---------|
-| B6.2.01 | Migration `shipments` | `todo` | M | order_seller_id, tracking_code, status, carrier=simulated |
-| B6.2.02 | Seller cria shipment pós-paid → FSM shipped | `todo` | M | |
-| B6.2.03 | Atualizar delivered (seller/admin/job fake) | `todo` | M | |
-| B6.2.04 | Buyer/seller veem tracking | `todo` | S | |
-| B6.2.05 | Feature tests | `todo` | M | |
+| B6.2.01 | Migration `shipments` | `done` | M | 1 por subpedido (unique `order_seller_id`), `tracking_code` unique `SM#########BR`, carrier `simulated`, status `in_transit`/`delivered`, `shipped_at`, `estimated_delivery_at` (= envio + prazo cotado), `delivered_at` |
+| B6.2.02 | Seller em separação e envio pós-paid → FSM shipped | `done` | M | `POST seller/order-sellers/{id}/processing` e `/shipments` (201); `FulfillmentService` |
+| B6.2.03 | Marcar entregue (seller/admin) | `done` | M | `POST seller/order-sellers/{id}/deliver` e `POST admin/order-sellers/{id}/deliver`; job de entrega automática fica para depois |
+| B6.2.04 | Buyer/seller veem tracking | `done` | S | bloco `shipment` em `OrderSellerResource` (pedido do buyer, lista e detalhe do seller) |
+| B6.2.05 | Feature tests | `done` | M | `tests/Feature/Shipping/ShipmentWorkflowTest.php` |
 
 ---
 

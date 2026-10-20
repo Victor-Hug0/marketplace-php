@@ -27,6 +27,7 @@ final class OrderSellerResource extends JsonResource
                 'eta_days' => $this->shipping_eta_days,
                 'quoted_at' => $this->shipping_quoted_at?->timezone(config('app.timezone'))->toIso8601String(),
             ],
+            'shipment' => new ShipmentResource($this->whenLoaded('shipment')),
             'store' => $this->whenLoaded('store', fn () => [
                 'id' => $this->store->id,
                 'store_name' => $this->store->store_name,
