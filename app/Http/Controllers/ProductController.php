@@ -60,6 +60,8 @@ final class ProductController extends Controller
                 'store:id,store_name,slug,status',
                 'category:id,name,slug',
             ])
+            ->withCount('reviews')
+            ->withAvg('reviews', 'rating')
             ->firstOrFail();
 
         $eligibleOffers = $this->buyBoxService->eligibleOffers($product);

@@ -17,6 +17,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderPaymentController;
 use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\Seller\FulfillmentController as SellerFulfillmentController;
 use App\Http\Controllers\Seller\LedgerController as SellerLedgerController;
 use App\Http\Controllers\Seller\OfferController as SellerOfferController;
@@ -100,7 +101,11 @@ Route::prefix('v1')->group(function () {
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductController::class, 'index']);
         Route::get('{slug}', [ProductController::class, 'show']);
+        Route::get('{slug}/reviews', [ProductReviewController::class, 'index']);
     });
+
+    Route::post('order-items/{orderItem}/reviews', [ProductReviewController::class, 'store'])
+        ->middleware(['auth:sanctum', 'abilities:access', 'throttle:20,1']);
 
     Route::prefix('seller/products')
         ->middleware(['auth:sanctum', 'abilities:access', 'role:seller'])

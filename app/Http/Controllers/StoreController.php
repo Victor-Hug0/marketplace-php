@@ -55,6 +55,8 @@ final class StoreController extends Controller
         $store = Store::query()
             ->where('slug', $slug)
             ->where('status', StoreStatus::ACTIVE)
+            ->withCount('productReviews')
+            ->withAvg('productReviews', 'rating')
             ->firstOrFail();
 
         $products = $this->cursorPaginate(
