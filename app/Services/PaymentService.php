@@ -15,6 +15,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PaymentWebhookEvent;
 use App\Models\User;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -97,6 +98,11 @@ final class PaymentService
             }
 
             $externalId = 'mock_pay_'.Str::lower((string) Str::ulid());
+            $deadline = $this->paymentDeadline($method);
+
+            if ($order->payment_due_at === null || $deadline->greaterThan($order->payment_due_at)) {
+                $order->update(['payment_due_at' => $deadline]);
+            }
 
             $payment = Payment::query()->create([
                 'order_id' => $order->id,
@@ -107,7 +113,7 @@ final class PaymentService
                 'idempotency_key' => $idempotencyKey,
                 'currency' => $order->currency,
                 'amount_cents' => $amountCents,
-                'payload' => $this->mockInstructions($method, $externalId),
+                'payload' => $this->mockInstructions($method, $externalId, $deadline),
             ]);
 
             $this->audit($buyer, $order, 'payment.intent_created', [
@@ -242,25 +248,33 @@ final class PaymentService
      *
      * @return array<string, string>
      */
-    private function mockInstructions(PaymentMethod $method, string $externalId): array
+    private function mockInstructions(PaymentMethod $method, string $externalId, CarbonInterface $deadline): array
     {
         return match ($method) {
             PaymentMethod::PIX => [
                 'qr_code_text' => '00020126580014br.gov.bcb.pix0136'.$externalId.'5204000053039865802BR6304MOCK',
-                'expires_at' => now()
-                    ->addMinutes((int) config('payments.mock.pix_ttl_minutes'))
-                    ->toIso8601String(),
+                'expires_at' => $deadline->toIso8601String(),
             ],
             PaymentMethod::BOLETO => [
                 'digitable_line' => $this->randomDigits(47),
                 'barcode' => $this->randomDigits(44),
-                'due_date' => now()
-                    ->addDays((int) config('payments.mock.boleto_due_days'))
-                    ->toDateString(),
+                'due_date' => $deadline->toDateString(),
             ],
             PaymentMethod::CREDIT_CARD => [
                 'checkout_url' => rtrim((string) config('payments.mock.checkout_base_url'), '/').'/'.$externalId,
             ],
+        };
+    }
+
+    /**
+     * Until when the order keeps its stock reserved for this payment attempt.
+     */
+    private function paymentDeadline(PaymentMethod $method): CarbonInterface
+    {
+        return match ($method) {
+            PaymentMethod::PIX => now()->addMinutes((int) config('payments.mock.pix_ttl_minutes')),
+            PaymentMethod::BOLETO => now()->addDays((int) config('payments.mock.boleto_due_days'))->endOfDay(),
+            PaymentMethod::CREDIT_CARD => now()->addMinutes((int) config('orders.unpaid_ttl_minutes')),
         };
     }
 

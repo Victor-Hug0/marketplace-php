@@ -128,10 +128,16 @@ final class InventoryService
         ]);
     }
 
+    /**
+     * Releases standalone reservations past their TTL. Reservations that belong
+     * to an order follow the order's payment deadline instead, otherwise a late
+     * payment would find no reserved stock to commit.
+     */
     public function releaseExpired(): int
     {
         $expiredIds = InventoryReservation::query()
             ->where('status', ReservationStatus::ACTIVE)
+            ->whereNull('order_id')
             ->where('expires_at', '<', now())
             ->pluck('id');
 
@@ -143,8 +149,12 @@ final class InventoryService
                 continue;
             }
 
-            $this->release($reservation);
-            $released++;
+            try {
+                $this->release($reservation);
+                $released++;
+            } catch (ConflictHttpException) {
+                // Released by someone else between the read and the lock.
+            }
         }
 
         return $released;

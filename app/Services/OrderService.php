@@ -105,38 +105,48 @@ final class OrderService
                 );
             }
 
-            $this->transitionOrder(
-                $order,
-                OrderStatus::CANCELLED,
-                $buyer,
-                $reason ?? 'Cancelado pelo comprador.',
-            );
-
-            $sellers = OrderSeller::query()
-                ->where('order_id', $order->id)
-                ->lockForUpdate()
-                ->get();
-
-            foreach ($sellers as $seller) {
-                if ($seller->status === OrderSellerStatus::CANCELLED) {
-                    continue;
-                }
-
-                $this->transitionOrderSeller(
-                    $seller,
-                    OrderSellerStatus::CANCELLED,
-                    $buyer,
-                    $reason ?? 'Cancelado pelo comprador.',
-                );
-            }
-
-            $this->releaseOrderReservations($order);
-            $this->cancelPendingPayments($order);
+            $this->cancelUnpaidOrder($order, $buyer, $reason ?? 'Cancelado pelo comprador.');
             $this->audit($buyer, $order, 'order.cancelled_by_buyer', [
                 'reason' => $reason,
             ]);
 
             return $this->loadOrder($order->refresh());
+        });
+    }
+
+    /**
+     * @return Builder<Order>
+     */
+    public function overdueUnpaidOrdersQuery(): Builder
+    {
+        return Order::query()
+            ->where('status', OrderStatus::PENDING_PAYMENT)
+            ->where('payment_due_at', '<', now());
+    }
+
+    /**
+     * Cancels an order whose payment deadline passed, releasing its stock.
+     * Returns false when the order was paid or cancelled in the meantime.
+     */
+    public function expireUnpaid(Order $order): bool
+    {
+        return DB::transaction(function () use ($order): bool {
+            $order = Order::query()->lockForUpdate()->findOrFail($order->id);
+
+            if (
+                $order->status !== OrderStatus::PENDING_PAYMENT
+                || $order->payment_due_at === null
+                || $order->payment_due_at->isFuture()
+            ) {
+                return false;
+            }
+
+            $this->cancelUnpaidOrder($order, null, 'Prazo de pagamento expirado.');
+            $this->audit(null, $order, 'order.expired_unpaid', [
+                'payment_due_at' => $order->payment_due_at->toIso8601String(),
+            ]);
+
+            return true;
         });
     }
 
@@ -362,6 +372,30 @@ final class OrderService
         return $orderSeller;
     }
 
+    /**
+     * Caller must hold a lock on the order row inside a transaction.
+     */
+    private function cancelUnpaidOrder(Order $order, ?User $actor, string $reason): void
+    {
+        $this->transitionOrder($order, OrderStatus::CANCELLED, $actor, $reason);
+
+        $sellers = OrderSeller::query()
+            ->where('order_id', $order->id)
+            ->lockForUpdate()
+            ->get();
+
+        foreach ($sellers as $seller) {
+            if ($seller->status === OrderSellerStatus::CANCELLED) {
+                continue;
+            }
+
+            $this->transitionOrderSeller($seller, OrderSellerStatus::CANCELLED, $actor, $reason);
+        }
+
+        $this->releaseOrderReservations($order);
+        $this->cancelPendingPayments($order);
+    }
+
     private function releaseOrderReservations(Order $order): void
     {
         $reservations = InventoryReservation::query()
@@ -478,12 +512,12 @@ final class OrderService
     /**
      * @param  array<string, mixed>  $payload
      */
-    private function audit(User $actor, Order $order, string $action, array $payload = []): void
+    private function audit(?User $actor, Order $order, string $action, array $payload = []): void
     {
         AuditLog::query()->create([
             'action' => $action,
-            'actor_id' => $actor->id,
-            'actor_type' => $actor->getMorphClass(),
+            'actor_id' => $actor?->id,
+            'actor_type' => $actor?->getMorphClass(),
             'auditable_id' => $order->id,
             'auditable_type' => $order->getMorphClass(),
             'payload' => $payload,
