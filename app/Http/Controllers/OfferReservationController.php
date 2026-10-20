@@ -11,15 +11,20 @@ use App\Models\Offer;
 use App\Services\InventoryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Knuckles\Scribe\Attributes as Doc;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+#[Doc\Group('Ofertas e reservas')]
 final class OfferReservationController extends Controller
 {
     public function __construct(
         private readonly InventoryService $inventoryService,
     ) {}
 
+    #[Doc\Subgroup('Comprador')]
+    #[Doc\Endpoint('Reservar estoque', 'Reserva avulsa por 15 minutos, sob lock na oferta. Oferta pausada, loja inativa ou estoque insuficiente: 409.')]
+    #[Doc\ResponseFromApiResource(InventoryReservationResource::class, InventoryReservation::class, status: 201)]
     public function store(StoreReservationRequest $request, Offer $offer): JsonResponse
     {
         $reservation = $this->inventoryService->reserve(
@@ -34,6 +39,9 @@ final class OfferReservationController extends Controller
             ->setStatusCode(201);
     }
 
+    #[Doc\Subgroup('Comprador')]
+    #[Doc\Endpoint('Liberar reserva')]
+    #[Doc\Response('', status: 204)]
     public function destroy(
         Request $request,
         Offer $offer,

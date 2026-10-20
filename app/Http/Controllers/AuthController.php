@@ -13,13 +13,19 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
+use Knuckles\Scribe\Attributes as Doc;
 
+#[Doc\Group('Autenticação')]
 class AuthController extends Controller
 {
     public function __construct(
         private readonly AuthService $authService
     ) {}
 
+    #[Doc\Endpoint('Entrar', 'Devolve `access_token` (1 hora) e `refresh_token` (30 dias) e invalida os pares anteriores do usuário. 10 falhas por IP bloqueiam o login por 60 segundos (429).')]
+    #[Doc\Unauthenticated]
+    #[Doc\Response('{"message":"Login realizado com sucesso","user":{"id":"01a14513-4821-7084-bb71-dbc2e1d84d94","name":"Maria Compradora","email":"maria@exemplo.com"},"access_token":"1|aBcD...","refresh_token":"2|eFgH..."}', status: 200)]
+    #[Doc\Response('{"message":"Credenciais inválidas","timestamp":"2026-10-20T10:00:00-03:00","errors":[]}', status: 401)]
     public function login(LoginRequest $request): JsonResponse
     {
         $credentials = $request->validated();
@@ -59,6 +65,9 @@ class AuthController extends Controller
         ]);
     }
 
+    #[Doc\Endpoint('Cadastrar comprador', 'Cria o usuário com o papel `buyer`. Senha com 8 a 64 caracteres, maiúscula, minúscula, número e símbolo. Limite de 10 tentativas por IP e e-mail.')]
+    #[Doc\Unauthenticated]
+    #[Doc\Response('{"message":"Usuário registrado com sucesso","user":{"id":"01a14513-4821-7084-bb71-dbc2e1d84d94","name":"Maria Compradora","email":"maria@exemplo.com"}}', status: 201)]
     public function register(RegisterRequest $request): JsonResponse
     {
         $data = $request->validated();
@@ -94,6 +103,8 @@ class AuthController extends Controller
             ], 201);
     }
 
+    #[Doc\Endpoint('Sair', 'Revoga o par de tokens do usuário.')]
+    #[Doc\Response('', status: 204)]
     public function logout(Request $request): Response
     {
         $this->authService->deleteUserTokens($request->user());
@@ -111,6 +122,8 @@ class AuthController extends Controller
         return response()->noContent();
     }
 
+    #[Doc\Endpoint('Renovar tokens', 'Envie o `refresh_token` como Bearer. Devolve um par novo e invalida o anterior; um `access_token` aqui responde 401.')]
+    #[Doc\Response('{"message":"Token de atualização realizado com sucesso","access_token":"3|iJkL...","refresh_token":"4|mNoP..."}', status: 200)]
     public function refresh(Request $request): JsonResponse
     {
         $user = $request->user();

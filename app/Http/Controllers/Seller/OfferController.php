@@ -14,8 +14,10 @@ use App\Support\Pagination\CursorPaginates;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Knuckles\Scribe\Attributes as Doc;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+#[Doc\Group('Ofertas e reservas')]
 final class OfferController extends Controller
 {
     use CursorPaginates;
@@ -24,6 +26,9 @@ final class OfferController extends Controller
         private readonly OfferService $offerService,
     ) {}
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Minhas ofertas')]
+    #[Doc\ResponseFromApiResource(OfferResource::class, Offer::class, collection: true, cursorPaginate: 20, with: ['product', 'store'])]
     public function index(Request $request): AnonymousResourceCollection
     {
         $this->authorize('viewAny', Offer::class);
@@ -41,6 +46,9 @@ final class OfferController extends Controller
         return OfferResource::collection($offers);
     }
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Criar oferta', 'Preço em reais com duas casas. Pode ofertar produto `active` de outra loja; uma oferta por loja e produto (409).')]
+    #[Doc\ResponseFromApiResource(OfferResource::class, Offer::class, status: 201, with: ['product', 'store'])]
     public function store(StoreOfferRequest $request): JsonResponse
     {
         $store = $request->user()->store;
@@ -58,6 +66,9 @@ final class OfferController extends Controller
             ->setStatusCode(201);
     }
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Detalhar oferta', 'Inclui `stock` e `reserved_stock`, visíveis só para o dono e o admin.')]
+    #[Doc\ResponseFromApiResource(OfferResource::class, Offer::class, with: ['product', 'store'])]
     public function show(Request $request, Offer $offer): OfferResource
     {
         $this->ensureSellerOffer($request, $offer);
@@ -68,6 +79,9 @@ final class OfferController extends Controller
         return new OfferResource($offer);
     }
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Atualizar oferta', '`stock` não pode ficar abaixo do reservado (409).')]
+    #[Doc\ResponseFromApiResource(OfferResource::class, Offer::class, with: ['product', 'store'])]
     public function update(UpdateOfferRequest $request, Offer $offer): OfferResource
     {
         $this->ensureSellerOffer($request, $offer);
@@ -81,6 +95,9 @@ final class OfferController extends Controller
         );
     }
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Remover oferta', 'Soft delete; bloqueado com reservas ativas (409).')]
+    #[Doc\Response('', status: 204)]
     public function destroy(Request $request, Offer $offer): JsonResponse
     {
         $this->ensureSellerOffer($request, $offer);
@@ -91,6 +108,9 @@ final class OfferController extends Controller
         return response()->json(null, 204);
     }
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Pausar oferta', '`active → paused`; sai do Buy Box e da compra.')]
+    #[Doc\ResponseFromApiResource(OfferResource::class, Offer::class, factoryStates: ['paused'])]
     public function pause(Request $request, Offer $offer): OfferResource
     {
         $this->ensureSellerOffer($request, $offer);
@@ -101,6 +121,9 @@ final class OfferController extends Controller
         );
     }
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Retomar oferta', '`paused → active`.')]
+    #[Doc\ResponseFromApiResource(OfferResource::class, Offer::class, factoryStates: ['active'])]
     public function resume(Request $request, Offer $offer): OfferResource
     {
         $this->ensureSellerOffer($request, $offer);

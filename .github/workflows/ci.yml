@@ -46,6 +46,12 @@ jobs:
       - name: Check code style
         run: vendor/bin/pint --test
 
+      # Mirrors the Dockerfile: config files must load without dev packages (e.g. Scribe).
+      - name: Check production install (no dev dependencies)
+        run: |
+          composer install --no-dev --no-interaction --prefer-dist --no-progress
+          php artisan about --only=environment
+
   tests:
     name: Tests (PHPUnit)
     runs-on: ubuntu-latest
@@ -106,3 +112,21 @@ jobs:
 
       - name: Run test suite
         run: php artisan test --fail-on-warning
+
+      # Scribe only warns when an endpoint fails to document; make that fail the build.
+      - name: Generate API docs
+        # Outside PHPUnit, Artisan reads .env; point it at the CI test database.
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5433
+          DB_DATABASE: marketplace_test
+          DB_USERNAME: marketplace_test
+          DB_PASSWORD: marketplace_test
+          CACHE_STORE: array
+        run: |
+          php artisan scribe:generate --no-interaction | tee /tmp/scribe.log
+          if grep -qE 'FAIL|errors while processing routes' /tmp/scribe.log; then exit 1; fi
+
+      - name: Validate OpenAPI spec
+        run: pipx run openapi-spec-validator public/docs/openapi.yaml

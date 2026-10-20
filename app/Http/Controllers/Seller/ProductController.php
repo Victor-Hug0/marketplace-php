@@ -18,8 +18,10 @@ use App\Support\Pagination\CursorPaginates;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Knuckles\Scribe\Attributes as Doc;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+#[Doc\Group('Produtos')]
 final class ProductController extends Controller
 {
     use CursorPaginates;
@@ -28,6 +30,9 @@ final class ProductController extends Controller
         private readonly ProductService $productService,
     ) {}
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Meus produtos', 'Produtos da própria loja, em qualquer status.')]
+    #[Doc\ResponseFromApiResource(ProductResource::class, Product::class, collection: true, cursorPaginate: 20)]
     public function index(Request $request): AnonymousResourceCollection
     {
         $this->authorize('viewAny', Product::class);
@@ -45,6 +50,9 @@ final class ProductController extends Controller
         return ProductResource::collection($products);
     }
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Criar produto', 'Cria em `draft`. Exige loja `active`. Peso e medidas são usados na cotação de frete.')]
+    #[Doc\ResponseFromApiResource(ProductResource::class, Product::class, status: 201)]
     public function store(StoreProductRequest $request): JsonResponse
     {
         $store = $request->user()->store;
@@ -62,6 +70,9 @@ final class ProductController extends Controller
             ->setStatusCode(201);
     }
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Detalhar meu produto')]
+    #[Doc\ResponseFromApiResource(ProductResource::class, Product::class, with: ['images', 'category'])]
     public function show(Request $request, Product $product): ProductResource
     {
         $this->ensureSellerProduct($request, $product);
@@ -72,6 +83,9 @@ final class ProductController extends Controller
         return new ProductResource($product);
     }
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Editar produto', 'Só em `draft` ou `rejected` (409 nos demais).')]
+    #[Doc\ResponseFromApiResource(ProductResource::class, Product::class)]
     public function update(UpdateProductRequest $request, Product $product): ProductResource
     {
         $this->ensureSellerProduct($request, $product);
@@ -85,6 +99,9 @@ final class ProductController extends Controller
         );
     }
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Remover produto', 'Soft delete em `draft`, `rejected` ou `paused`; apaga as imagens do disco.')]
+    #[Doc\Response('', status: 204)]
     public function destroy(Request $request, Product $product): JsonResponse
     {
         $this->ensureSellerProduct($request, $product);
@@ -95,6 +112,9 @@ final class ProductController extends Controller
         return response()->json(null, 204);
     }
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Enviar para moderação', '`draft` ou `rejected` → `pending_moderation`.')]
+    #[Doc\ResponseFromApiResource(ProductResource::class, Product::class, factoryStates: ['pendingModeration'])]
     public function submit(Request $request, Product $product): ProductResource
     {
         $this->ensureSellerProduct($request, $product);
@@ -105,6 +125,9 @@ final class ProductController extends Controller
         );
     }
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Pausar produto', '`active → paused`; as ofertas saem da compra.')]
+    #[Doc\ResponseFromApiResource(ProductResource::class, Product::class, factoryStates: ['paused'])]
     public function pause(Request $request, Product $product): ProductResource
     {
         $this->ensureSellerProduct($request, $product);
@@ -115,6 +138,9 @@ final class ProductController extends Controller
         );
     }
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Retomar produto', '`paused → active`.')]
+    #[Doc\ResponseFromApiResource(ProductResource::class, Product::class, factoryStates: ['active'])]
     public function resume(Request $request, Product $product): ProductResource
     {
         $this->ensureSellerProduct($request, $product);
@@ -125,6 +151,9 @@ final class ProductController extends Controller
         );
     }
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Enviar imagem', 'multipart/form-data. jpeg, jpg, png ou webp até 2 MB; no máximo 8 imagens (409). A primeira vira capa.')]
+    #[Doc\ResponseFromApiResource(ProductImageResource::class, ProductImage::class, status: 201)]
     public function storeImage(
         StoreProductImageRequest $request,
         Product $product,
@@ -144,6 +173,9 @@ final class ProductController extends Controller
             ->setStatusCode(201);
     }
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Remover imagem')]
+    #[Doc\Response('', status: 204)]
     public function destroyImage(
         Request $request,
         Product $product,
@@ -161,6 +193,9 @@ final class ProductController extends Controller
         return response()->json(null, 204);
     }
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Reordenar imagens', '`image_ids` precisa listar todas as imagens do produto, na nova ordem (409 se não listar).')]
+    #[Doc\ResponseFromApiResource(ProductResource::class, Product::class, with: ['images'])]
     public function reorderImages(
         ReorderProductImagesRequest $request,
         Product $product,

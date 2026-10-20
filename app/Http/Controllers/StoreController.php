@@ -16,7 +16,9 @@ use App\Services\StoreService;
 use App\Support\Pagination\CursorPaginates;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Knuckles\Scribe\Attributes as Doc;
 
+#[Doc\Group('Lojas')]
 final class StoreController extends Controller
 {
     use CursorPaginates;
@@ -26,6 +28,9 @@ final class StoreController extends Controller
         private readonly ProductService $productService,
     ) {}
 
+    #[Doc\Subgroup('Comprador')]
+    #[Doc\Endpoint('Solicitar loja', 'Cria a loja em `pending`. Uma loja por usuário, inclusive contando rejeitadas. O papel `seller` só é concedido quando o admin aprova.')]
+    #[Doc\ResponseFromApiResource(StoreResource::class, Store::class, status: 201)]
     public function store(CreateStoreRequest $request): JsonResponse
     {
         $store = $this->storeService->requestStore(
@@ -39,6 +44,9 @@ final class StoreController extends Controller
             ->setStatusCode(201);
     }
 
+    #[Doc\Subgroup('Comprador')]
+    #[Doc\Endpoint('Minha loja', 'Loja do usuário autenticado, com documento e status.')]
+    #[Doc\ResponseFromApiResource(StoreResource::class, Store::class)]
     public function me(Request $request): StoreResource
     {
         $store = Store::query()
@@ -50,6 +58,10 @@ final class StoreController extends Controller
         return new StoreResource($store);
     }
 
+    #[Doc\Subgroup('Público')]
+    #[Doc\Endpoint('Vitrine da loja', 'Loja `active` pelo slug, sem documento nem motivo de rejeição, com nota média e produtos ativos paginados em `products` (filtros `q`, `category`, `category_id`).')]
+    #[Doc\Unauthenticated]
+    #[Doc\ResponseFromApiResource(PublicStoreResource::class, Store::class, factoryStates: ['active'])]
     public function show(SearchProductsRequest $request, string $slug): PublicStoreResource
     {
         $store = Store::query()
