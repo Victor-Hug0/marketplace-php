@@ -411,7 +411,34 @@ Enquanto a disputa está `open` ou a devolução está `requested`, o saldo daqu
 
 ---
 
-## 15. Tarefas agendadas e fila
+## 15. Notificações
+
+Os services disparam eventos de domínio (`app/Events`) que implementam `ShouldDispatchAfterCommit`: uma transação desfeita não notifica ninguém, e replays idempotentes (checkout, pagamento, webhook repetido) não disparam de novo. Listeners por contexto (`app/Listeners`) escolhem os destinatários e enviam notificações em fila (`afterCommit`) por dois canais: e-mail (Resend) e banco (caixa em `GET /notifications`). O payload do banco leva só ids, status e valores em centavos. Os e-mails saem em português (`User::preferredLocale()` + `lang/pt_BR.json`).
+
+| Evento | Quando | Destinatários | `type` |
+|--------|--------|---------------|--------|
+| `OrderPlaced` | checkout criado | comprador | `order.placed` |
+| `PaymentIntentCreated` | intenção de pagamento criada (Pix, boleto ou cartão) | comprador | `payment.instructions` |
+| `OrderPaid` | webhook confirma o pagamento | comprador; dono de cada loja do pedido | `order.paid`; `sale.paid` |
+| `OrderSellerShipped` | envio com rastreio | comprador | `order_seller.shipped` |
+| `OrderSellerDelivered` | entrega confirmada | comprador | `order_seller.delivered` |
+| `OrderCancelled` | comprador cancela ou o prazo de pagamento vence | comprador | `order.cancelled` (`data.cause`: `buyer` ou `expired`) |
+| `OrderSellerCancelledBySeller` | seller cancela o subpedido | comprador | `order_seller.cancelled_by_seller` |
+| `DisputeOpened` | comprador abre disputa | dono da loja; admins | `dispute.opened` |
+| `DisputeResolved` | admin decide | comprador; dono da loja | `dispute.resolved` |
+| `ReturnRequested` | comprador pede devolução | dono da loja | `return_request.created` |
+| `ReturnRequestDecided` | seller ou admin decide | comprador | `return_request.decided` |
+| `PayoutProcessed` | admin marca pago ou falho | dono da loja | `payout.paid` / `payout.failed` |
+| `StoreRequested` | loja solicitada | admins | `store.requested` |
+| `StoreDecided` | loja aprovada, rejeitada ou suspensa | quem solicitou | `store.active` / `store.rejected` / `store.suspended` |
+| `ProductSubmitted` | produto enviado para moderação | admins | `product.submitted` |
+| `ProductDecided` | produto aprovado ou rejeitado | dono da loja | `product.approved` / `product.rejected` |
+
+Os botões dos e-mails apontam para rotas do app cliente em `FRONTEND_URL` (`/pedidos/{id}`, `/vendedor/subpedidos/{id}`, `/vendedor/disputas/{id}`, `/admin/lojas/{id}` etc.). Um envio de e-mail que falha (por exemplo, sem `RESEND_API_KEY`) vai para `failed_jobs` sem afetar a cópia no banco, porque cada canal é um job separado.
+
+---
+
+## 16. Tarefas agendadas e fila
 
 | O quê | Onde roda | Frequência | Efeito |
 |-------|-----------|-----------|--------|
@@ -424,7 +451,7 @@ Nos testes a fila roda de forma síncrona (`QUEUE_CONNECTION=sync`).
 
 ---
 
-## 16. Configuração de domínio
+## 17. Configuração de domínio
 
 | Variável | Padrão | Efeito |
 |----------|--------|--------|
@@ -449,7 +476,7 @@ Valores fixos no código: embalagem padrão e divisor volumétrico (`config/ship
 
 ---
 
-## 17. Auditoria
+## 18. Auditoria
 
 `audit_logs` grava ator (morph, nulo quando é o sistema), recurso (morph), ação, payload, IP, user agent e data. Nunca grava token, senha, dado de cartão ou caminho absoluto de arquivo.
 

@@ -9,6 +9,8 @@ use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\PaymentWebhookEventType;
 use App\Enums\PaymentWebhookResult;
+use App\Events\OrderPaid;
+use App\Events\PaymentIntentCreated;
 use App\Jobs\ProcessPaymentWebhookEvent;
 use App\Models\AuditLog;
 use App\Models\Order;
@@ -116,6 +118,7 @@ final class PaymentService
                 'payload' => $this->mockInstructions($method, $externalId, $deadline),
             ]);
 
+            event(new PaymentIntentCreated($payment));
             $this->audit($buyer, $order, 'payment.intent_created', [
                 'payment_id' => $payment->id,
                 'method' => $method->value,
@@ -225,6 +228,8 @@ final class PaymentService
         foreach ($paidSellers as $orderSeller) {
             $this->ledgerService->postSale($orderSeller, $payment);
         }
+
+        event(new OrderPaid($order));
 
         return PaymentWebhookResult::APPLIED;
     }

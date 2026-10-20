@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\ReturnRequestStatus;
+use App\Events\ReturnRequestDecided;
+use App\Events\ReturnRequested;
 use App\Models\AuditLog;
 use App\Models\Order;
 use App\Models\OrderSeller;
@@ -58,6 +60,7 @@ final class ReturnRequestService
                     'amount_cents' => $amountCents,
                 ]);
 
+                event(new ReturnRequested($returnRequest));
                 $this->audit($buyer, $returnRequest, 'return_request.created', ['amount_cents' => $amountCents]);
 
                 return $returnRequest;
@@ -89,6 +92,7 @@ final class ReturnRequestService
                 'refund_id' => $refund->id,
             ]);
 
+            event(new ReturnRequestDecided($returnRequest));
             $this->audit($actor, $returnRequest, 'return_request.approved', [
                 'refund_id' => $refund->id,
                 'amount_cents' => $refund->amount_cents,
@@ -110,6 +114,7 @@ final class ReturnRequestService
                 'decided_at' => now(),
             ]);
 
+            event(new ReturnRequestDecided($returnRequest));
             $this->audit($actor, $returnRequest, 'return_request.rejected');
 
             return $returnRequest->refresh();

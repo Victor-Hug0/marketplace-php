@@ -77,7 +77,7 @@ Enquanto essa jornada não existir com testes, **não** investir em e-mail verif
 
 ## 3. Estado atual do repositório
 
-**Revisão de 20/10/2026.** O caminho crítico **B1 → B7 está completo** em `develop` e `main` (release no PR #17). A jornada mínima da seção 2 roda de ponta a ponta e está coberta por testes de feature (274 testes em 32 arquivos).
+**Revisão de 20/10/2026.** O caminho crítico **B1 → B7 está completo** em `develop` e `main` (release no PR #17). A jornada mínima da seção 2 roda de ponta a ponta e está coberta por testes de feature (293 testes em 38 arquivos).
 
 ### Fundação
 
@@ -574,7 +574,7 @@ Só começar com a jornada B1→B6 (e B7 mínimo) **verde**.
 - Cupons, frete grátis por regra  
 - Ads/boost de listagem  
 - Wishlist, Q&A, chat  
-- Notificações e-mail/in-app via fila  
+- [x] Notificações e-mail/in-app via fila — eventos após commit, Resend + caixa `GET /notifications` (`tests/Feature/Notifications`)
 
 ### L3 — Admin analytics, auditoria plena, OpenAPI e API seller
 
@@ -633,7 +633,7 @@ Só começar com a jornada B1→B6 (e B7 mínimo) **verde**.
 - [x] Comissão e saldo seller batem com o ledger — `PayoutWorkflowTest::test_financial_totals_reconcile_across_sales_refunds_and_payouts`
 - [x] Frete congelado e tracking por subpedido — `ShippingQuoteTest::test_checkout_freezes_shipping_per_sub_order`, `ShipmentWorkflowTest::test_buyer_and_seller_see_tracking`
 - [x] Seller pendente não vende; admin opera com Policy — `StoreWorkflowTest`, `ProductWorkflowTest::test_buyer_cannot_access_admin_product_routes`
-- [x] Feature tests cobrem o caminho feliz + principais 403/409 — 274 testes (`tests/Feature` e `tests/Unit`)
+- [x] Feature tests cobrem o caminho feliz + principais 403/409 — 293 testes (`tests/Feature` e `tests/Unit`)
 
 **Status (20/10/2026): core pronto.**
 

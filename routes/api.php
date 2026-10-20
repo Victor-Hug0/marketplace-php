@@ -15,6 +15,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OfferReservationController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderPaymentController;
@@ -59,6 +60,15 @@ Route::prefix('v1')->group(function () {
         Route::get('me', [UserController::class, 'me'])->middleware(['auth:sanctum', 'abilities:access']);
         Route::get('/', [UserController::class, 'index'])->middleware(['auth:sanctum', 'abilities:access', 'role:admin']);
     });
+
+    Route::prefix('notifications')
+        ->middleware(['auth:sanctum', 'abilities:access'])
+        ->group(function () {
+            Route::get('/', [NotificationController::class, 'index']);
+            Route::get('unread-count', [NotificationController::class, 'unreadCount']);
+            Route::post('read-all', [NotificationController::class, 'markAllRead']);
+            Route::post('{notification}/read', [NotificationController::class, 'markRead'])->whereUuid('notification');
+        });
 
     Route::prefix('addresses')
         ->middleware(['auth:sanctum', 'abilities:access'])

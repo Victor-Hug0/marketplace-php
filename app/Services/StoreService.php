@@ -6,6 +6,8 @@ namespace App\Services;
 
 use App\Enums\RoleName;
 use App\Enums\StoreStatus;
+use App\Events\StoreDecided;
+use App\Events\StoreRequested;
 use App\Models\AuditLog;
 use App\Models\Role;
 use App\Models\Store;
@@ -37,6 +39,7 @@ final class StoreService
                 'status' => StoreStatus::PENDING,
             ]);
 
+            event(new StoreRequested($store));
             $this->audit($user, $store, 'store.requested');
 
             return $store;
@@ -62,6 +65,7 @@ final class StoreService
 
             $store->owner->roles()->syncWithoutDetaching([$sellerRole->id]);
 
+            event(new StoreDecided($store));
             $this->audit($admin, $store, 'store.approved');
 
             return $store->refresh();
@@ -82,6 +86,7 @@ final class StoreService
             ]);
 
             $this->removeSellerRole($store->owner);
+            event(new StoreDecided($store));
             $this->audit($admin, $store, 'store.rejected', ['reason' => $reason]);
 
             return $store->refresh();
@@ -102,6 +107,7 @@ final class StoreService
             ]);
 
             $this->removeSellerRole($store->owner);
+            event(new StoreDecided($store));
             $this->audit($admin, $store, 'store.suspended', ['reason' => $reason]);
 
             return $store->refresh();

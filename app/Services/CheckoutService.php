@@ -10,6 +10,7 @@ use App\Enums\OrderSellerStatus;
 use App\Enums\OrderStatus;
 use App\Enums\ProductStatus;
 use App\Enums\StoreStatus;
+use App\Events\OrderPlaced;
 use App\Models\Address;
 use App\Models\AuditLog;
 use App\Models\Cart;
@@ -182,6 +183,7 @@ final class CheckoutService
 
                 $cart->items()->delete();
 
+                event(new OrderPlaced($order));
                 $this->audit($user, $order, 'order.checkout.created', [
                     'sellers_count' => $grouped->count(),
                     'items_count' => $prepared->sum('quantity'),

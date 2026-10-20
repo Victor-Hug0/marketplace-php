@@ -7,6 +7,8 @@ namespace App\Services;
 use App\Enums\OrderSellerStatus;
 use App\Enums\OrderStatus;
 use App\Enums\ShipmentStatus;
+use App\Events\OrderSellerDelivered;
+use App\Events\OrderSellerShipped;
 use App\Models\AuditLog;
 use App\Models\Order;
 use App\Models\OrderSeller;
@@ -88,6 +90,7 @@ final class FulfillmentService
             ]);
 
             $this->advanceOrder($order, $seller, 'Pedido enviado.');
+            event(new OrderSellerShipped($orderSeller));
             $this->audit($seller, $orderSeller, 'order_seller.shipped', [
                 'shipment_id' => $shipment->id,
                 'tracking_code' => $shipment->tracking_code,
@@ -128,6 +131,7 @@ final class FulfillmentService
             ]);
 
             $this->advanceOrder($order, $actor, 'Pedido entregue.');
+            event(new OrderSellerDelivered($orderSeller));
             $this->audit($actor, $orderSeller, 'order_seller.delivered', [
                 'shipment_id' => $shipment->id,
             ]);
