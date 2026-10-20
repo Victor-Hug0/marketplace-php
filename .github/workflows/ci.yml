@@ -46,6 +46,12 @@ jobs:
       - name: Check code style
         run: vendor/bin/pint --test
 
+      # Mirrors the Dockerfile: config files must load without dev packages (e.g. Scribe).
+      - name: Check production install (no dev dependencies)
+        run: |
+          composer install --no-dev --no-interaction --prefer-dist --no-progress
+          php artisan about --only=environment
+
   tests:
     name: Tests (PHPUnit)
     runs-on: ubuntu-latest
