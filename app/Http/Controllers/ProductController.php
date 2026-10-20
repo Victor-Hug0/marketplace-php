@@ -14,7 +14,9 @@ use App\Services\BuyBoxService;
 use App\Services\ProductService;
 use App\Support\Pagination\CursorPaginates;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Knuckles\Scribe\Attributes as Doc;
 
+#[Doc\Group('Produtos')]
 final class ProductController extends Controller
 {
     use CursorPaginates;
@@ -24,6 +26,10 @@ final class ProductController extends Controller
         private readonly BuyBoxService $buyBoxService,
     ) {}
 
+    #[Doc\Subgroup('Público')]
+    #[Doc\Endpoint('Buscar produtos', 'Só produtos `active` de lojas `active`, mais recentes primeiro. Filtros por texto (`q`), categoria (`category` ou `category_id`) e loja (`store` ou `store_id`).')]
+    #[Doc\Unauthenticated]
+    #[Doc\ResponseFromApiResource(ProductResource::class, Product::class, collection: true, cursorPaginate: 20, factoryStates: ['active'])]
     public function index(SearchProductsRequest $request): AnonymousResourceCollection
     {
         $query = $this->productService->publicCatalogQuery(
@@ -46,6 +52,10 @@ final class ProductController extends Controller
         );
     }
 
+    #[Doc\Subgroup('Público')]
+    #[Doc\Endpoint('Detalhar produto', 'Produto ativo com imagens, ofertas elegíveis e nota média. A oferta vencedora do Buy Box vem em `buy_box`, fora de `data`.')]
+    #[Doc\Unauthenticated]
+    #[Doc\ResponseFromApiResource(ProductResource::class, Product::class, factoryStates: ['active'], with: ['store', 'category', 'images'])]
     public function show(string $slug): ProductResource
     {
         $product = Product::query()

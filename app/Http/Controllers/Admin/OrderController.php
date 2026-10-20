@@ -11,7 +11,9 @@ use App\Services\OrderService;
 use App\Support\Pagination\CursorPaginates;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Knuckles\Scribe\Attributes as Doc;
 
+#[Doc\Group('Pedidos')]
 final class OrderController extends Controller
 {
     use CursorPaginates;
@@ -20,6 +22,9 @@ final class OrderController extends Controller
         private readonly OrderService $orderService,
     ) {}
 
+    #[Doc\Subgroup('Admin')]
+    #[Doc\Endpoint('Listar pedidos')]
+    #[Doc\ResponseFromApiResource(OrderResource::class, Order::class, collection: true, cursorPaginate: 20)]
     public function index(Request $request): AnonymousResourceCollection
     {
         $this->authorize('viewAnyAsAdmin', Order::class);
@@ -34,6 +39,9 @@ final class OrderController extends Controller
         return OrderResource::collection($orders);
     }
 
+    #[Doc\Subgroup('Admin')]
+    #[Doc\Endpoint('Detalhar pedido (admin)')]
+    #[Doc\ResponseFromApiResource(OrderResource::class, Order::class, with: ['sellers'])]
     public function show(Order $order): OrderResource
     {
         $this->authorize('view', $order);

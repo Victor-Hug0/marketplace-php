@@ -47,4 +47,12 @@ final class UpdateAddressRequest extends FormRequest
             'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO',
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return (new StoreAddressRequest)->bodyParameters();
+    }
 }

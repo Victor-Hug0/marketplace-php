@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Arr;
 
 final class UpdateOfferRequest extends FormRequest
 {
@@ -27,5 +28,13 @@ final class UpdateOfferRequest extends FormRequest
             'promo_ends_at' => ['sometimes', 'nullable', 'date', 'after:promo_starts_at'],
             'stock' => ['sometimes', 'required', 'integer', 'min:0'],
         ];
+    }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return Arr::except((new StoreOfferRequest)->bodyParameters(), ['product_id']);
     }
 }

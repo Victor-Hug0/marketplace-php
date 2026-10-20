@@ -25,4 +25,21 @@ final class OpenDisputeRequest extends FormRequest
             'description' => ['required', 'string', 'min:10', 'max:2000'],
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'reason' => [
+                'description' => 'Motivo da disputa.',
+                'example' => 'not_as_described',
+            ],
+            'description' => [
+                'description' => 'Relato do problema (mínimo 10 caracteres).',
+                'example' => 'A cor recebida é diferente da anunciada.',
+            ],
+        ];
+    }
 }

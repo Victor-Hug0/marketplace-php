@@ -37,4 +37,45 @@ final class StoreProductRequest extends FormRequest
             'height_cm' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:300'],
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'category_id' => [
+                'description' => 'Categoria ativa do produto.',
+                'example' => '01a159cb-4e6b-7c33-9f5a-6d7b8c9d0e1f',
+            ],
+            'name' => [
+                'description' => 'Nome do produto.',
+                'example' => 'Smartphone Demo X 128 GB',
+            ],
+            'slug' => [
+                'description' => 'Slug único; gerado a partir do nome quando omitido.',
+                'example' => 'smartphone-demo-x-128-gb',
+            ],
+            'description' => [
+                'description' => 'Descrição longa.',
+                'example' => 'Tela de 6,5 polegadas, 128 GB, câmera dupla.',
+            ],
+            'weight_grams' => [
+                'description' => 'Peso em gramas, usado no frete.',
+                'example' => 350,
+            ],
+            'length_cm' => [
+                'description' => 'Comprimento da embalagem em cm.',
+                'example' => 20,
+            ],
+            'width_cm' => [
+                'description' => 'Largura da embalagem em cm.',
+                'example' => 12,
+            ],
+            'height_cm' => [
+                'description' => 'Altura da embalagem em cm.',
+                'example' => 8,
+            ],
+        ];
+    }
 }

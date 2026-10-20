@@ -43,4 +43,17 @@ final class StorePaymentRequest extends FormRequest
     {
         return PaymentMethod::from($this->string('method')->value());
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'method' => [
+                'description' => 'Forma de pagamento.',
+                'example' => 'pix',
+            ],
+        ];
+    }
 }

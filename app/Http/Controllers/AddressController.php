@@ -12,14 +12,18 @@ use App\Services\AddressService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Knuckles\Scribe\Attributes as Doc;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+#[Doc\Group('Endereços')]
 final class AddressController extends Controller
 {
     public function __construct(
         private readonly AddressService $addressService,
     ) {}
 
+    #[Doc\Endpoint('Meus endereços', 'O endereço padrão vem primeiro.')]
+    #[Doc\ResponseFromApiResource(AddressResource::class, Address::class, collection: true)]
     public function index(Request $request): AnonymousResourceCollection
     {
         $this->authorize('viewAny', Address::class);
@@ -33,6 +37,8 @@ final class AddressController extends Controller
         return AddressResource::collection($addresses);
     }
 
+    #[Doc\Endpoint('Criar endereço', 'CEP `#####-###` ou 8 dígitos; UF válida. O primeiro endereço vira padrão.')]
+    #[Doc\ResponseFromApiResource(AddressResource::class, Address::class, status: 201)]
     public function store(StoreAddressRequest $request): JsonResponse
     {
         $address = $this->addressService->create(
@@ -46,6 +52,8 @@ final class AddressController extends Controller
             ->setStatusCode(201);
     }
 
+    #[Doc\Endpoint('Detalhar endereço')]
+    #[Doc\ResponseFromApiResource(AddressResource::class, Address::class)]
     public function show(Request $request, Address $address): AddressResource
     {
         $this->ensureOwner($request, $address);
@@ -54,6 +62,8 @@ final class AddressController extends Controller
         return new AddressResource($address);
     }
 
+    #[Doc\Endpoint('Atualizar endereço', 'Não é possível desmarcar o padrão sem definir outro (409).')]
+    #[Doc\ResponseFromApiResource(AddressResource::class, Address::class)]
     public function update(UpdateAddressRequest $request, Address $address): AddressResource
     {
         $this->ensureOwner($request, $address);
@@ -67,6 +77,8 @@ final class AddressController extends Controller
         );
     }
 
+    #[Doc\Endpoint('Remover endereço', 'Se era o padrão, o endereço mais antigo restante vira padrão.')]
+    #[Doc\Response('', status: 204)]
     public function destroy(Request $request, Address $address): JsonResponse
     {
         $this->ensureOwner($request, $address);
@@ -77,6 +89,8 @@ final class AddressController extends Controller
         return response()->json(null, 204);
     }
 
+    #[Doc\Endpoint('Definir como padrão')]
+    #[Doc\ResponseFromApiResource(AddressResource::class, Address::class)]
     public function makeDefault(Request $request, Address $address): AddressResource
     {
         $this->ensureOwner($request, $address);

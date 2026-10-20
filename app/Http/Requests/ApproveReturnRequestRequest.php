@@ -22,4 +22,17 @@ final class ApproveReturnRequestRequest extends FormRequest
             'notes' => ['sometimes', 'nullable', 'string', 'max:2000'],
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'notes' => [
+                'description' => 'Observação do admin registrada na aprovação.',
+                'example' => 'Produto conferido; reembolso liberado.',
+            ],
+        ];
+    }
 }

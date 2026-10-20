@@ -22,4 +22,17 @@ final class RespondDisputeRequest extends FormRequest
             'response' => ['required', 'string', 'min:5', 'max:2000'],
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'response' => [
+                'description' => 'Resposta do vendedor à disputa.',
+                'example' => 'Enviamos outra unidade; código de rastreio em anexo.',
+            ],
+        ];
+    }
 }

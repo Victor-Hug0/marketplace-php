@@ -29,4 +29,25 @@ final class ResolveDisputeRequest extends FormRequest
     {
         return $this->validated('outcome') === 'refund';
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'outcome' => [
+                'description' => 'refund reembolsa o comprador; reject encerra sem reembolso.',
+                'example' => 'refund',
+            ],
+            'amount_cents' => [
+                'description' => 'Valor do reembolso em centavos (só com refund); padrão: o saldo ainda reembolsável do subpedido.',
+                'example' => 189900,
+            ],
+            'notes' => [
+                'description' => 'Justificativa registrada na disputa.',
+                'example' => 'Vendedor confirmou o envio errado.',
+            ],
+        ];
+    }
 }

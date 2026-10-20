@@ -15,7 +15,9 @@ use App\Support\Pagination\CursorPaginates;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Validation\Rule;
+use Knuckles\Scribe\Attributes as Doc;
 
+#[Doc\Group('Produtos')]
 final class ProductController extends Controller
 {
     use CursorPaginates;
@@ -24,6 +26,9 @@ final class ProductController extends Controller
         private readonly ProductService $productService,
     ) {}
 
+    #[Doc\Subgroup('Admin')]
+    #[Doc\Endpoint('Listar produtos', 'Filtro opcional por `status`.')]
+    #[Doc\ResponseFromApiResource(ProductResource::class, Product::class, collection: true, cursorPaginate: 20)]
     public function index(Request $request): AnonymousResourceCollection
     {
         $this->authorize('viewAny', Product::class);
@@ -44,6 +49,9 @@ final class ProductController extends Controller
         );
     }
 
+    #[Doc\Subgroup('Admin')]
+    #[Doc\Endpoint('Detalhar produto (admin)')]
+    #[Doc\ResponseFromApiResource(ProductResource::class, Product::class, with: ['store', 'category', 'images'])]
     public function show(Product $product): ProductResource
     {
         $this->authorize('view', $product);
@@ -53,6 +61,9 @@ final class ProductController extends Controller
         return new ProductResource($product);
     }
 
+    #[Doc\Subgroup('Admin')]
+    #[Doc\Endpoint('Editar produto (admin)', 'O admin edita em qualquer status.')]
+    #[Doc\ResponseFromApiResource(ProductResource::class, Product::class)]
     public function update(UpdateProductRequest $request, Product $product): ProductResource
     {
         return new ProductResource(
@@ -65,6 +76,9 @@ final class ProductController extends Controller
         );
     }
 
+    #[Doc\Subgroup('Admin')]
+    #[Doc\Endpoint('Aprovar produto', '`pending_moderation → active`.')]
+    #[Doc\ResponseFromApiResource(ProductResource::class, Product::class, factoryStates: ['active'])]
     public function approve(Request $request, Product $product): ProductResource
     {
         $this->authorize('review', $product);
@@ -74,6 +88,9 @@ final class ProductController extends Controller
         );
     }
 
+    #[Doc\Subgroup('Admin')]
+    #[Doc\Endpoint('Rejeitar produto', '`pending_moderation → rejected` com motivo.')]
+    #[Doc\ResponseFromApiResource(ProductResource::class, Product::class, factoryStates: ['rejected'])]
     public function reject(RejectProductRequest $request, Product $product): ProductResource
     {
         return new ProductResource(
@@ -85,6 +102,9 @@ final class ProductController extends Controller
         );
     }
 
+    #[Doc\Subgroup('Admin')]
+    #[Doc\Endpoint('Pausar produto (admin)', '`active → paused`.')]
+    #[Doc\ResponseFromApiResource(ProductResource::class, Product::class, factoryStates: ['paused'])]
     public function pause(Request $request, Product $product): ProductResource
     {
         $this->authorize('pause', $product);

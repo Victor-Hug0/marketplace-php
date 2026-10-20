@@ -413,6 +413,7 @@ Enquanto a disputa está `open` ou a devolução está `requested`, o saldo daqu
 |-------|-----------|-----------|--------|
 | `orders:expire-unpaid` | serviço `scheduler` (`schedule:work`) | a cada minuto, sem sobreposição | cancela pedidos com `payment_due_at` vencido (até 200 por execução) |
 | `reservations:release-expired` | serviço `scheduler` | a cada minuto, sem sobreposição | libera reservas avulsas vencidas |
+| `sanctum:prune-expired --hours=24` | serviço `scheduler` | diário | apaga tokens vencidos há mais de 24 h |
 | `ProcessPaymentWebhookEvent` | serviço `worker` (`queue:work redis`) | por evento | aplica o webhook; 5 tentativas com espera de 5 s, 30 s, 2 min e 5 min |
 
 Nos testes a fila roda de forma síncrona (`QUEUE_CONNECTION=sync`).

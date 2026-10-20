@@ -10,14 +10,19 @@ use App\Models\OrderSeller;
 use App\Services\FulfillmentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Knuckles\Scribe\Attributes as Doc;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+#[Doc\Group('Envio')]
 final class FulfillmentController extends Controller
 {
     public function __construct(
         private readonly FulfillmentService $fulfillmentService,
     ) {}
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Iniciar separação', '`paid → processing`.')]
+    #[Doc\ResponseFromApiResource(OrderSellerResource::class, OrderSeller::class)]
     public function startProcessing(Request $request, OrderSeller $orderSeller): OrderSellerResource
     {
         $this->ensureSellerOwns($request, $orderSeller);
@@ -28,6 +33,9 @@ final class FulfillmentController extends Controller
         );
     }
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Registrar envio', 'Gera o código de rastreio `SM#########BR` e a previsão de entrega pelo prazo cotado. A partir de `paid`, registra `processing` antes.')]
+    #[Doc\ResponseFromApiResource(OrderSellerResource::class, OrderSeller::class, status: 201, with: ['shipment'])]
     public function ship(Request $request, OrderSeller $orderSeller): JsonResponse
     {
         $this->ensureSellerOwns($request, $orderSeller);
@@ -41,6 +49,9 @@ final class FulfillmentController extends Controller
             ->setStatusCode(201);
     }
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Confirmar entrega', '`shipped → delivered`.')]
+    #[Doc\ResponseFromApiResource(OrderSellerResource::class, OrderSeller::class, with: ['shipment'])]
     public function markDelivered(Request $request, OrderSeller $orderSeller): OrderSellerResource
     {
         $this->ensureSellerOwns($request, $orderSeller);

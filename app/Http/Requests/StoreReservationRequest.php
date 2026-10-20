@@ -22,4 +22,17 @@ final class StoreReservationRequest extends FormRequest
             'quantity' => ['required', 'integer', 'min:1'],
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'quantity' => [
+                'description' => 'Unidades a reservar.',
+                'example' => 1,
+            ],
+        ];
+    }
 }

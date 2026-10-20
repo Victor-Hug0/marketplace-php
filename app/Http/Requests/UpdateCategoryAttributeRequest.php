@@ -25,12 +25,12 @@ final class UpdateCategoryAttributeRequest extends FormRequest
      */
     public function rules(): array
     {
-        /** @var Category $category */
+        /** @var Category|null $category */
         $category = $this->route('category');
-        /** @var CategoryAttribute $attribute */
+        /** @var CategoryAttribute|null $attribute */
         $attribute = $this->route('attribute');
 
-        $dataType = $this->input('data_type', $attribute->data_type->value);
+        $dataType = $this->input('data_type', $attribute?->data_type->value);
 
         return [
             'code' => [
@@ -39,8 +39,8 @@ final class UpdateCategoryAttributeRequest extends FormRequest
                 'max:64',
                 'alpha_dash',
                 Rule::unique('category_attributes', 'code')
-                    ->where(fn ($query) => $query->where('category_id', $category->id))
-                    ->ignore($attribute->id),
+                    ->where(fn ($query) => $query->where('category_id', $category?->id))
+                    ->ignore($attribute?->id),
             ],
             'label' => ['sometimes', 'string', 'max:120'],
             'data_type' => ['sometimes', Rule::enum(CategoryAttributeDataType::class)],
@@ -57,5 +57,13 @@ final class UpdateCategoryAttributeRequest extends FormRequest
             'is_filterable' => ['sometimes', 'boolean'],
             'position' => ['sometimes', 'integer', 'min:0'],
         ];
+    }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return (new StoreCategoryAttributeRequest)->bodyParameters();
     }
 }

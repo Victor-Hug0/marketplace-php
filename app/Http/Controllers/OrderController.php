@@ -11,8 +11,10 @@ use App\Services\OrderService;
 use App\Support\Pagination\CursorPaginates;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Knuckles\Scribe\Attributes as Doc;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+#[Doc\Group('Pedidos')]
 final class OrderController extends Controller
 {
     use CursorPaginates;
@@ -21,6 +23,9 @@ final class OrderController extends Controller
         private readonly OrderService $orderService,
     ) {}
 
+    #[Doc\Subgroup('Comprador')]
+    #[Doc\Endpoint('Meus pedidos', 'Mais recentes primeiro.')]
+    #[Doc\ResponseFromApiResource(OrderResource::class, Order::class, collection: true, cursorPaginate: 20)]
     public function index(Request $request): AnonymousResourceCollection
     {
         $this->authorize('viewAny', Order::class);
@@ -35,6 +40,9 @@ final class OrderController extends Controller
         return OrderResource::collection($orders);
     }
 
+    #[Doc\Subgroup('Comprador')]
+    #[Doc\Endpoint('Detalhar pedido', 'Inclui prazo de pagamento, cópia do endereço, subpedidos com itens, frete, envio, reembolsos, disputa, devolução e histórico de status.')]
+    #[Doc\ResponseFromApiResource(OrderResource::class, Order::class, with: ['sellers', 'statusHistories'])]
     public function show(Request $request, Order $order): OrderResource
     {
         $this->ensureBuyerOwnsOrder($request, $order);
@@ -45,6 +53,9 @@ final class OrderController extends Controller
         );
     }
 
+    #[Doc\Subgroup('Comprador')]
+    #[Doc\Endpoint('Cancelar pedido', 'Só em `pending_payment`: libera as reservas e cancela os pagamentos pendentes.')]
+    #[Doc\ResponseFromApiResource(OrderResource::class, Order::class)]
     public function cancel(CancelOrderRequest $request, Order $order): OrderResource
     {
         $this->ensureBuyerOwnsOrder($request, $order);

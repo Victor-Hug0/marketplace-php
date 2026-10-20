@@ -12,8 +12,10 @@ use App\Services\OrderService;
 use App\Support\Pagination\CursorPaginates;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Knuckles\Scribe\Attributes as Doc;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+#[Doc\Group('Pedidos')]
 final class OrderSellerController extends Controller
 {
     use CursorPaginates;
@@ -22,6 +24,9 @@ final class OrderSellerController extends Controller
         private readonly OrderService $orderService,
     ) {}
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Meus subpedidos', 'Subpedidos da própria loja.')]
+    #[Doc\ResponseFromApiResource(OrderSellerResource::class, OrderSeller::class, collection: true, cursorPaginate: 20, with: ['items'])]
     public function index(Request $request): AnonymousResourceCollection
     {
         $this->authorize('viewAny', OrderSeller::class);
@@ -36,6 +41,9 @@ final class OrderSellerController extends Controller
         return OrderSellerResource::collection($orderSellers);
     }
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Detalhar subpedido')]
+    #[Doc\ResponseFromApiResource(OrderSellerResource::class, OrderSeller::class, with: ['items', 'shipment'])]
     public function show(Request $request, OrderSeller $orderSeller): OrderSellerResource
     {
         $this->ensureSellerOwns($request, $orderSeller);
@@ -46,6 +54,9 @@ final class OrderSellerController extends Controller
         );
     }
 
+    #[Doc\Subgroup('Seller')]
+    #[Doc\Endpoint('Cancelar subpedido', 'Até `processing`. Se já pago, reembolsa o restante e repõe o estoque.')]
+    #[Doc\ResponseFromApiResource(OrderSellerResource::class, OrderSeller::class)]
     public function cancel(
         CancelOrderRequest $request,
         OrderSeller $orderSeller,

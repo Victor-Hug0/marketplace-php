@@ -4,6 +4,8 @@ Referência de todos os endpoints de `/api/v1` (96 rotas). Gerada a partir de `r
 
 Regras de negócio, máquinas de estado e autorização em detalhe: [`fluxos-e-regras.md`](fluxos-e-regras.md).
 
+Versão interativa e especificação OpenAPI 3.0.3, geradas pelo Scribe a partir do código: `http://127.0.0.1:8080/docs/` e [`public/docs/openapi.yaml`](../public/docs/openapi.yaml). Nelas, rotas que aceitam `PUT` e `PATCH` aparecem só como `PUT`.
+
 ---
 
 ## 1. Convenções
@@ -321,4 +323,4 @@ O webhook é processado pelo job `ProcessPaymentWebhookEvent` (fila Redis, até 
 
 | Método | Rota | Uso |
 |--------|------|-----|
-| `GET` | `/up` | health check do Laravel |
+| `GET` | `/up` | health check: 200 se banco e Redis respondem, 500 caso contrário |

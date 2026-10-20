@@ -1,5 +1,7 @@
 # Marketplace PHP
 
+[![CI](https://github.com/Victor-Hug0/marketplace-php/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Victor-Hug0/marketplace-php/actions/workflows/ci.yml)
+
 API REST de um marketplace multi-seller em **Laravel 12** e **PHP 8.4**: lojas aprovadas por um admin vendem produtos de um catálogo compartilhado, o comprador fecha um pedido com itens de várias lojas num único checkout, paga (gateway simulado), recebe com frete e rastreio por loja, e pode avaliar, abrir disputa ou pedir devolução. A plataforma cobra comissão e repassa o restante ao seller por um ledger contábil.
 
 Projeto de portfólio com foco em **regra de negócio**: transações, concorrência de estoque, idempotência, máquinas de estado explícitas e dinheiro em centavos com trilha de auditoria.
@@ -12,7 +14,8 @@ Projeto de portfólio com foco em **regra de negócio**: transações, concorrê
 - **Ledger append-only:** comissão, venda, reembolso proporcional e saque como lançamentos imutáveis (bloqueados no model e por trigger no Postgres). Saldo é sempre soma.
 - **Webhook de pagamento idempotente,** processado em fila com retentativas.
 - **Autorização em três camadas:** ability do token, papel (`buyer`, `seller`, `admin`) e Policy por recurso; recurso de outro usuário responde 404.
-- **209 testes de feature** cobrindo caminho feliz, 401/403/404/409/422 e conciliação financeira.
+- **215 testes** cobrindo caminho feliz, 401/403/404/409/422 e conciliação financeira; lazy loading é proibido fora de produção, então um N+1 falha na suíte.
+- **Pronto para operar:** `/up` verifica Postgres e Redis (usado pelo healthcheck da imagem), tokens vencidos são limpos todo dia e o CI valida também a instalação sem dependências de desenvolvimento.
 
 ## Stack
 
@@ -46,6 +49,8 @@ Projeto de portfólio com foco em **regra de negócio**: transações, concorrê
 
 | Documento | Conteúdo |
 |-----------|----------|
+| [`public/docs/index.html`](public/docs/index.html) (em `http://127.0.0.1:8080/docs/`) | Documentação interativa gerada pelo Scribe: endpoints agrupados por contexto, parâmetros extraídos dos Form Requests, exemplos de resposta e botão "Try it out" |
+| [`public/docs/openapi.yaml`](public/docs/openapi.yaml) e [`collection.json`](public/docs/collection.json) | Especificação OpenAPI 3.0.3 e coleção do Postman, para importar em Insomnia, Postman ou geradores de cliente |
 | [`docs/api-referencia.md`](docs/api-referencia.md) | Os 96 endpoints: acesso, corpo, sucesso e erros; convenções de envelope, paginação, idempotência e rate limit |
 | [`docs/fluxos-e-regras.md`](docs/fluxos-e-regras.md) | Máquinas de estado, regras de cada contexto, fluxo do dinheiro e do estoque, autorização, configuração e auditoria |
 | [`docs/roadmap-implementacao-api.md`](docs/roadmap-implementacao-api.md) | Roadmap de negócio por fase, com o teste que comprova cada critério de pronto |
@@ -76,24 +81,60 @@ docker compose exec app php artisan migrate --seed
 
 O entrypoint do container instala as dependências, cria as pastas de `storage/` e executa `storage:link` (necessário para as URLs das imagens de produto).
 
+#### Permissões entre host e container (Linux)
+
+O projeto é montado dentro dos containers, então quem grava em `storage/`, `vendor/` ou `public/docs` precisa ser o mesmo usuário do host. Não há nada a configurar: ao subir, o entrypoint lê o dono da pasta do projeto e dá esse UID/GID ao `www-data` do container. Composer, Artisan, worker, scheduler e testes rodam como esse usuário (o Apache sobe como root e troca sozinho). Resultado: nenhum arquivo do repositório fica com dono root ou `www-data`, e dá para alternar entre `artisan serve` no host e os containers sem `chown`.
+
+- `docker compose exec` não passa pelo entrypoint e entra como root; para comandos que gravam arquivos, use `docker compose exec -u www-data app php artisan ...`.
+- Na imagem de produção o projeto já pertence ao `www-data` (UID 33), então nada muda; em Docker Desktop (macOS/Windows), onde a pasta montada aparece como root, o entrypoint mantém o comportamento padrão.
+
 ### Dados de demonstração
 
 `php artisan db:seed` (ou `migrate --seed`) cria:
 
 | Seeder | O que cria |
 |--------|-----------|
-| `DatabaseSeeder` | papéis `buyer`, `seller`, `admin` |
+| `DatabaseSeeder` | papéis `buyer`, `seller`, `admin`; chama os demais e, só com `APP_ENV=local`, o `DemoSeeder` |
 | `PlatformFeeRuleSeeder` | regra global de comissão de 10% |
 | `ShippingRateRuleSeeder` | 18 regras de frete (2 modalidades × 3 zonas × 3 faixas) |
 | `CategorySeeder` | 5 categorias (Eletrônicos > Celulares, Notebooks; Casa > Móveis) com atributos |
-| `ProductSeeder` | seller `seller.demo@marketplace.test`, "Loja Demo", 3 produtos (`smartphone-demo-128gb` e `notebook-demo-16gb` ativos, `fone-bluetooth-demo` em rascunho) e uma oferta do smartphone a R$ 1.999,90 |
-| `OfferSeeder` | seller `seller.b.demo@marketplace.test`, "Loja Rival Demo" e uma oferta concorrente do mesmo smartphone a R$ 1.899,00, que vence o Buy Box |
+| `ProductSeeder` | seller `seller.demo@marketplace.test`, "Loja Demo", 3 produtos (`smartphone-demo-128gb` e `notebook-demo-16gb` ativos, `fone-bluetooth-demo` em rascunho) e uma oferta do smartphone a R$ 1.999,90 com promoção de R$ 1.799,90 nos 30 dias seguintes ao seed |
+| `OfferSeeder` | seller `seller.b.demo@marketplace.test`, "Loja Rival Demo" e uma oferta concorrente do mesmo smartphone a R$ 1.899,00. Enquanto a promoção da Loja Demo vale, ela vence o Buy Box; depois, vence a Rival |
+| `DemoSeeder` | a jornada completa, descrita abaixo |
 
-A senha dos dois sellers de demonstração é `Password1!`. Todos os seeders podem rodar mais de uma vez sem duplicar dados.
+Todos os seeders podem rodar mais de uma vez sem duplicar dados.
+
+### Jornada de demonstração (`DemoSeeder`)
+
+Roda sozinho em `migrate --seed` com `APP_ENV=local`, ou explicitamente com `php artisan db:seed --class=DemoSeeder`. **Recusa rodar em produção.** Os pedidos são montados pelos próprios services (carrinho, checkout, pagamento, webhook, envio, entrega), então estoque, ledger e histórico ficam coerentes, como num uso real.
+
+Contas (senha `Password1!` em todas):
+
+| E-mail | Papel | Para testar |
+|--------|-------|-------------|
+| `admin@marketplace.test` | admin | aprovar a loja candidata e o produto em moderação, resolver a disputa, processar o saque, confirmar entregas, reembolsar |
+| `comprador@marketplace.test` | buyer | pedidos em todos os estados, avaliação, disputa e devolução |
+| `seller.demo@marketplace.test` | seller (Loja Demo) | enviar o pedido pago, decidir a devolução, ver saldo |
+| `seller.b.demo@marketplace.test` | seller (Loja Rival Demo) | responder a disputa, ver o saque pendente |
+| `candidato@marketplace.test` | buyer | tem a "Loja Candidata Demo" aguardando aprovação |
+
+Pedidos do comprador (a `Idempotency-Key` de cada um é o nome do cenário):
+
+| Cenário | Estado | Detalhe |
+|---------|--------|---------|
+| `demo-aguardando-pagamento` | `pending_payment` | boleto gerado; expira em 3 dias se não for pago |
+| `demo-pago` | `paid` | dois subpedidos (Loja Rival e Loja Demo), prontos para envio |
+| `demo-enviado` | `shipped` | com código de rastreio |
+| `demo-entregue-avaliado` | `delivered` | avaliação de 5 estrelas no smartphone |
+| `demo-em-disputa` | `delivered` | disputa aberta; o saldo do subpedido está travado no saque da Loja Rival |
+| `demo-devolucao-pendente` | `delivered` | devolução pedida, aguardando decisão da Loja Demo |
+| `demo-cancelado` | `cancelled` | cancelado pelo comprador antes de pagar |
+
+Também deixa o produto `fone-bluetooth-demo` aguardando moderação e um saque de R$ 500,00 pendente da Loja Rival.
 
 ### Criando um admin
 
-Não existe seeder nem endpoint para criar admin, de propósito. Cadastre um usuário normalmente e promova pelo Tinker:
+Fora do ambiente de demonstração não existe seeder nem endpoint para criar admin, de propósito. Cadastre um usuário normalmente e promova pelo Tinker:
 
 ```bash
 docker compose exec app php artisan tinker --execute="\$u = App\Models\User::where('email', 'voce@exemplo.com')->firstOrFail(); \$u->roles()->syncWithoutDetaching([App\Models\Role::firstOrCreate(['name' => App\Enums\RoleName::ADMIN])->id]);"
@@ -107,9 +148,11 @@ docker compose exec app php artisan tinker --execute="\$u = App\Models\User::whe
 | `postgres` | `marketplace-postgres` | `5432` | banco |
 | `redis` | `marketplace-redis` | `6379` | fila e cache |
 | `worker` | `marketplace-worker` | — | `queue:work redis` (webhooks de pagamento) |
-| `scheduler` | `marketplace-scheduler` | — | `schedule:work` (expiração de pedidos e reservas, a cada minuto) |
+| `scheduler` | `marketplace-scheduler` | — | `schedule:work` (expiração de pedidos e reservas a cada minuto; `sanctum:prune-expired` diário) |
 
 Dentro dos containers, `DB_HOST` e `REDIS_HOST` são sobrescritos para `postgres` e `redis`. No `.env` do host mantenha `127.0.0.1` para usar ferramentas locais.
+
+O health check `GET /up` responde 200 só quando o banco e o Redis respondem; caso contrário, 500. O `HEALTHCHECK` da imagem usa essa rota, então `docker compose ps` mostra o `app` como `unhealthy` quando uma dependência cai.
 
 ### Comandos úteis
 
@@ -157,7 +200,7 @@ curl -s -X POST $API/auth/register -H 'Content-Type: application/json' -d '{
 curl -s -X POST $API/auth/login -H 'Content-Type: application/json' \
   -d '{"email": "maria@exemplo.com", "password": "Senha@Forte1"}'
 
-# Catálogo: produto com duas ofertas; buy_box aponta a da Loja Rival Demo
+# Catálogo: produto com duas ofertas e a vencedora em buy_box
 curl -s $API/products/smartphone-demo-128gb
 
 # Endereço, carrinho, cotação e checkout
@@ -180,6 +223,21 @@ curl -s -X POST $API/webhooks/payments/mock -H 'Content-Type: application/json' 
 ```
 
 Daí em diante, o seller faz `POST /seller/order-sellers/{id}/shipments` e `/deliver`, e o comprador pode avaliar o item, abrir disputa ou pedir devolução. Todos os endpoints estão em [`docs/api-referencia.md`](docs/api-referencia.md).
+
+## Documentação interativa (Scribe)
+
+A página em `public/docs` é gerada a partir do código e fica versionada no repositório, então `/docs/` funciona sem passo extra. As anotações ficam nos controllers como atributos PHP (`#[Doc\Group]`, `#[Doc\Endpoint]`, `#[Doc\ResponseFromApiResource]` e afins); os parâmetros vêm das `rules()` dos Form Requests, e as descrições e exemplos, do `bodyParameters()` (ou `queryParameters()`, na busca) de cada um.
+
+O "Try it out" envia as requisições para o mesmo endereço que serve a página (override de uma linha em `resources/views/vendor/scribe/themes/default/index.blade.php`), então funciona em qualquer host ou porta. Ao atualizar o Scribe, compare esse arquivo com o original do pacote.
+
+Depois de criar ou alterar endpoints, regenere com o banco de teste no ar (os exemplos de resposta são montados com factories dentro de uma transação desfeita no final):
+
+```bash
+docker compose -f compose.test.yml up -d postgres redis
+docker compose -f compose.test.yml run --rm test sh -c "php artisan migrate:fresh --force && php artisan scribe:generate"
+```
+
+O CI gera a documentação e valida o `openapi.yaml` a cada PR: anotação quebrada ou spec inválido falham o build.
 
 ## Testes
 
@@ -206,7 +264,7 @@ docker compose -f compose.test.yml up -d postgres redis
 php artisan test
 ```
 
-No host, dois testes falham se `storage/` pertencer a `www-data` (o entrypoint do container faz esse `chown`): o health check (`ExampleTest`) e o upload de imagem (`ProductWorkflowTest`), que precisam escrever em `storage/`. Rodar pelo container evita o problema; no host, coloque seu usuário no grupo `www-data` ou ajuste o dono de `storage/` e `bootstrap/cache`.
+No host, o PHP precisa da extensão `redis` (o health check testa o Redis de verdade) e `storage/` precisa ser seu, o que os containers já garantem (veja [Permissões entre host e container](#permissões-entre-host-e-container-linux)).
 
 ### O que está coberto
 
@@ -222,8 +280,9 @@ No host, dois testes falham se `storage/` pertencer a `www-data` (o entrypoint d
 | Ledger, reembolso e saque | `Ledger/`, `Refund/`, `Payout/` | 29 |
 | Frete e envio | `Shipping/` | 17 |
 | Avaliações e pós-venda | `Review/`, `PostSale/` | 20 |
-| Health check e exemplo unitário | `ExampleTest` (feature e unit) | 2 |
-| **Total** | | **209** |
+| Seeder de demonstração | `Seeders/` | 4 |
+| Health check (banco e Redis) e exemplo unitário | `HealthCheckTest`, `tests/Unit/ExampleTest` | 4 |
+| **Total** | | **215** |
 
 Formatação: `./vendor/bin/pint` (ou `--test` para só verificar).
 
@@ -252,6 +311,7 @@ routes/api.php          rotas /api/v1
 routes/console.php      agendamentos
 tests/Feature/          testes por contexto
 docs/                   referência da API, regras e roadmap
+public/docs/            documentação interativa, OpenAPI e coleção Postman (geradas pelo Scribe)
 compose.yml             app, postgres, redis, worker, scheduler
 compose.test.yml        infraestrutura e runner de testes
 ```
@@ -270,7 +330,8 @@ Branches de feature saem de `develop`; `develop` vai para `main` por PR de relea
 | B6 — Frete simulado e envio | Concluída |
 | B7 — Avaliações, disputas e devoluções | Concluída |
 | Qualidade — CI, `preventLazyLoading`, limpeza de tokens | Próxima |
-| L1 a L3 — conta, engajamento, OpenAPI e relatórios | Liberadas |
+| L3 — documentação OpenAPI interativa e jornada de demonstração | Concluída |
+| L1 a L3 — conta, engajamento, relatórios e API de seller | Liberadas |
 
 Pendências opcionais e próximos passos detalhados: [`docs/roadmap-backlog-tecnico.md`](docs/roadmap-backlog-tecnico.md).
 

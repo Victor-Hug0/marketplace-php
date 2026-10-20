@@ -36,4 +36,37 @@ final class StoreOfferRequest extends FormRequest
             'stock' => ['required', 'integer', 'min:0'],
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'product_id' => [
+                'description' => 'Produto ativo do catálogo que a loja vai vender.',
+                'example' => '01a159cb-3d5a-7b22-8e4f-5c6a7b8c9d0e',
+            ],
+            'price' => [
+                'description' => 'Preço em reais, até 2 casas decimais.',
+                'example' => 1899.0,
+            ],
+            'promotional_price' => [
+                'description' => 'Preço promocional em reais; precisa ser menor que price.',
+                'example' => 1799.9,
+            ],
+            'promo_starts_at' => [
+                'description' => 'Início da promoção (ISO 8601).',
+                'example' => '2026-11-01T00:00:00-03:00',
+            ],
+            'promo_ends_at' => [
+                'description' => 'Fim da promoção (ISO 8601), depois do início.',
+                'example' => '2026-11-30T23:59:59-03:00',
+            ],
+            'stock' => [
+                'description' => 'Unidades disponíveis.',
+                'example' => 25,
+            ],
+        ];
+    }
 }

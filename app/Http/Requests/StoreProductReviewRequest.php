@@ -25,4 +25,25 @@ final class StoreProductReviewRequest extends FormRequest
             'body' => ['sometimes', 'nullable', 'string', 'max:2000'],
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'rating' => [
+                'description' => 'Nota de 1 a 5.',
+                'example' => 5,
+            ],
+            'title' => [
+                'description' => 'Título da avaliação.',
+                'example' => 'Excelente',
+            ],
+            'body' => [
+                'description' => 'Comentário.',
+                'example' => 'Chegou antes do prazo e funciona muito bem.',
+            ],
+        ];
+    }
 }

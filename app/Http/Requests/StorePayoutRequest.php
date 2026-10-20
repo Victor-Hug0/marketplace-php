@@ -25,4 +25,17 @@ final class StorePayoutRequest extends FormRequest
             'amount_cents' => ['required', 'integer', 'min:1'],
         ];
     }
+
+    /**
+     * @return array<string, array{description: string, example?: mixed}>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'amount_cents' => [
+                'description' => 'Valor do saque em centavos; até o saldo disponível.',
+                'example' => 50000,
+            ],
+        ];
+    }
 }
