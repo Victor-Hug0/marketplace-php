@@ -27,7 +27,7 @@ Backlog técnico (itens quebrados): [`docs/roadmap-backlog-tecnico.md`](docs/roa
 - Usuário com UUID, soft deletes, CPF, telefone, status e `last_login_at`
 
 ### Infra e qualidade
-- Docker Compose: `app`, `postgres`, `redis`, `worker`
+- Docker Compose: `app`, `postgres`, `redis`, `worker`, `scheduler`
 - Compose de testes: Postgres (`5433`) + Redis (`6380`) + runner
 - Envelope de erro JSON padronizado (`ApiErrorResponse`)
 - Audit log de domínio (`audit_logs` com morphs actor/auditable)
@@ -60,7 +60,7 @@ cp .env.example .env
 # php artisan key:generate
 # ou: docker compose run --rm app php artisan key:generate
 
-# 2. Build e start (app + postgres + redis + worker)
+# 2. Build e start (app + postgres + redis + worker + scheduler)
 docker compose up -d --build
 
 # 3. Migrations
@@ -78,6 +78,7 @@ docker compose exec app php artisan migrate
 | PostgreSQL | `marketplace-postgres` | `5432` |
 | Redis | `marketplace-redis` | `6379` |
 | Queue worker | `marketplace-worker` | — |
+| Scheduler (`schedule:work`) | `marketplace-scheduler` | — |
 
 No Docker, `DB_HOST` e `REDIS_HOST` são sobrescritos para `postgres` e `redis`. No `.env` do host continue com `127.0.0.1` para ferramentas locais.
 
@@ -87,6 +88,7 @@ No Docker, `DB_HOST` e `REDIS_HOST` são sobrescritos para `postgres` e `redis`.
 docker compose ps
 docker compose logs -f app
 docker compose logs -f worker
+docker compose logs -f scheduler
 docker compose exec app php artisan migrate
 docker compose exec app php artisan tinker
 docker compose down
@@ -143,7 +145,7 @@ app/
   Models/               User, AuditLog
   Services/             AuthService
   Support/Pagination/   CursorPaginates
-compose.yml             app + postgres + redis + worker
+compose.yml             app + postgres + redis + worker + scheduler
 compose.test.yml        infra e runner de testes
 docs/roadmap-implementacao-api.md
 docs/roadmap-backlog-tecnico.md

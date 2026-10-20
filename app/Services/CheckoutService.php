@@ -118,6 +118,7 @@ final class CheckoutService
                     'shipping_cents' => $shippingCents,
                     'total_cents' => $orderTotalCents,
                     'idempotency_key' => $idempotencyKey,
+                    'payment_due_at' => now()->addMinutes((int) config('orders.unpaid_ttl_minutes')),
                     ...Order::snapshotFromAddress($address),
                 ]);
 

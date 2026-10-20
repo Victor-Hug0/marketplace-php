@@ -27,6 +27,7 @@ class Order extends Model
         'shipping_cents',
         'total_cents',
         'idempotency_key',
+        'payment_due_at',
         'address_id',
         'shipping_recipient_name',
         'shipping_phone',
@@ -46,6 +47,7 @@ class Order extends Model
             'subtotal_cents' => 'integer',
             'shipping_cents' => 'integer',
             'total_cents' => 'integer',
+            'payment_due_at' => 'datetime',
         ];
     }
 

@@ -295,7 +295,7 @@ limite 1
 | B3.4.01 | `InventoryService::reserve(offer, qty, user|cart, ttl, idemKey)` | `todo` | L | transaction + lock offer; increment reserved; create reservation |
 | B3.4.02 | `release(reservation)` | `todo` | M | decrementa reserved; status released |
 | B3.4.03 | `commit(reservation)` | `todo` | M | stock-=qty; reserved-=qty; status committed |
-| B3.4.04 | Job `ExpireInventoryReservations` (scheduler) | `todo` | M | status expired + release estoque |
+| B3.4.04 | Expiração agendada de reservas e pedidos não pagos | `done` | M | `reservations:release-expired` libera só reservas avulsas (sem `order_id`); reservas de pedido seguem `orders.payment_due_at` via `orders:expire-unpaid`, que cancela o pedido pelo fluxo de cancelamento. Ambos rodam a cada minuto no serviço `scheduler` do compose |
 | B3.4.05 | Endpoint interno/admin ou seller debug (opcional) | `todo` | S | MVP: só service; HTTP na B4 via cart |
 | B3.4.06 | Teste concorrência: 2 reserves no último item | `todo` | L | `Http::pool` ou parallel processes / DB locks assert |
 | B3.4.07 | Idempotência de reserve por key | `todo` | M | mesma key retorna mesma reservation |
@@ -642,6 +642,7 @@ GET    /api/v1/seller/balance                              # balance_cents, pend
 | X.1.05 | Atualizar README com fluxo develop + matriz endpoints | `todo` | M | após B3 |
 | X.1.06 | Matriz de Policies documentada | `todo` | S | contínuo |
 | X.1.07 | Teste de regressão full suite no CI | `todo` | M | L3/agora se houver CI |
+| X.1.08 | Prazo de pagamento do pedido (`payment_due_at`) | `done` | M | Checkout define agora + `orders.unpaid_ttl_minutes` (60). Cada tentativa de pagamento só estende: Pix até a validade do QR (30 min), boleto até o fim do dia de vencimento (3 dias), cartão + TTL. Pagamento que chega depois do cancelamento é ignorado (`payment_not_pending`) |
 
 ---
 

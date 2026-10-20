@@ -24,6 +24,7 @@ final class OrderResource extends JsonResource
             'address_id' => $this->address_id,
             'address_snapshot' => $this->shippingAddressSnapshot(),
             'idempotency_key' => $this->idempotency_key,
+            'payment_due_at' => $this->payment_due_at?->timezone(config('app.timezone'))->toIso8601String(),
             'sellers' => OrderSellerResource::collection($this->whenLoaded('sellers')),
             'status_histories' => OrderStatusHistoryResource::collection(
                 $this->whenLoaded('statusHistories'),
