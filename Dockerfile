@@ -50,14 +50,17 @@ RUN composer install \
     --prefer-dist \
     --no-progress \
     --no-scripts \
-    --optimize-autoloader
+    --optimize-autoloader \
+    && rm -rf "$COMPOSER_HOME"
 
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 COPY . .
 
+# Build-time Composer runs as root; drop its cache so www-data can create its own at runtime.
 RUN composer dump-autoload --optimize --no-dev --no-interaction \
+    && rm -rf "$COMPOSER_HOME" \
     && mkdir -p \
         storage/framework/cache/data \
         storage/framework/sessions \
