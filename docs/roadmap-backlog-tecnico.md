@@ -599,7 +599,7 @@ GET    /api/v1/seller/balance                              # balance_cents, pend
 | L1.1.01 | Verificação de e-mail (notification + endpoint) | `done` | M |
 | L1.1.02 | Forgot/reset password | `done` | M |
 | L1.1.03 | Social login Google (Socialite) | `done` | L |
-| L1.1.04 | Exigir e-mail verificado para seller/payout (flag) | `later` | S |
+| L1.1.04 | Exigir e-mail verificado para seller/payout (flag) | `done` | S |
 | L1.1.05 | Rate limit reforçado em reset | `done` | S |
 
 ---
@@ -654,7 +654,7 @@ FEITO:
   + CI no GitHub Actions (X.1.07, PR #19)
   + documentação OpenAPI e jornada de demonstração (L3, PRs #21 e #22)
   + hardening: preventLazyLoading, limpeza de tokens, /up com banco e Redis (X.1.01, X.1.03, X.1.04)
-  + L1: verificação de e-mail, reset de senha e login com Google, e-mails via Resend em fila
+  + L1 completa: verificação de e-mail (exigida no checkout, pedido de loja e saque), reset de senha e login com Google, e-mails via Resend em fila
   + X.1.02: preço da oferta em centavos (dinheiro inteiro de ponta a ponta)
 
 PENDÊNCIAS OPCIONAIS DO CORE:

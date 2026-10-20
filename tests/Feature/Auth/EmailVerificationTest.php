@@ -5,6 +5,7 @@ namespace Tests\Feature\Auth;
 use App\Enums\RoleName;
 use App\Models\Address;
 use App\Models\Role;
+use App\Models\Store;
 use App\Models\User;
 use App\Notifications\VerifyEmailNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -121,6 +122,38 @@ class EmailVerificationTest extends TestCase
             ->assertJsonPath('message', 'Confirme seu e-mail para continuar. Peça um novo link em POST /api/v1/auth/email/verification-notification.');
 
         $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_unverified_user_cannot_request_a_store(): void
+    {
+        $user = User::factory()->unverified()->create();
+        $user->roles()->syncWithoutDetaching([Role::query()->firstOrCreate(['name' => RoleName::BUYER])->id]);
+
+        $this->withToken($this->accessToken($user))
+            ->postJson('/api/v1/stores', [
+                'store_name' => 'Loja Sem Confirmação',
+                'document_type' => 'cnpj',
+                'document' => '11222333000181',
+            ])
+            ->assertForbidden()
+            ->assertJsonPath('message', 'Confirme seu e-mail para continuar. Peça um novo link em POST /api/v1/auth/email/verification-notification.');
+
+        $this->assertDatabaseCount('stores', 0);
+    }
+
+    public function test_unverified_seller_cannot_request_a_payout(): void
+    {
+        $seller = User::factory()->unverified()->create();
+        foreach ([RoleName::BUYER, RoleName::SELLER] as $role) {
+            $seller->roles()->syncWithoutDetaching([Role::query()->firstOrCreate(['name' => $role])->id]);
+        }
+        Store::factory()->active()->create(['user_id' => $seller->id]);
+
+        $this->withToken($this->accessToken($seller))
+            ->postJson('/api/v1/seller/payouts', ['amount_cents' => 1000], ['Idempotency-Key' => 'payout-unverified-001'])
+            ->assertForbidden();
+
+        $this->assertDatabaseCount('payouts', 0);
     }
 
     private function verificationUrl(User $user): string

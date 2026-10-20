@@ -128,7 +128,7 @@ Erro:
 | `GET` | `/users/me` | Autenticado | — | `200` `{ user }` com `roles` e resumo da `store` | `401` |
 | `GET` | `/users` | Admin | `per_page`, `cursor` | `200` lista paginada | `401`, `403` |
 
-Todo cadastro recebe o papel `buyer`. `POST /checkout` responde `403` enquanto o e-mail não for confirmado; contas criadas pelo Google já nascem confirmadas. `user` inclui `email_verified_at`.
+Todo cadastro recebe o papel `buyer`. `POST /checkout`, `POST /stores` e `POST /seller/payouts` respondem `403` enquanto o e-mail não for confirmado; contas criadas pelo Google já nascem confirmadas. `user` inclui `email_verified_at`.
 
 ---
 
@@ -136,7 +136,7 @@ Todo cadastro recebe o papel `buyer`. `POST /checkout` responde `403` enquanto o
 
 | Método | Rota | Acesso | Corpo / Query | Sucesso | Erros |
 |--------|------|--------|---------------|---------|-------|
-| `POST` | `/stores` | Autenticado (buyer) | `store_name`, `document_type` (`cpf`\|`cnpj`), `document` (11 ou 14 dígitos, único), `description?`, `commercial_email?`, `commercial_phone?` (10–15 dígitos), `origin_cep?` (CEP; gravado só com dígitos) | `201` loja `pending` | `409` usuário já tem loja (inclusive rejeitada), `422` |
+| `POST` | `/stores` | Autenticado (buyer) | `store_name`, `document_type` (`cpf`\|`cnpj`), `document` (11 ou 14 dígitos, único), `description?`, `commercial_email?`, `commercial_phone?` (10–15 dígitos), `origin_cep?` (CEP; gravado só com dígitos) | `201` loja `pending` | `403` e-mail não confirmado, `409` usuário já tem loja (inclusive rejeitada), `422` |
 | `GET` | `/stores/me` | Autenticado + Dono | — | `200` loja completa | `404` sem loja |
 | `GET` | `/stores/{slug}` | Público | `q`, `category`, `category_id`, `per_page`, `cursor` | `200` vitrine (`data` sem documento nem motivo de rejeição; `data.rating`) + `products` paginados | `404` loja inexistente ou não `active` |
 | `GET` | `/admin/stores` | Admin | `per_page`, `cursor` | `200` lista com dono | `403` |
@@ -293,7 +293,7 @@ O webhook é processado pelo job `ProcessPaymentWebhookEvent` (fila Redis, até 
 | `GET` | `/seller/balance` | Seller | — | `200` `{ balance_cents, pending_payout_cents, held_cents, available_cents, currency }` | `403` |
 | `GET` | `/seller/ledger-entries` | Seller | `per_page`, `cursor` | `200` lançamentos da loja | `403` |
 | `GET` | `/seller/payouts` | Seller | `per_page`, `cursor` | `200` saques da loja | `403` |
-| `POST` | `/seller/payouts` **[idem]** | Seller | `amount_cents` (≥ 1) | `201` saque `requested`; `200` em replay | `409` loja não ativa, valor acima do disponível, chave reusada com outro valor |
+| `POST` | `/seller/payouts` **[idem]** | Seller | `amount_cents` (≥ 1) | `201` saque `requested`; `200` em replay | `403` e-mail não confirmado, `409` loja não ativa, valor acima do disponível, chave reusada com outro valor |
 | `POST` | `/admin/order-sellers/{orderSeller}/refunds` **[idem]** | Admin | `reason` (até 500), `amount_cents?` (padrão: todo o restante) | `201` reembolso; `200` em replay | `409` subpedido sem pagamento confirmado, valor fora de 1..restante, chave reusada com outro valor |
 | `GET` | `/admin/payouts` | Admin | `status?` (`requested`\|`paid`\|`failed`), `per_page`, `cursor` | `200` | `403` |
 | `POST` | `/admin/payouts/{payout}/mark-paid` | Admin | — | `200` `paid`; lançamento negativo no ledger | `409` não está `requested` |

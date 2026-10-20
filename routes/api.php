@@ -104,7 +104,7 @@ Route::prefix('v1')->group(function () {
 
     Route::prefix('stores')->group(function () {
         Route::middleware(['auth:sanctum', 'abilities:access'])->group(function () {
-            Route::post('/', [StoreController::class, 'store']);
+            Route::post('/', [StoreController::class, 'store'])->middleware('email.verified');
             Route::get('me', [StoreController::class, 'me']);
         });
 
@@ -179,7 +179,7 @@ Route::prefix('v1')->group(function () {
             Route::get('balance', [SellerLedgerController::class, 'balance']);
             Route::get('ledger-entries', [SellerLedgerController::class, 'entries']);
             Route::get('payouts', [SellerPayoutController::class, 'index']);
-            Route::post('payouts', [SellerPayoutController::class, 'store'])->middleware('throttle:10,1');
+            Route::post('payouts', [SellerPayoutController::class, 'store'])->middleware(['email.verified', 'throttle:10,1']);
             Route::get('disputes', [SellerPostSaleController::class, 'disputes']);
             Route::post('disputes/{dispute}/respond', [SellerPostSaleController::class, 'respondDispute']);
             Route::get('returns', [SellerPostSaleController::class, 'returns']);

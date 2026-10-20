@@ -79,6 +79,7 @@ stateDiagram-v2
   active --> suspended: admin suspende com motivo
 ```
 
+- Só quem confirmou o e-mail pode solicitar loja (403 antes disso).
 - Uma loja por usuário, inclusive contando lojas rejeitadas ou excluídas: uma segunda solicitação responde 409.
 - `document` (CPF 11 ou CNPJ 14 dígitos) é único; `slug` é gerado a partir do nome e desambiguado com sufixo.
 - Aprovar concede o papel `seller`. Rejeitar ou suspender remove o papel.
@@ -339,7 +340,7 @@ held_cents           = saldo de subpedidos com disputa aberta ou devolução pen
 available_cents      = balance − pending_payout − held
 ```
 
-- O seller com loja `active` pede saque de até `available_cents` (409 acima disso).
+- O seller com loja `active` e e-mail confirmado (403 sem confirmação) pede saque de até `available_cents` (409 acima disso).
 - Admin marca `paid` (gera o lançamento negativo) ou `failed` (o valor volta ao disponível, sem lançamento).
 - Um reembolso depois de um saque pode deixar o saldo negativo; nesse caso nenhum saque novo passa até o saldo voltar a ser positivo.
 
