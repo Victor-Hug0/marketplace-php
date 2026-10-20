@@ -106,3 +106,12 @@ jobs:
 
       - name: Run test suite
         run: php artisan test --fail-on-warning
+
+      # Scribe only warns when an endpoint fails to document; make that fail the build.
+      - name: Generate API docs
+        run: |
+          php artisan scribe:generate --no-interaction | tee /tmp/scribe.log
+          if grep -qE 'FAIL|errors while processing routes' /tmp/scribe.log; then exit 1; fi
+
+      - name: Validate OpenAPI spec
+        run: pipx run openapi-spec-validator public/docs/openapi.yaml

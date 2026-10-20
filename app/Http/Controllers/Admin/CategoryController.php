@@ -17,13 +17,18 @@ use App\Services\CategoryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Knuckles\Scribe\Attributes as Doc;
 
+#[Doc\Group('Categorias')]
 final class CategoryController extends Controller
 {
     public function __construct(
         private readonly CategoryService $categoryService,
     ) {}
 
+    #[Doc\Subgroup('Admin')]
+    #[Doc\Endpoint('Árvore completa', 'Inclui categorias inativas.')]
+    #[Doc\ResponseFromApiResource(CategoryResource::class, Category::class, collection: true)]
     public function index(): AnonymousResourceCollection
     {
         $this->authorize('viewAny', Category::class);
@@ -45,6 +50,9 @@ final class CategoryController extends Controller
         return CategoryResource::collection($categories);
     }
 
+    #[Doc\Subgroup('Admin')]
+    #[Doc\Endpoint('Criar categoria', 'Slug gerado a partir do nome quando não informado. Profundidade máxima de 3 níveis (422).')]
+    #[Doc\ResponseFromApiResource(CategoryResource::class, Category::class, status: 201)]
     public function store(StoreCategoryRequest $request): JsonResponse
     {
         $category = $this->categoryService->create(
@@ -57,6 +65,9 @@ final class CategoryController extends Controller
             ->setStatusCode(201);
     }
 
+    #[Doc\Subgroup('Admin')]
+    #[Doc\Endpoint('Atualizar categoria', 'Mover para outro pai revalida ciclo e profundidade da subárvore (422).')]
+    #[Doc\ResponseFromApiResource(CategoryResource::class, Category::class)]
     public function update(
         UpdateCategoryRequest $request,
         Category $category,
@@ -70,6 +81,9 @@ final class CategoryController extends Controller
         );
     }
 
+    #[Doc\Subgroup('Admin')]
+    #[Doc\Endpoint('Remover categoria', 'Soft delete; bloqueado se houver subcategorias ou produtos (409).')]
+    #[Doc\Response('', status: 204)]
     public function destroy(Request $request, Category $category): JsonResponse
     {
         $this->authorize('manage', $category);
@@ -79,6 +93,9 @@ final class CategoryController extends Controller
         return response()->json(null, 204);
     }
 
+    #[Doc\Subgroup('Admin')]
+    #[Doc\Endpoint('Criar atributo', '`code` único na categoria; `options` obrigatório quando `data_type` é `enum`.')]
+    #[Doc\ResponseFromApiResource(CategoryAttributeResource::class, CategoryAttribute::class, status: 201)]
     public function storeAttribute(
         StoreCategoryAttributeRequest $request,
         Category $category,
@@ -94,6 +111,9 @@ final class CategoryController extends Controller
             ->setStatusCode(201);
     }
 
+    #[Doc\Subgroup('Admin')]
+    #[Doc\Endpoint('Atualizar atributo')]
+    #[Doc\ResponseFromApiResource(CategoryAttributeResource::class, CategoryAttribute::class)]
     public function updateAttribute(
         UpdateCategoryAttributeRequest $request,
         Category $category,
@@ -109,6 +129,9 @@ final class CategoryController extends Controller
         );
     }
 
+    #[Doc\Subgroup('Admin')]
+    #[Doc\Endpoint('Remover atributo')]
+    #[Doc\Response('', status: 204)]
     public function destroyAttribute(
         Request $request,
         Category $category,

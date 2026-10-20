@@ -46,6 +46,8 @@ Projeto de portfólio com foco em **regra de negócio**: transações, concorrê
 
 | Documento | Conteúdo |
 |-----------|----------|
+| [`public/docs/index.html`](public/docs/index.html) (em `http://127.0.0.1:8080/docs/`) | Documentação interativa gerada pelo Scribe: endpoints agrupados por contexto, parâmetros extraídos dos Form Requests, exemplos de resposta e botão "Try it out" |
+| [`public/docs/openapi.yaml`](public/docs/openapi.yaml) e [`collection.json`](public/docs/collection.json) | Especificação OpenAPI 3.0.3 e coleção do Postman, para importar em Insomnia, Postman ou geradores de cliente |
 | [`docs/api-referencia.md`](docs/api-referencia.md) | Os 96 endpoints: acesso, corpo, sucesso e erros; convenções de envelope, paginação, idempotência e rate limit |
 | [`docs/fluxos-e-regras.md`](docs/fluxos-e-regras.md) | Máquinas de estado, regras de cada contexto, fluxo do dinheiro e do estoque, autorização, configuração e auditoria |
 | [`docs/roadmap-implementacao-api.md`](docs/roadmap-implementacao-api.md) | Roadmap de negócio por fase, com o teste que comprova cada critério de pronto |
@@ -181,6 +183,19 @@ curl -s -X POST $API/webhooks/payments/mock -H 'Content-Type: application/json' 
 
 Daí em diante, o seller faz `POST /seller/order-sellers/{id}/shipments` e `/deliver`, e o comprador pode avaliar o item, abrir disputa ou pedir devolução. Todos os endpoints estão em [`docs/api-referencia.md`](docs/api-referencia.md).
 
+## Documentação interativa (Scribe)
+
+A página em `public/docs` é gerada a partir do código e fica versionada no repositório, então `/docs/` funciona sem passo extra. As anotações ficam nos controllers como atributos PHP (`#[Doc\Group]`, `#[Doc\Endpoint]`, `#[Doc\ResponseFromApiResource]` e afins); os parâmetros vêm das `rules()` dos Form Requests.
+
+Depois de criar ou alterar endpoints, regenere com o banco de teste no ar (os exemplos de resposta são montados com factories dentro de uma transação desfeita no final):
+
+```bash
+docker compose -f compose.test.yml up -d postgres redis
+docker compose -f compose.test.yml run --rm test sh -c "php artisan migrate:fresh --force && php artisan scribe:generate"
+```
+
+O CI gera a documentação e valida o `openapi.yaml` a cada PR: anotação quebrada ou spec inválido falham o build.
+
 ## Testes
 
 A suíte usa Postgres e Redis isolados (`compose.test.yml`) e o `phpunit.xml` aponta para:
@@ -252,6 +267,7 @@ routes/api.php          rotas /api/v1
 routes/console.php      agendamentos
 tests/Feature/          testes por contexto
 docs/                   referência da API, regras e roadmap
+public/docs/            documentação interativa, OpenAPI e coleção Postman (geradas pelo Scribe)
 compose.yml             app, postgres, redis, worker, scheduler
 compose.test.yml        infraestrutura e runner de testes
 ```
@@ -270,7 +286,8 @@ Branches de feature saem de `develop`; `develop` vai para `main` por PR de relea
 | B6 — Frete simulado e envio | Concluída |
 | B7 — Avaliações, disputas e devoluções | Concluída |
 | Qualidade — CI, `preventLazyLoading`, limpeza de tokens | Próxima |
-| L1 a L3 — conta, engajamento, OpenAPI e relatórios | Liberadas |
+| L3 — documentação OpenAPI interativa | Concluída |
+| L1 a L3 — conta, engajamento, relatórios e API de seller | Liberadas |
 
 Pendências opcionais e próximos passos detalhados: [`docs/roadmap-backlog-tecnico.md`](docs/roadmap-backlog-tecnico.md).
 

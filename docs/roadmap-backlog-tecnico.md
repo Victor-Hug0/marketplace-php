@@ -622,7 +622,7 @@ GET    /api/v1/seller/balance                              # balance_cents, pend
 | ID | Item | Status | Esforço |
 |----|------|--------|---------|
 | L3.1.01 | Relatórios GMV / comissão / cancelamentos | `later` | L |
-| L3.1.02 | OpenAPI (Scribe/L5-Swagger) | `later` | L |
+| L3.1.02 | OpenAPI (Scribe) | `done` | L | `knuckleswtf/scribe` (dev); anotações por atributos nos controllers; saída estática versionada em `public/docs` (HTML, `openapi.yaml` 3.0.3, coleção Postman); exemplos de resposta via API Resources + factories; CI gera e valida o spec |
 | L3.1.03 | API seller tokens + webhooks HMAC | `later` | XL |
 | L3.1.04 | Seeders demo ricos (jornada completa) | `later` | M |
 
