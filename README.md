@@ -14,7 +14,7 @@ Projeto de portfólio com foco em **regra de negócio**: transações, concorrê
 - **Ledger append-only:** comissão, venda, reembolso proporcional e saque como lançamentos imutáveis (bloqueados no model e por trigger no Postgres). Saldo é sempre soma.
 - **Webhook de pagamento idempotente,** processado em fila com retentativas.
 - **Autorização em três camadas:** ability do token, papel (`buyer`, `seller`, `admin`) e Policy por recurso; recurso de outro usuário responde 404.
-- **259 testes** cobrindo caminho feliz, 401/403/404/409/422 e conciliação financeira; lazy loading é proibido fora de produção, então um N+1 falha na suíte.
+- **261 testes** cobrindo caminho feliz, 401/403/404/409/422 e conciliação financeira; lazy loading é proibido fora de produção, então um N+1 falha na suíte.
 - **Pronto para operar:** `/up` verifica Postgres e Redis (usado pelo healthcheck da imagem), tokens vencidos são limpos todo dia e o CI valida também a instalação sem dependências de desenvolvimento.
 
 ## Stack
@@ -34,7 +34,7 @@ Projeto de portfólio com foco em **regra de negócio**: transações, concorrê
 
 | Contexto | Resumo |
 |----------|--------|
-| Conta | Cadastro com senha forte (sempre como `buyer`), confirmação de e-mail por link assinado (checkout bloqueado até confirmar), recuperação de senha com token de uso único, login com Google, login com rate limit, logout, refresh com rotação, `GET /users/me` com papéis e loja |
+| Conta | Cadastro com senha forte (sempre como `buyer`), confirmação de e-mail por link assinado (checkout, pedido de loja e saque bloqueados até confirmar), recuperação de senha com token de uso único, login com Google, login com rate limit, logout, refresh com rotação, `GET /users/me` com papéis e loja |
 | Lojas | Comprador solicita loja; admin aprova (concede `seller`), rejeita ou suspende (remove `seller`); vitrine pública por slug com nota média |
 | Catálogo | Categorias em árvore (3 níveis) com atributos; produtos com moderação (`draft → pending_moderation → active`), até 8 imagens, peso e medidas; busca pública por texto, categoria e loja |
 | Ofertas | Vários sellers vendem o mesmo produto, cada um com preço, promoção com janela e estoque; Buy Box (menor preço, depois mais estoque, depois mais antiga) |
@@ -298,7 +298,7 @@ No host, o PHP precisa da extensão `redis` (o health check testa o Redis de ver
 
 | Área | Arquivos em `tests/Feature/` | Testes |
 |------|------------------------------|-------:|
-| Conta (cadastro, login, e-mail, senha, Google) | `Auth/` | 39 |
+| Conta (cadastro, login, e-mail, senha, Google) | `Auth/` | 41 |
 | Lojas e vitrine | `Store/`, `Catalog/` | 15 |
 | Catálogo | `Category/`, `Product/` | 28 |
 | Ofertas, Buy Box, estoque e preço em centavos | `Offer/` | 15 |
@@ -311,7 +311,7 @@ No host, o PHP precisa da extensão `redis` (o health check testa o Redis de ver
 | Avaliações e pós-venda | `Review/`, `PostSale/` | 20 |
 | Seeder de demonstração | `Seeders/` | 4 |
 | Health check (banco e Redis) e exemplo unitário | `HealthCheckTest`, `tests/Unit/ExampleTest` | 4 |
-| **Total** | | **259** |
+| **Total** | | **261** |
 
 Formatação: `./vendor/bin/pint` (ou `--test` para só verificar).
 
