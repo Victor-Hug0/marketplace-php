@@ -142,7 +142,9 @@ Todo cadastro recebe o papel `buyer`. `POST /checkout`, `POST /stores` e `POST /
 | `GET` | `/admin/stores` | Admin | `per_page`, `cursor` | `200` lista com dono | `403` |
 | `POST` | `/admin/stores/{store}/approve` | Admin | — | `200` loja `active`; dono ganha papel `seller` | `409` não está `pending` |
 | `POST` | `/admin/stores/{store}/reject` | Admin | `reason` (10–2000) | `200` loja `rejected` | `409`, `422` |
-| `POST` | `/admin/stores/{store}/suspend` | Admin | `reason` (10–2000) | `200` loja `suspended`; dono perde o papel `seller` | `409` não está `active`, `422` |
+| `POST` | `/admin/stores/{store}/suspend` | Admin | `reason` (10–2000) | `200` loja `suspended`; dono perde o papel `seller` | `409` não está `active` ou é a loja da plataforma, `422` |
+
+A loja e o bloco `store` de produtos e ofertas trazem `is_platform`: `true` só na loja pela qual o próprio marketplace vende (1P). Ela é criada pelo `PlatformStoreSeeder` e não pode ser marcada pela API.
 
 ---
 
@@ -210,12 +212,16 @@ Todo cadastro recebe o papel `buyer`. `POST /checkout`, `POST /stores` e `POST /
 | `GET` | `/seller/offers/{offer}` | Seller + Dono | — | `200` com `stock` e `reserved_stock` | `404` |
 | `PUT`/`PATCH` | `/seller/offers/{offer}` | Seller + Dono | `price?`, `promotional_price?`, `promo_starts_at?`, `promo_ends_at?`, `stock?` | `200` | `409` `stock` menor que o reservado, `422` |
 | `POST` | `/seller/offers/{offer}/pause` | Seller + Dono | — | `200` `paused` | `409` |
-| `POST` | `/seller/offers/{offer}/resume` | Seller + Dono | — | `200` `active` | `409` |
+| `POST` | `/seller/offers/{offer}/resume` | Seller + Dono | — | `200` `active` | `409` não está `paused` ou foi pausada pela moderação |
 | `DELETE` | `/seller/offers/{offer}` | Seller + Dono | — | `204` (soft delete) | `409` há reservas ativas |
 | `POST` | `/offers/{offer}/reservations` | Autenticado | `quantity` (≥ 1) | `201` reserva `active` por 15 min | `409` oferta pausada, loja inativa ou estoque insuficiente |
 | `DELETE` | `/offers/{offer}/reservations/{reservation}` | Autenticado + Dono | — | `204` | `403` reserva de outro usuário, `404` reserva de outra oferta, `409` já liberada/consumida |
+| `GET` | `/admin/offers` | Admin | `status?` (`active`\|`paused`), `store_id?`, `product_id?`, `admin_paused?` (0\|1), `per_page`, `cursor` | `200` ofertas de todas as lojas, mais recentes primeiro | `403`, `422` |
+| `GET` | `/admin/offers/{offer}` | Admin | — | `200` com estoque e motivo da trava | `404` |
+| `POST` | `/admin/offers/{offer}/pause` | Admin | `reason` (10–2000) | `200` `paused` com `admin_paused: true`; vale para oferta `active` ou já pausada pelo seller | `409` já travada pela moderação, `422` |
+| `POST` | `/admin/offers/{offer}/resume` | Admin | — | `200` `active`, trava removida | `409` não está travada pela moderação |
 
-Para o público, a oferta expõe `current_price` e `available_stock`; `stock` e `reserved_stock` só aparecem para o dono e para o admin.
+Para o público, a oferta expõe `current_price`, `available_stock` e `admin_paused`; `stock`, `reserved_stock`, `admin_paused_at` e `admin_pause_reason` só aparecem para o dono e para o admin.
 
 ---
 

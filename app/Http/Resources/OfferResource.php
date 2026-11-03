@@ -41,10 +41,17 @@ final class OfferResource extends JsonResource
             'reserved_stock' => $this->when($isOwnerOrAdmin, $this->reserved_stock),
             'available_stock' => $this->availableStock(),
             'status' => $this->status,
+            'admin_paused' => $this->isAdminPaused(),
+            'admin_paused_at' => $this->when(
+                $isOwnerOrAdmin,
+                fn (): ?string => $this->admin_paused_at?->timezone(config('app.timezone'))->toIso8601String(),
+            ),
+            'admin_pause_reason' => $this->when($isOwnerOrAdmin, $this->admin_pause_reason),
             'store' => $this->whenLoaded('store', fn () => [
                 'id' => $this->store->id,
                 'store_name' => $this->store->store_name,
                 'slug' => $this->store->slug,
+                'is_platform' => (bool) $this->store->is_platform,
             ]),
             'product' => $this->whenLoaded('product', fn () => [
                 'id' => $this->product->id,

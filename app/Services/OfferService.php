@@ -8,6 +8,7 @@ use App\Enums\OfferStatus;
 use App\Enums\ProductStatus;
 use App\Enums\RoleName;
 use App\Enums\StoreStatus;
+use App\Events\OfferModerated;
 use App\Models\AuditLog;
 use App\Models\Offer;
 use App\Models\Product;
@@ -99,17 +100,12 @@ final class OfferService
         });
     }
 
-    public function pause(User $actor, Offer $offer, bool $asAdmin = false): Offer
+    public function pause(User $actor, Offer $offer): Offer
     {
-        return DB::transaction(function () use ($actor, $offer, $asAdmin): Offer {
+        return DB::transaction(function () use ($actor, $offer): Offer {
             $offer = $this->lockedOffer($offer);
-
-            if ($asAdmin) {
-                $this->assertAdmin($actor);
-            } else {
-                $this->assertSellerOwnsOffer($actor, $offer);
-                $this->assertSellerCanWrite($actor, $offer->store);
-            }
+            $this->assertSellerOwnsOffer($actor, $offer);
+            $this->assertSellerCanWrite($actor, $offer->store);
 
             if ($offer->status !== OfferStatus::ACTIVE) {
                 throw new ConflictHttpException(
@@ -131,6 +127,12 @@ final class OfferService
             $this->assertSellerOwnsOffer($actor, $offer);
             $this->assertSellerCanWrite($actor, $offer->store);
 
+            if ($offer->isAdminPaused()) {
+                throw new ConflictHttpException(
+                    'A oferta foi pausada pela moderação e só pode ser reativada por um administrador.',
+                );
+            }
+
             if ($offer->status !== OfferStatus::PAUSED) {
                 throw new ConflictHttpException(
                     'A oferta precisa estar paused para ser reativada.',
@@ -139,6 +141,63 @@ final class OfferService
 
             $offer->update(['status' => OfferStatus::ACTIVE]);
             $this->audit($actor, $offer, 'offer.resumed');
+
+            return $offer->refresh()->load(['product', 'store']);
+        });
+    }
+
+    /**
+     * Moderation lock: takes the offer out of sale until an admin lifts it,
+     * whether the seller had it active or already paused.
+     */
+    public function pauseAsAdmin(User $admin, Offer $offer, string $reason): Offer
+    {
+        return DB::transaction(function () use ($admin, $offer, $reason): Offer {
+            $offer = $this->lockedOffer($offer);
+            $this->assertAdmin($admin);
+
+            if ($offer->isAdminPaused()) {
+                throw new ConflictHttpException('A oferta já está pausada pela moderação.');
+            }
+
+            $previousStatus = $offer->status;
+
+            $offer->update([
+                'status' => OfferStatus::PAUSED,
+                'admin_paused_at' => now(),
+                'admin_pause_reason' => $reason,
+            ]);
+
+            $this->audit($admin, $offer, 'offer.admin_paused', [
+                'from' => $previousStatus->value,
+                'reason' => $reason,
+            ]);
+
+            event(new OfferModerated($offer));
+
+            return $offer->refresh()->load(['product', 'store']);
+        });
+    }
+
+    public function resumeAsAdmin(User $admin, Offer $offer): Offer
+    {
+        return DB::transaction(function () use ($admin, $offer): Offer {
+            $offer = $this->lockedOffer($offer);
+            $this->assertAdmin($admin);
+
+            if (! $offer->isAdminPaused()) {
+                throw new ConflictHttpException('A oferta não está pausada pela moderação.');
+            }
+
+            $offer->update([
+                'status' => OfferStatus::ACTIVE,
+                'admin_paused_at' => null,
+                'admin_pause_reason' => null,
+            ]);
+
+            $this->audit($admin, $offer, 'offer.admin_resumed');
+
+            event(new OfferModerated($offer));
 
             return $offer->refresh()->load(['product', 'store']);
         });

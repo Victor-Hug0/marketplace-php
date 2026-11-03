@@ -32,6 +32,8 @@ class Offer extends Model
         'stock',
         'reserved_stock',
         'status',
+        'admin_paused_at',
+        'admin_pause_reason',
     ];
 
     protected function casts(): array
@@ -44,6 +46,7 @@ class Offer extends Model
             'stock' => 'integer',
             'reserved_stock' => 'integer',
             'status' => OfferStatus::class,
+            'admin_paused_at' => 'datetime',
         ];
     }
 
@@ -137,5 +140,13 @@ class Offer extends Model
     public function isActive(): bool
     {
         return $this->status === OfferStatus::ACTIVE;
+    }
+
+    /**
+     * Paused by moderation: only an admin can resume it.
+     */
+    public function isAdminPaused(): bool
+    {
+        return $this->admin_paused_at !== null;
     }
 }

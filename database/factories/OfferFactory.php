@@ -45,6 +45,15 @@ final class OfferFactory extends Factory
         ]);
     }
 
+    public function adminPaused(string $reason = 'Preço incompatível com o mercado.'): static
+    {
+        return $this->state(fn (): array => [
+            'status' => OfferStatus::PAUSED,
+            'admin_paused_at' => now(),
+            'admin_pause_reason' => $reason,
+        ]);
+    }
+
     public function belongingToStore(Store $store): static
     {
         return $this->state(fn (): array => [

@@ -73,6 +73,7 @@ final class DemoSeeder extends Seeder
         $this->call([
             PlatformFeeRuleSeeder::class,
             ShippingRateRuleSeeder::class,
+            PlatformStoreSeeder::class,
             CategorySeeder::class,
             ProductSeeder::class,
             OfferSeeder::class,

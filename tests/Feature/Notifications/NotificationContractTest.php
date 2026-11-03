@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Notifications;
 
 use App\Models\Dispute;
+use App\Models\Offer;
 use App\Models\Order;
 use App\Models\OrderSeller;
 use App\Models\Payment;
@@ -16,6 +17,7 @@ use App\Models\User;
 use App\Notifications\DisputeOpenedNotification;
 use App\Notifications\DisputeResolvedNotification;
 use App\Notifications\NewSaleNotification;
+use App\Notifications\OfferModeratedNotification;
 use App\Notifications\OrderCancelledNotification;
 use App\Notifications\OrderPaidNotification;
 use App\Notifications\OrderPlacedNotification;
@@ -62,6 +64,7 @@ final class NotificationContractTest extends TestCase
             new StoreDecidedNotification(new Store),
             new ProductSubmittedNotification(new Product),
             new ProductDecidedNotification(new Product),
+            new OfferModeratedNotification(new Offer),
         ];
 
         $covered = array_map(fn (TransactionalNotification $n): string => $n::class, $instances);

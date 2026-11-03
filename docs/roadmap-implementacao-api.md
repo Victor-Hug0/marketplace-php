@@ -101,14 +101,18 @@ Enquanto essa jornada não existir com testes, **não** investir em e-mail verif
 | **B7** | Avaliação de item entregue com média por produto e por loja; disputa mediada pelo admin e devolução decidida pelo seller ou admin, ambas travando o saque e disparando reembolso | #14, #15 |
 | Correção | Pedidos não pagos expiram por `payment_due_at` e liberam o estoque | #16 |
 
+### Depois do core
+
+Já entregues: CI no GitHub Actions, hardening (`preventLazyLoading`, limpeza de tokens, `/up` com banco e Redis), L1 completa, OpenAPI e seeder de demonstração (L3), dinheiro em centavos de ponta a ponta, atributos valorados com filtros e preço "a partir de", notificações por e-mail e caixa no app (L2.1.06), loja da plataforma (B2.4.07, fecha o modelo híbrido da seção 2) e moderação de ofertas pelo admin (B3.2.08).
+
 ### O que ficou de fora do core (opcional)
 
-KYC do seller (B1.3), resize de imagem em fila e flag de produto da plataforma (restante da B2.4), rotas admin de oferta (B3.2.08), idempotência de reserva avulsa (B3.4.07). Detalhes no [backlog](roadmap-backlog-tecnico.md).
+KYC do seller (B1.3), resize de imagem em fila (B2.4.05) e idempotência de reserva avulsa (B3.4.07). Detalhes no [backlog](roadmap-backlog-tecnico.md).
 
 ### Próximos passos
 
-1. Qualidade: CI no GitHub Actions, `preventLazyLoading`, limpeza de tokens, health check ampliado.
-2. Fases later, agora liberadas: L3 (OpenAPI, seeders de demo) e L1 (conta).
+1. L3.1.01: relatórios do admin (GMV, comissão, cancelamentos), só leitura sobre ledger, pedidos e reembolsos.
+2. L2.1.01: cupons, quebrados em itens menores antes de começar (afetam preço, checkout, comissão e ledger).
 
 Referência de endpoints: [`api-referencia.md`](api-referencia.md). Estados, regras e autorização: [`fluxos-e-regras.md`](fluxos-e-regras.md).
 
@@ -265,7 +269,7 @@ Nesta fase o foco é **produto + categoria + mídia + moderação**. Preço/esto
 - [x] Produto rejeitado/pausado some da busca — `ProductWorkflowTest::test_non_active_products_are_hidden_from_public_listing`
 - [x] Seed com categorias e alguns produtos para demo — `CategorySeeder`, `ProductSeeder`
 
-**Implementação:** moderação pela opção B (`pending_moderation` → admin aprova/rejeita). Atributos valorados por produto e filtros `?attr[...]` entraram depois, em B2.4.
+**Implementação:** moderação pela opção B (`pending_moderation` → admin aprova/rejeita). Atributos valorados por produto e filtros `?attr[...]` entraram depois, em B2.4. A plataforma vende por uma loja comum marcada com `stores.is_platform` (B2.4.07), então produto e oferta 1P usam o mesmo modelo.
 
 #### Cuidados
 

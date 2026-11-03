@@ -18,7 +18,7 @@ final class BuyBoxService
         return Offer::query()
             ->where('product_id', $product->id)
             ->purchasable()
-            ->with('store:id,store_name,slug,status')
+            ->with('store:id,store_name,slug,status,is_platform')
             ->get();
     }
 

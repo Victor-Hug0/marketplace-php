@@ -57,7 +57,7 @@ Um usuário pode ser `buyer` e `seller` ao mesmo tempo. Comprar não exige loja.
 | `StorePolicy` | pedir loja exige o papel `buyer`; dono ou admin vê; admin lista e decide |
 | `CategoryPolicy` | escrita só admin |
 | `ProductPolicy` | seller dono com loja `active` cria, edita, submete, gerencia imagens, pausa, retoma e exclui; admin vê, edita, pausa e modera qualquer um |
-| `OfferPolicy` | seller dono com loja `active` cria, edita, pausa, retoma e exclui; a policy já autoriza admin a ver, editar e pausar (sem rotas admin ainda) |
+| `OfferPolicy` | seller dono com loja `active` cria, edita, pausa, retoma e exclui; admin vê e modera (`moderate`: pausa com trava e reativa) qualquer oferta |
 | `AddressPolicy` | só o dono |
 | `CartPolicy` / `CartItemPolicy` | só o dono do carrinho |
 | `OrderPolicy` | comprador vê, cancela e paga os próprios pedidos; admin vê todos |
@@ -86,6 +86,14 @@ stateDiagram-v2
 - Loja suspensa: as ofertas dela saem do Buy Box, da reserva, do carrinho e do checkout; ela não solicita saque.
 - `origin_cep` é o CEP de saída do frete. Sem ele, o frete usa `SHIPPING_DEFAULT_ORIGIN_CEP`.
 - Não há reativação de loja suspensa nem nova solicitação após rejeição.
+
+### Loja da plataforma (1P)
+
+- O marketplace vende os próprios produtos por uma loja comum marcada com `is_platform`. O banco aceita só uma (índice único parcial no Postgres).
+- `PlatformStoreSeeder` cria a loja já `active`, com um usuário operador (`buyer` + `seller`, e-mail confirmado, senha aleatória: o acesso é pela redefinição de senha). Nome, slug, CNPJ e e-mails vêm de `config/platform_store.php`.
+- `is_platform` não é preenchível em massa: `POST /stores` ignora o campo.
+- Produtos, ofertas, Buy Box, carrinho, frete e ledger tratam a loja da plataforma como qualquer outra. A venda 1P gera o crédito da loja e a comissão normalmente, para o ledger e os reembolsos seguirem uma regra só.
+- A loja da plataforma não pode ser suspensa (409).
 
 ---
 
@@ -130,6 +138,20 @@ stateDiagram-v2
 - `price_cents` e `promotional_price_cents` em centavos (`bigint`); a API recebe reais e converte com `App\Support\Money` (bcmath, sem `float`). O banco garante preço > 0 e promoção > 0 e menor que o preço (`CHECK`). O preço vigente (`currentPriceCents()`) é o promocional quando há promoção dentro da janela `promo_starts_at`–`promo_ends_at`; senão, o regular.
 - Estados `active` ↔ `paused`. Exclusão (soft delete) só sem reservas ativas.
 - `stock` pode ser alterado, mas nunca para menos que `reserved_stock` (409).
+
+```mermaid
+stateDiagram-v2
+  [*] --> active: seller cria
+  active --> paused: seller pausa
+  paused --> active: seller retoma (sem trava)
+  active --> travada: admin pausa com motivo
+  paused --> travada: admin pausa com motivo
+  travada --> active: admin reativa
+```
+
+- "Travada" é `status = paused` com `admin_paused_at` preenchido. Enquanto houver trava, o seller não retoma (409), mas ainda pode editar preço e estoque ou excluir a oferta.
+- O motivo (`admin_pause_reason`) vai para o seller na notificação e na resposta da oferta, e para a auditoria.
+- Pausar o **produto** continua tirando todas as ofertas dele da venda; a trava de oferta atinge só um vendedor.
 
 ### Buy Box
 
@@ -433,6 +455,7 @@ Os services disparam eventos de domínio (`app/Events`) que implementam `ShouldD
 | `StoreDecided` | loja aprovada, rejeitada ou suspensa | quem solicitou | `store.active` / `store.rejected` / `store.suspended` |
 | `ProductSubmitted` | produto enviado para moderação | admins | `product.submitted` |
 | `ProductDecided` | produto aprovado ou rejeitado | dono da loja | `product.approved` / `product.rejected` |
+| `OfferModerated` | admin trava ou reativa uma oferta | dono da loja | `offer.admin_paused` / `offer.admin_resumed` |
 
 Os botões dos e-mails apontam para rotas do app cliente em `FRONTEND_URL` (`/pedidos/{id}`, `/vendedor/subpedidos/{id}`, `/vendedor/disputas/{id}`, `/admin/lojas/{id}` etc.). Um envio de e-mail que falha (por exemplo, sem `RESEND_API_KEY`) vai para `failed_jobs` sem afetar a cópia no banco, porque cada canal é um job separado.
 
@@ -465,6 +488,9 @@ Nos testes a fila roda de forma síncrona (`QUEUE_CONNECTION=sync`).
 | `SHIPPING_DEFAULT_ORIGIN_CEP` | `01310100` | origem do frete para loja sem `origin_cep` |
 | `POST_SALE_DISPUTE_WINDOW_DAYS` | 7 | janela para abrir disputa |
 | `POST_SALE_RETURN_WINDOW_DAYS` | 7 | janela para pedir devolução |
+| `PLATFORM_STORE_NAME` / `PLATFORM_STORE_SLUG` | `Marketplace Oficial` / `marketplace-oficial` | nome e slug da loja da plataforma |
+| `PLATFORM_STORE_CNPJ` / `PLATFORM_STORE_EMAIL` | `00000000000191` / `loja@marketplace.test` | documento e e-mail comercial da loja da plataforma |
+| `PLATFORM_STORE_OWNER_EMAIL` / `PLATFORM_STORE_OWNER_NAME` | `plataforma@marketplace.test` / `Operação Marketplace` | conta operadora da loja da plataforma |
 | `MAIL_MAILER` | `log` | `resend` envia pela Resend; `log` grava em `storage/logs` |
 | `RESEND_API_KEY` | vazio | chave da API da Resend |
 | `MAIL_FROM_ADDRESS` | `onboarding@resend.dev` | remetente; o domínio precisa estar verificado na Resend para enviar a qualquer destinatário |
@@ -486,7 +512,7 @@ Valores fixos no código: embalagem padrão e divisor volumétrico (`config/ship
 | Loja | `store.requested`, `store.approved`, `store.rejected`, `store.suspended` |
 | Categoria | `category.created`, `category.updated`, `category.deleted`, `category.attribute.created`, `category.attribute.updated`, `category.attribute.deleted` |
 | Produto | `product.created`, `product.updated`, `product.submitted`, `product.approved`, `product.rejected`, `product.paused`, `product.resumed`, `product.deleted`, `product.image.created`, `product.image.deleted`, `product.image.reordered` |
-| Oferta | `offer.created`, `offer.updated`, `offer.paused`, `offer.resumed`, `offer.deleted` |
+| Oferta | `offer.created`, `offer.updated`, `offer.paused`, `offer.resumed`, `offer.deleted`, `offer.admin_paused`, `offer.admin_resumed` |
 | Endereço | `address.created`, `address.updated`, `address.deleted`, `address.default_set` |
 | Pedido | `order.checkout.created`, `order.cancelled_by_buyer`, `order.expired_unpaid`, `order_seller.cancelled_by_seller`, `order_seller.processing_started`, `order_seller.shipped`, `order_seller.delivered` |
 | Dinheiro | `payment.intent_created`, `payment.webhook_processed`, `order_seller.refunded_by_admin`, `order_seller.refunded_by_dispute`, `order_seller.refunded_by_return`, `payout.requested`, `payout.marked_paid`, `payout.marked_failed` |

@@ -32,6 +32,7 @@ final class StoreResource extends JsonResource
             'document_type' => $this->document_type,
             'document' => $this->document,
             'status' => $this->status,
+            'is_platform' => (bool) $this->is_platform,
             'rejection_reason' => $this->rejection_reason,
             'reviewed_at' => $this->reviewed_at?->timezone(config('app.timezone'))->toIso8601String(),
             'owner' => UserResource::make($this->whenLoaded('owner')),

@@ -100,9 +100,10 @@ O projeto é montado dentro dos containers, então quem grava em `storage/`, `ve
 | `DatabaseSeeder` | papéis `buyer`, `seller`, `admin`; chama os demais e, só com `APP_ENV=local`, o `DemoSeeder` |
 | `PlatformFeeRuleSeeder` | regra global de comissão de 10% |
 | `ShippingRateRuleSeeder` | 18 regras de frete (2 modalidades × 3 zonas × 3 faixas) |
+| `PlatformStoreSeeder` | a loja da plataforma (`is_platform`, "Marketplace Oficial" por padrão, ver `config/platform_store.php`), já `active`, com o operador `plataforma@marketplace.test`. A senha é aleatória: para entrar, use a redefinição de senha. Roda em todos os ambientes |
 | `CategorySeeder` | 5 categorias (Eletrônicos > Celulares, Notebooks; Casa > Móveis) com atributos |
 | `ProductSeeder` | seller `seller.demo@marketplace.test`, "Loja Demo", 3 produtos (`smartphone-demo-128gb` e `notebook-demo-16gb` ativos, `fone-bluetooth-demo` em rascunho) e uma oferta do smartphone a R$ 1.999,90 com promoção de R$ 1.799,90 nos 30 dias seguintes ao seed |
-| `OfferSeeder` | seller `seller.b.demo@marketplace.test`, "Loja Rival Demo" e uma oferta concorrente do mesmo smartphone a R$ 1.899,00. Enquanto a promoção da Loja Demo vale, ela vence o Buy Box; depois, vence a Rival |
+| `OfferSeeder` | seller `seller.b.demo@marketplace.test`, "Loja Rival Demo" e uma oferta concorrente do mesmo smartphone a R$ 1.899,00. Enquanto a promoção da Loja Demo vale, ela vence o Buy Box; depois, vence a Rival. Também cria a oferta da loja da plataforma para o `notebook-demo-16gb` a R$ 4.599,00 |
 | `DemoSeeder` | a jornada completa, descrita abaixo |
 
 Todos os seeders podem rodar mais de uma vez sem duplicar dados.
@@ -301,9 +302,9 @@ No host, o PHP precisa da extensão `redis` (o health check testa o Redis de ver
 | Área | Arquivos em `tests/Feature/` | Testes |
 |------|------------------------------|-------:|
 | Conta (cadastro, login, e-mail, senha, Google) | `Auth/` | 41 |
-| Lojas, vitrine e preço "a partir de" | `Store/`, `Catalog/` | 20 |
+| Lojas, loja da plataforma, vitrine e preço "a partir de" | `Store/`, `Catalog/` | 26 |
 | Catálogo e atributos | `Category/`, `Product/` | 36 |
-| Ofertas, Buy Box, estoque e preço em centavos | `Offer/` | 15 |
+| Ofertas, Buy Box, estoque, moderação pelo admin e preço em centavos | `Offer/` | 24 |
 | Conversão reais ↔ centavos | `tests/Unit/MoneyTest` | 11 |
 | Endereços e carrinho | `Address/`, `Cart/` | 20 |
 | Checkout e pedidos | `Checkout/`, `Order/` | 36 |
@@ -314,7 +315,7 @@ No host, o PHP precisa da extensão `redis` (o health check testa o Redis de ver
 | Notificações (eventos, destinatários, caixa, e-mail em pt-BR) | `Notifications/` | 19 |
 | Seeder de demonstração | `Seeders/` | 4 |
 | Health check (banco e Redis) e exemplo unitário | `HealthCheckTest`, `tests/Unit/ExampleTest` | 4 |
-| **Total** | | **293** |
+| **Total** | | **308** |
 
 Formatação: `./vendor/bin/pint` (ou `--test` para só verificar).
 

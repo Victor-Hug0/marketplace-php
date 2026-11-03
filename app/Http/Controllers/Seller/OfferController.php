@@ -39,7 +39,7 @@ final class OfferController extends Controller
         $offers = $this->cursorPaginate(
             Offer::query()
                 ->where('store_id', $store->id)
-                ->with(['product:id,name,slug', 'store:id,store_name,slug,user_id']),
+                ->with(['product:id,name,slug', 'store:id,store_name,slug,user_id,is_platform']),
             $request,
         );
 
@@ -74,7 +74,7 @@ final class OfferController extends Controller
         $this->ensureSellerOffer($request, $offer);
         $this->authorize('view', $offer);
 
-        $offer->load(['product:id,name,slug', 'store:id,store_name,slug,user_id']);
+        $offer->load(['product:id,name,slug', 'store:id,store_name,slug,user_id,is_platform']);
 
         return new OfferResource($offer);
     }
