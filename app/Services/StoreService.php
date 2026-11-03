@@ -99,6 +99,10 @@ final class StoreService
             $store = $this->lockedStore($store);
             $this->ensureStatus($store, StoreStatus::ACTIVE);
 
+            if ($store->isPlatform()) {
+                throw new ConflictHttpException('A loja da plataforma não pode ser suspensa.');
+            }
+
             $store->update([
                 'status' => StoreStatus::SUSPENDED,
                 'rejection_reason' => $reason,

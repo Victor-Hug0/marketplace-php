@@ -46,16 +46,17 @@ final class OfferPolicy
 
     public function pause(User $user, Offer $offer): bool
     {
-        if ($user->hasRole(RoleName::ADMIN)) {
-            return true;
-        }
-
         return $this->ownsOffer($user, $offer) && $this->hasActiveStore($user);
     }
 
     public function resume(User $user, Offer $offer): bool
     {
         return $this->ownsOffer($user, $offer) && $this->hasActiveStore($user);
+    }
+
+    public function moderate(User $user, Offer $offer): bool
+    {
+        return $user->hasRole(RoleName::ADMIN);
     }
 
     private function ownsOffer(User $user, Offer $offer): bool

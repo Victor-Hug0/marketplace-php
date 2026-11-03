@@ -94,5 +94,34 @@ final class OfferSeeder extends Seeder
                 'status' => OfferStatus::ACTIVE,
             ],
         );
+
+        $this->seedPlatformOffer();
+    }
+
+    private function seedPlatformOffer(): void
+    {
+        $platformStore = Store::query()->platform()->first();
+        $notebook = Product::query()
+            ->where('slug', 'notebook-demo-16gb')
+            ->where('status', ProductStatus::ACTIVE)
+            ->first();
+
+        if ($platformStore === null || $notebook === null) {
+            return;
+        }
+
+        Offer::query()->firstOrCreate(
+            [
+                'product_id' => $notebook->id,
+                'store_id' => $platformStore->id,
+            ],
+            [
+                'price_cents' => 459900,
+                'promotional_price_cents' => null,
+                'stock' => 15,
+                'reserved_stock' => 0,
+                'status' => OfferStatus::ACTIVE,
+            ],
+        );
     }
 }

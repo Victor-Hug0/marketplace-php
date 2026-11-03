@@ -176,7 +176,7 @@ final class CartService
     private function loadCart(Cart $cart): Cart
     {
         return $cart->load([
-            'items.offer.store:id,store_name,slug,status,user_id',
+            'items.offer.store:id,store_name,slug,status,user_id,is_platform',
             'items.offer.product:id,name,slug,status',
         ]);
     }

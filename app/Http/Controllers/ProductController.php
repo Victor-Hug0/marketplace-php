@@ -68,7 +68,7 @@ final class ProductController extends Controller
             )
             ->with([
                 'images',
-                'store:id,store_name,slug,status',
+                'store:id,store_name,slug,status,is_platform',
                 'category:id,name,slug',
                 'attributeValues.categoryAttribute',
             ])

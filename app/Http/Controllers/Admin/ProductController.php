@@ -38,7 +38,7 @@ final class ProductController extends Controller
         ]);
 
         $query = Product::query()
-            ->with(['images', 'store:id,store_name,slug', 'category:id,name,slug', 'attributeValues.categoryAttribute']);
+            ->with(['images', 'store:id,store_name,slug,is_platform', 'category:id,name,slug', 'attributeValues.categoryAttribute']);
 
         if ($request->filled('status')) {
             $query->where('status', $request->string('status')->value());
@@ -56,7 +56,7 @@ final class ProductController extends Controller
     {
         $this->authorize('view', $product);
 
-        $product->load(['images', 'store:id,store_name,slug', 'category:id,name,slug', 'attributeValues.categoryAttribute']);
+        $product->load(['images', 'store:id,store_name,slug,is_platform', 'category:id,name,slug', 'attributeValues.categoryAttribute']);
 
         return new ProductResource($product);
     }

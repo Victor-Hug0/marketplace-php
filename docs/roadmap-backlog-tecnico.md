@@ -5,7 +5,7 @@ Documento derivado de [`roadmap-implementacao-api.md`](roadmap-implementacao-api
 **Fluxo Git:** `feature/*` → `develop` → `main`  
 **Convenção de ID:** `{FASE}.{SLICE}.{ITEM}` (ex.: `B3.2.03`)  
 **Status:** `done` · `wip` · `todo` · `blocked` · `later`  
-**Última revisão:** 20/10/2026 — B1 a B7 concluídas em `develop` e `main` (PR #17). Referência de endpoints: [`api-referencia.md`](api-referencia.md); estados e regras: [`fluxos-e-regras.md`](fluxos-e-regras.md).
+**Última revisão:** 21/10/2026 — B1 a B7 concluídas em `develop` e `main` (PR #17); loja da plataforma (B2.4.07) e moderação de ofertas pelo admin (B3.2.08) entregues. Referência de endpoints: [`api-referencia.md`](api-referencia.md); estados e regras: [`fluxos-e-regras.md`](fluxos-e-regras.md).
 
 ---
 
@@ -44,7 +44,7 @@ Documento derivado de [`roadmap-implementacao-api.md`](roadmap-implementacao-api
 | Fundação (auth, docker, audit) | `done` | Pré-requisito |
 | B1 Atores / loja | `done` | Store + roles + middleware |
 | B2 Catálogo | `done` | Categorias, produtos, vitrine, busca |
-| B2-extra (atributos valorados, filtros, resize) | `parcial` | Valores de atributo e filtros feitos (B2.4.01–04) e limite de upload (B2.4.06); faltam resize em fila e flag `is_platform` |
+| B2-extra (atributos valorados, filtros, resize) | `parcial` | Valores de atributo e filtros (B2.4.01–04), limite de upload (B2.4.06) e loja da plataforma (B2.4.07) feitos; falta resize em fila |
 | B3 Ofertas / estoque / Buy Box | `done` | Em `develop` (PR #3) |
 | B4 Carrinho / checkout / pedidos | `done` | B4.1–B4.5 em `develop` |
 | B5 Pagamento / ledger | `done` | B5.1–B5.3 em `develop` (PRs #9–#11) |
@@ -170,7 +170,7 @@ seller edita conteúdo só em draft|rejected
 | B2.4.04 | Filtro público `?attr[color]=preto` | `done` | L | `whereHas` por atributo filtrável; vírgula = OU, códigos = E; índices em `value_number`, `value_boolean` e `lower(value_string)` (`ProductAttributesTest`) |
 | B2.4.05 | Job `ProcessProductImage` (resize/webp) | `todo` | M | queue redis; path relativo |
 | B2.4.06 | Limite MIME/size upload reforçado | `done` | S | `StoreProductImageRequest`: `jpeg,jpg,png,webp`, até 2 MB; máximo 8 imagens por produto (409) |
-| B2.4.07 | Flag `is_platform` / store platform seeder | `todo` | S | produto da plataforma |
+| B2.4.07 | Flag `is_platform` / store platform seeder | `done` | S | `stores.is_platform` (fora do `$fillable`, índice único parcial: uma loja só); `PlatformStoreSeeder` cria a loja `active` com operador de senha aleatória (`config/platform_store.php`); `is_platform` na loja e no bloco `store` de produto/oferta; loja da plataforma não é suspensa (409); venda 1P usa o mesmo ledger com comissão (`PlatformStoreTest`) |
 
 ---
 
@@ -242,10 +242,10 @@ index (offer_id, status), (user_id, status), (order_id, status), (expires_at)
 | B3.2.02 | Pause / resume oferta | `done` | S | `active ↔ paused`; transição inválida → 409 |
 | B3.2.03 | Ajuste de estoque | `done` | M | via `PUT/PATCH seller/offers/{id}` com `stock` absoluto; recusa valor menor que `reserved_stock` (409). Não há endpoint de delta |
 | B3.2.04 | Soft delete oferta (só se reserved=0) | `done` | S | 409 "Não é possível remover uma oferta com reservas ativas." |
-| B3.2.05 | Policy `OfferPolicy` | `done` | M | criar/editar/excluir/pausar/retomar exige ser dono e ter loja `active`; a policy já autoriza admin a ver, editar e pausar |
+| B3.2.05 | Policy `OfferPolicy` | `done` | M | criar/editar/excluir/pausar/retomar exige ser dono e ter loja `active`; admin vê e modera (`moderate`) |
 | B3.2.06 | Form Requests + `OfferResource` | `done` | M | `StoreOfferRequest`, `UpdateOfferRequest`; resource expõe `current_price` e `available_stock`, e `stock`/`reserved_stock` só para dono ou admin |
 | B3.2.07 | Rotas `seller/offers` | `done` | M | index, store, show, update, pause, resume, destroy |
-| B3.2.08 | Admin list/pause oferta | `todo` | S | faltam só as rotas `admin/offers` (a policy já permite). Hoje o admin modera o **produto**: pausar o produto tira todas as ofertas da compra |
+| B3.2.08 | Admin list/pause oferta | `done` | S | `GET admin/offers` (filtros `status`, `store_id`, `product_id`, `admin_paused`), `GET admin/offers/{id}`, `POST .../pause` (motivo obrigatório) e `.../resume`. A pausa do admin **trava** a oferta (`admin_paused_at`, `admin_pause_reason`): o seller não retoma (409) e é notificado (`OfferModerated`). Auditoria `offer.admin_paused`/`offer.admin_resumed` (`AdminOfferModerationTest`) |
 | B3.2.09 | Feature tests CRUD + isolamento IDOR | `done` | M | `OfferWorkflowTest` |
 
 **Endpoints implementados:**
@@ -658,11 +658,11 @@ FEITO:
   + X.1.02: preço da oferta em centavos (dinheiro inteiro de ponta a ponta)
   + B2.4.01–04 e B3.3.04: atributos valorados, filtros ?attr[...] e preço "a partir de" na busca
   + L2.1.06: notificações por e-mail e caixa no app para comprador, vendedor e admin
+  + B2.4.07 e B3.2.08: loja da plataforma (1P) e moderação de ofertas pelo admin com trava
 
 PENDÊNCIAS OPCIONAIS DO CORE:
   B1.3    KYC do seller
-  B2.4    resize de imagem em fila (B2.4.05), flag is_platform (B2.4.07)
-  B3.2.08 rotas admin de oferta
+  B2.4.05 resize de imagem em fila
   B3.4.07 idempotência de reserva avulsa
 
 FASES LATER (liberadas):
@@ -691,7 +691,7 @@ FASES LATER (liberadas):
 | Loja | `StoreService` | `StoreController`, `Admin/StoreController` | `Store/` |
 | Categoria | `CategoryService` | `CategoryController`, `Admin/CategoryController` | `Category/` |
 | Produto | `ProductService` | `ProductController`, `Seller/ProductController`, `Admin/ProductController` | `Product/`, `Catalog/` |
-| Oferta / estoque | `OfferService`, `BuyBoxService`, `InventoryService` | `Seller/OfferController`, `OfferReservationController` | `Offer/` |
+| Oferta / estoque | `OfferService`, `BuyBoxService`, `InventoryService` | `Seller/OfferController`, `Admin/OfferController`, `OfferReservationController` | `Offer/` |
 | Endereço | `AddressService` | `AddressController` | `Address/` |
 | Carrinho | `CartService` | `CartController` | `Cart/` |
 | Checkout / pedido | `CheckoutService`, `OrderService`, `OrderStateMachine` | `CheckoutController`, `OrderController`, `Seller/OrderSellerController`, `Admin/OrderController` | `Checkout/`, `Order/` |

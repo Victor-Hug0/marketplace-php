@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Events\OfferModerated;
 use App\Events\ProductDecided;
 use App\Events\ProductSubmitted;
 use App\Events\StoreDecided;
 use App\Events\StoreRequested;
+use App\Notifications\OfferModeratedNotification;
 use App\Notifications\ProductDecidedNotification;
 use App\Notifications\ProductSubmittedNotification;
 use App\Notifications\StoreDecidedNotification;
@@ -40,5 +42,11 @@ final class ModerationNotificationListener
     {
         $this->recipients->storeOwner($event->product->loadMissing('store')->store)
             ?->notify(new ProductDecidedNotification($event->product));
+    }
+
+    public function handleOfferModerated(OfferModerated $event): void
+    {
+        $this->recipients->storeOwner($event->offer->loadMissing('store')->store)
+            ?->notify(new OfferModeratedNotification($event->offer));
     }
 }

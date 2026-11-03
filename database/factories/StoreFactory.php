@@ -40,4 +40,11 @@ final class StoreFactory extends Factory
             'reviewed_at' => now(),
         ]);
     }
+
+    public function platform(): static
+    {
+        return $this->active()->state(fn (): array => [
+            'is_platform' => true,
+        ]);
+    }
 }

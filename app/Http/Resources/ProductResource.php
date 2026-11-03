@@ -38,6 +38,7 @@ final class ProductResource extends JsonResource
                 'id' => $this->store->id,
                 'store_name' => $this->store->store_name,
                 'slug' => $this->store->slug,
+                'is_platform' => (bool) $this->store->is_platform,
             ]),
             'attributes' => $this->whenLoaded('attributeValues', fn (): array => $this->attributeValues
                 ->sortBy(fn (ProductAttributeValue $value): int => $value->categoryAttribute->position)

@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\StoreStatus;
 use Database\Factories\StoreFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -18,6 +19,9 @@ class Store extends Model
     /** @use HasFactory<StoreFactory> */
     use HasFactory, HasUuids, SoftDeletes;
 
+    /**
+     * `is_platform` stays out on purpose: only PlatformStoreSeeder may set it.
+     */
     protected $fillable = [
         'user_id',
         'store_name',
@@ -40,8 +44,18 @@ class Store extends Model
     {
         return [
             'status' => StoreStatus::class,
+            'is_platform' => 'boolean',
             'reviewed_at' => 'datetime',
         ];
+    }
+
+    /**
+     * @param  Builder<Store>  $query
+     * @return Builder<Store>
+     */
+    public function scopePlatform(Builder $query): Builder
+    {
+        return $query->where('is_platform', true);
     }
 
     public function owner(): BelongsTo
@@ -82,5 +96,10 @@ class Store extends Model
     public function isActive(): bool
     {
         return $this->status === StoreStatus::ACTIVE;
+    }
+
+    public function isPlatform(): bool
+    {
+        return $this->is_platform === true;
     }
 }

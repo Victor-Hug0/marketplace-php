@@ -21,6 +21,7 @@ final class PublicStoreResource extends JsonResource
             'store_name' => $this->store_name,
             'slug' => $this->slug,
             'description' => $this->description,
+            'is_platform' => (bool) $this->is_platform,
             'logo_url' => $this->logo_path
                 ? Storage::url($this->logo_path)
                 : null,

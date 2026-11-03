@@ -3,6 +3,7 @@
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\FulfillmentController as AdminFulfillmentController;
+use App\Http\Controllers\Admin\OfferController as AdminOfferController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PayoutController as AdminPayoutController;
 use App\Http\Controllers\Admin\PostSaleController as AdminPostSaleController;
@@ -236,6 +237,15 @@ Route::prefix('v1')->group(function () {
             Route::post('{product}/approve', [AdminProductController::class, 'approve']);
             Route::post('{product}/reject', [AdminProductController::class, 'reject']);
             Route::post('{product}/pause', [AdminProductController::class, 'pause']);
+        });
+
+    Route::prefix('admin/offers')
+        ->middleware(['auth:sanctum', 'abilities:access', 'role:admin'])
+        ->group(function () {
+            Route::get('/', [AdminOfferController::class, 'index']);
+            Route::get('{offer}', [AdminOfferController::class, 'show']);
+            Route::post('{offer}/pause', [AdminOfferController::class, 'pause']);
+            Route::post('{offer}/resume', [AdminOfferController::class, 'resume']);
         });
 
     Route::prefix('admin/orders')
